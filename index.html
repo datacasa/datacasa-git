@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>datacasa Fundão | Analítica 2026</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
+        
+        /* Layout dos Cartões */
+        .kpi-card { 
+            background: white; 
+            padding: 1.25rem; 
+            border-radius: 1.25rem; 
+            border: 1px solid #e2e8f0; 
+            display: grid; 
+            grid-template-columns: 1.5fr 1fr; 
+            gap: 0.5rem;
+            min-height: 110px;
+            align-items: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: help;
+            position: relative;
+        }
+        
+        .kpi-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
+            border-color: #818cf8;
+        }
+
+        .kpi-card:active {
+            transform: translateY(-1px);
+        }
+        
+        .card-left { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .sparkline-container { width: 100%; height: 50px; display: flex; align-items: center; justify-content: flex-end; opacity: 0.7; }
+        .variation-badge { font-size: 0.7rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 800; display: inline-block; margin-top: 0.4rem; width: fit-content; }
+        
+        #map { height: 650px; border-radius: 1.5rem; border: 1px solid #e2e8f0; z-index: 1; background: #eef2f6; position: relative; }
+        
+        /* Legenda do Mapa */
+        .info.legend { background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-size: 11px; line-height: 18px; color: #475569; font-weight: 600; }
+        .info.legend i { width: 16px; height: 16px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 4px; }
+        
+        /* Tooltip do Mapa */
+        .custom-tooltip { background: rgba(255, 255, 255, 0.98); border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px; padding: 8px 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; text-align: center; pointer-events: none; }
+
+        /* Toggle Button no Mapa */
+        .map-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            background: white;
+            padding: 4px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            gap: 4px;
+            border: 1px solid #e2e8f0;
+        }
+        .toggle-btn {
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .toggle-btn.active-sale { background-color: #4f46e5; color: white; }
+        .toggle-btn.active-rent { background-color: #f97316; color: white; }
+        .toggle-btn.inactive { background-color: transparent; color: #64748b; }
+        .toggle-btn.inactive:hover { background-color: #f1f5f9; }
+
+        /* Estilos do Modal */
+        #infoModal { transition: opacity 0.3s ease-in-out; }
+        #infoModal.hidden { pointer-events: none; opacity: 0; }
+        #infoModal:not(.hidden) { pointer-events: auto; opacity: 1; }
+        .modal-content { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        #infoModal.hidden .modal-content { transform: scale(0.95); }
+        #infoModal:not(.hidden) .modal-content { transform: scale(1); }
+
+        /* Estilos das Abas no Nav */
+        .nav-tab {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+        .nav-tab.active { background: #4f46e5; color: white; }
+        .nav-tab:not(.active) { color: #64748b; }
+        .nav-tab:not(.active):hover { background: #f1f5f9; }
+
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center px-6">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-indigo-200">d</div>
+                <div class="font-extrabold text-xl tracking-tight text-indigo-950">datacasa <span class="text-slate-400 font-medium">| Fundão</span></div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="switchTab('dashboard')" id="tab-dash" class="nav-tab active">Dashboard</button>
+                    <button onclick="switchTab('about')" id="tab-about-btn" class="nav-tab">Sobre</button>
+                </div>
+                <div id="lastUpdate" class="text-[10px] font-black text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg uppercase tracking-widest border border-slate-200">...</div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+        
+        <div id="content-dashboard" class="space-y-10">
+            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
+                <div>
+                    <h1 class="text-3xl font-black text-slate-900 tracking-tight">Dados imobiliário residencial</h1>
+                    <p class="text-slate-500 font-medium mt-1">Concelho do Fundão</p>
+                </div>
+                <select id="locationSelect" class="bg-white border-2 border-slate-200 rounded-2xl p-4 min-w-[280px] font-bold text-slate-700 shadow-sm focus:border-indigo-600 outline-none transition-all cursor-pointer"></select>
+            </div>
+
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Mercado de compra</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_active">...</div></div><div id="var_sale_active"></div></div><div id="spark_sale_active" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Preço Médio</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price">...</div></div><div id="var_sale_price"></div></div><div id="spark_sale_price" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price_m2">...</div></div><div id="var_sale_price_m2"></div></div><div id="spark_sale_price_m2" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_production">...</div></div><div id="var_sale_production"></div></div><div id="spark_sale_production" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">PMV</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_dom">...</div></div><div id="var_sale_dom"></div></div><div id="spark_sale_dom" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">IAH</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="sale_effort">...</div></div><div id="var_sale_effort"></div></div><div id="spark_sale_effort" class="sparkline-container"></div></div>
+                </div>
+            </section>
+
+            <section>
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="h-6 w-1 bg-orange-500 rounded-full"></div>
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Mercado de arrendamento</h2>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_active">...</div></div><div id="var_rent_active"></div></div><div id="spark_rent_active" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Renda Média</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price">...</div></div><div id="var_rent_price"></div></div><div id="spark_rent_price" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price_m2">...</div></div><div id="var_rent_price_m2"></div></div><div id="spark_rent_price_m2" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_production">...</div></div><div id="var_rent_production"></div></div><div id="spark_rent_production" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">PMA</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_dom">...</div></div><div id="var_rent_dom"></div></div><div id="spark_rent_dom" class="sparkline-container"></div></div>
+                    <div class="kpi-card"><div class="card-left"><div><p class="text-[10px] text-slate-400 font-black uppercase tracking-widest">ESFORÇO</p><div class="text-xl sm:text-2xl font-black text-slate-900 mt-1 tracking-tight" id="rent_effort">...</div></div><div id="var_rent_effort"></div></div><div id="spark_rent_effort" class="sparkline-container"></div></div>
+                </div>
+            </section>
+
+            <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Evolução do Preço por m² (Venda vs Renda)</h3>
+                <div class="h-80"><canvas id="evolutionChart"></canvas></div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Certificação Energética</h3>
+                    <div class="h-64"><canvas id="energyChart"></canvas></div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Tipologias (T5+)</h3>
+                    <div class="h-64"><canvas id="typologyChart"></canvas></div>
+                </div>
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras</h3>
+                    <div class="h-64"><canvas id="agencyChart"></canvas></div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-center gap-3">
+                    <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
+                    <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Geografia do Mercado</h2>
+                </div>
+                <div id="map" class="shadow-2xl shadow-indigo-100 relative">
+                    <div class="map-toggle">
+                        <button id="btnSale" class="toggle-btn active-sale" onclick="toggleMapMode('sale')">Venda</button>
+                        <button id="btnRent" class="toggle-btn inactive" onclick="toggleMapMode('rent')">Renda</button>
+                    </div>
+                    <div id="mapLoader" class="absolute inset-0 bg-slate-50 z-[1000] flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest">A carregar mapa...</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="content-about" class="hidden space-y-8 max-w-4xl mx-auto py-10">
+            <div class="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
+                <h2 class="text-2xl font-black text-slate-900">Sobre o datacasa | Fundão</h2>
+                <p class="text-slate-600 leading-relaxed">O projeto pretende disponibilizar ao público dados imobiliários centralizados do concelho do Fundão, uma região com particular interesse estatístico devido à crescente pressão do mercado e falta de informação pública agregada. O objetivo é fornecer transparência a proprietários, compradores e mediadores. O datacasa não está afiliado a qualquer entidade, mediadora ou intermediário de crédito.</p>
+                <div class="h-px bg-slate-100"></div>
+                <h3 class="text-lg font-bold text-slate-900">Metodologia</h3>
+                <p class="text-slate-600 leading-relaxed">Os dados de imóveis são processados duas vezes por semana através da consulta de sites públicos de agências de mediação imobiliária a operar no concelho do Fundão. São aplicados filtros rigorosos (guardrails) para garantir que apenas imóveis residenciais válidos são analisados, removendo duplicados e valores atípicos que possam distorcer a realidade do mercado. Entre em contacto para mais informação sobre a metodologia e valores concretos.</p>
+            </div>
+        </div>
+
+        <footer class="bg-indigo-950 text-white rounded-[2.5rem] p-12 text-center shadow-2xl">
+            <h2 class="text-4xl font-black mb-4 tracking-tight">Precisa de dados específicos?</h2>
+            <p class="text-indigo-200 max-w-lg mx-auto mb-10 font-medium">Análise de mercado personalizada para o concelho do Fundão.</p>
+            <a href="mailto:info@datacasa.pt" class="bg-white text-indigo-950 hover:bg-indigo-50 font-black py-5 px-12 rounded-2xl transition-all shadow-xl inline-block uppercase tracking-widest text-xs">Contactar datacasa</a>
+        </footer>
+    </main>
+
+    <div id="infoModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
+        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
+        <div class="modal-content bg-white w-full max-w-md mx-6 p-8 rounded-3xl shadow-2xl relative z-10">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-10 h-10 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h3 id="modalTitle" class="text-xl font-black text-slate-900">...</h3>
+            </div>
+            <p id="modalDesc" class="text-slate-600 leading-relaxed text-sm font-medium"></p>
+            <div class="mt-8 pt-6 border-t border-slate-100 text-center">
+                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-lg shadow-indigo-200">Entendido</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let globalData, geoDataStore;
+        let energyChart, typologyChart, agencyChart, evolutionChart;
+        let map, geoJsonLayer, markersLayer, legendControl;
+        
+        let currentMapMode = 'sale'; 
+        let currentSelectedLoc = 'Global';
+
+        function switchTab(tab) {
+            const dash = document.getElementById('content-dashboard');
+            const about = document.getElementById('content-about');
+            const btnDash = document.getElementById('tab-dash');
+            const btnAbout = document.getElementById('tab-about-btn');
+
+            if (tab === 'dashboard') {
+                dash.classList.remove('hidden');
+                about.classList.add('hidden');
+                btnDash.classList.add('active');
+                btnAbout.classList.remove('active');
+                if(map) map.invalidateSize();
+            } else {
+                dash.classList.add('hidden');
+                about.classList.remove('hidden');
+                btnDash.classList.remove('active');
+                btnAbout.classList.add('active');
+            }
+        }
+
+        const fmtEuro = new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format;
+        const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+
+        const metricDefinitions = {
+		"STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado.",
+
+		"PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
+
+		"PMV": "Prazo Médio de Venda. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
+
+		"PMA": "Prazo Médio de Arrendamento. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
+
+		"PREÇO MÉDIO": "Valor médio de todos os anúncios de venda ativos no período selecionado excluindo outliers.",
+
+		"RENDA MÉDIA": "Valor médio de renda mensal nos anúncios de arrendamento ativos excluindo outliers.",
+
+		"MÉDIA €/M²": "Preço médio por cada metro quadrado de área útil, permitindo comparar e avaliar o valor real dos imóveis.",
+
+		"IAH": "Índice de Acessibilidade Habitacional. Estima quantos anos de rendimentos são necessários para comprar um imóvel médio. O rendimento anual médio no concelho do Fundão ascendia a 15.722€ em 2023 segundo dados do INE.",
+
+		"ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
+	};
+
+        function setupCardInteractions() {
+            document.querySelectorAll('.kpi-card').forEach(card => {
+                const titleEl = card.querySelector('p');
+                if (titleEl) {
+                    const title = titleEl.innerText.trim();
+                    card.onclick = () => openModal(title);
+                }
+            });
+        }
+
+        function openModal(title) {
+            const modal = document.getElementById('infoModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalDesc = document.getElementById('modalDesc');
+            
+            modalTitle.innerText = title;
+            modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('infoModal').classList.add('hidden');
+        }
+
+        function generateSparkline(data, colorClass) {
+            if (!data || data.length < 2) return '';
+            const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
+            const points = data.map((v, i) => {
+                const x = (i / (data.length - 1)) * 100;
+                const y = 45 - ((v - min) / range) * 40; 
+                return [x, y];
+            });
+            let d = `M ${points[0][0]} ${points[0][1]}`;
+            for (let i = 1; i < points.length; i++) {
+                const curr = points[i], prev = points[i-1];
+                const cp1x = prev[0] + (curr[0] - prev[0]) / 2, cp1y = prev[1];
+                const cp2x = prev[0] + (curr[0] - prev[0]) / 2, cp2y = curr[1];
+                d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr[0]} ${curr[1]}`;
+            }
+            let stroke = '#cbd5e1';
+            if (colorClass.includes('emerald')) stroke = '#10b981'; 
+            else if (colorClass.includes('rose')) stroke = '#ef4444';
+            return `<svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+        }
+
+        function getVariation(current, history) {
+            if (!history || history.length < 2) return '';
+            const prev = history[history.length - 2];
+            if (prev === 0) return '';
+            const diff = ((current - prev) / prev) * 100;
+            if (Math.abs(diff) < 0.1) return '';
+            const isUp = diff > 0;
+            const color = isUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+            return `<span class="variation-badge ${color}">${isUp ? '↑' : '↓'} ${Math.abs(diff).toFixed(1)}%</span>`;
+        }
+
+        async function init() {
+            try {
+                const [dataResp, geoResp] = await Promise.all([
+                    fetch('web_dashboard_data.json'),
+                    fetch('freguesias_fundao.geojson')
+                ]);
+                globalData = await dataResp.json();
+                geoDataStore = await geoResp.json(); 
+                document.getElementById('lastUpdate').innerText = `Atualização: ${globalData.last_update}`;
+                document.getElementById('mapLoader').style.display = 'none';
+                const sel = document.getElementById('locationSelect');
+                const locKeys = Object.keys(globalData.locations).sort();
+                const sortedLocs = locKeys.filter(k => k !== "Global");
+                if(locKeys.includes("Global")) sortedLocs.unshift("Global");
+                sortedLocs.forEach(l => {
+                    const opt = document.createElement('option'); opt.value = l; opt.text = l === "Global" ? "Global (Concelho)" : l;
+                    sel.appendChild(opt);
+                });
+                sel.value = "Global";
+                initMapBase(); 
+                setupCardInteractions();
+                sel.addEventListener('change', (e) => {
+                    currentSelectedLoc = e.target.value;
+                    render(currentSelectedLoc);
+                });
+                render("Global");
+            } catch (e) { 
+                console.error("Erro fatal:", e);
+                document.getElementById('mapLoader').innerText = "Erro ao carregar mapa (GeoJSON)";
+            }
+        }
+
+        function initMapBase() {
+            map = L.map('map', { scrollWheelZoom: false, minZoom: 10, maxZoom: 16 }).setView([40.1415, -7.5020], 11);
+            map.createPane('polygonsPane'); map.getPane('polygonsPane').style.zIndex = 400;
+            map.createPane('markersPane'); map.getPane('markersPane').style.zIndex = 600;
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
+            markersLayer = L.layerGroup({pane: 'markersPane'}).addTo(map);
+            if (geoDataStore.features.length > 0) {
+                const tempLayer = L.geoJSON(geoDataStore);
+                const bounds = tempLayer.getBounds().pad(0.1);
+                map.fitBounds(bounds);
+                map.setMaxBounds(bounds.pad(0.2));
+            }
+        }
+
+        window.toggleMapMode = function(mode) {
+            currentMapMode = mode;
+            const btnSale = document.getElementById('btnSale'), btnRent = document.getElementById('btnRent');
+            if (mode === 'sale') { btnSale.className = 'toggle-btn active-sale'; btnRent.className = 'toggle-btn inactive'; }
+            else { btnSale.className = 'toggle-btn inactive'; btnRent.className = 'toggle-btn active-rent'; }
+            updateMapVisualization();
+        }
+
+        function getColor(value) {
+            if (!value) return '#f1f5f9';
+            if (currentMapMode === 'sale') {
+                return value > 250000 ? '#4338ca' : value > 180000 ? '#4f46e5' : value > 120000 ? '#6366f1' : value > 60000 ? '#818cf8' : '#c7d2fe';
+            } else {
+                return value > 800 ? '#c2410c' : value > 600 ? '#ea580c' : value > 400 ? '#f97316' : value > 200 ? '#fb923c' : '#fed7aa';
+            }
+        }
+
+        function updateMapVisualization() {
+            if (geoJsonLayer) map.removeLayer(geoJsonLayer);
+            if (legendControl) map.removeControl(legendControl);
+            markersLayer.clearLayers();
+            geoDataStore.features.forEach(feature => {
+                const raw = feature.properties.fre_name || feature.properties.fre_name_long || feature.properties.NAME_3 || "";
+                const clean = normalizeStr(raw);
+                const parts = clean.replace("UNIAO DAS FREGUESIAS DE", "").split(",").map(p => p.trim()).filter(p => p.length);
+                let sum = 0, count = 0;
+                parts.forEach(p => {
+                    const matchKey = Object.keys(globalData.locations).find(k => normalizeStr(k) === p);
+                    if (!matchKey) return;
+                    const dataset = currentMapMode === 'sale' ? globalData.locations[matchKey].current.sales : globalData.locations[matchKey].current.rent;
+                    if (dataset.median_price && dataset.active_count) {
+                        sum += dataset.median_price * dataset.active_count;
+                        count += dataset.active_count;
+                    }
+                });
+                feature.properties.current_mode_price = count ? sum / count : 0;
+                feature.properties.display_name = raw;
+            });
+            geoJsonLayer = L.geoJson(geoDataStore, {
+                style: (f) => ({ fillColor: getColor(f.properties.current_mode_price || 0), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.8 }),
+                pane: 'polygonsPane',
+                onEachFeature: function(f, layer) {
+                    const name = f.properties.display_name || "Freguesia";
+                    const p = f.properties.current_mode_price > 0 ? fmtEuro(f.properties.current_mode_price) : 'S/ Dados';
+                    layer.bindTooltip(`<div class="text-center"><div class="font-bold text-slate-800 text-xs mb-1">${name}</div><div class="${currentMapMode==='sale'?'text-indigo-600':'text-orange-600'} font-black text-sm">${p}</div></div>`, { className: 'custom-tooltip', sticky: true });
+                }
+            }).addTo(map);
+            legendControl = L.control({position: 'bottomright'});
+            legendControl.onAdd = function () {
+                const div = L.DomUtil.create('div', 'info legend');
+                const grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
+                div.innerHTML = `<div class="font-bold mb-2 text-xs uppercase tracking-wide">Preço Médio (${currentMapMode==='sale'?'Venda':'Renda'})</div>`;
+                for (let i = 0; i < grades.length; i++) {
+                    div.innerHTML += '<div class="flex items-center gap-2 mb-1"><i style="background:' + getColor(grades[i] + 1) + '"></i> ' + fmtEuro(grades[i]) + (grades[i + 1] ? ' &ndash; ' + fmtEuro(grades[i + 1]) : '+') + '</div>';
+                }
+                return div;
+            };
+            legendControl.addTo(map);
+        }
+
+        function updateCard(id, val, hist, fmt = v => v) {
+            const el = document.getElementById(id), varEl = document.getElementById('var_' + id);
+            el.innerText = fmt(val);
+            let cls = 'text-slate-900';
+            if (hist.length >= 2) {
+                const prev = hist[hist.length-2];
+                if (val > prev) cls = 'text-emerald-600'; else if (val < prev) cls = 'text-rose-600';
+            }
+            el.className = `text-xl sm:text-2xl font-black tracking-tight ${cls}`;
+            if (varEl) varEl.innerHTML = getVariation(val, hist);
+            document.getElementById('spark_'+id).innerHTML = generateSparkline(hist, cls);
+        }
+
+        function render(loc) {
+            const d = globalData.locations[loc], h = d.history;
+            const s = d.current.sales, r = d.current.rent;
+            updateCard('sale_active', s.active_count, h.map(i=>i.sales.active_count));
+            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), v=>(v>0?'+':'')+v);
+            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>i.sales.avg_days_on_market));
+            updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fmtEuro);
+            updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), v=>Math.round(v)+'€');
+            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index));
+            updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count));
+            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), v=>(v>0?'+':'')+v);
+            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>i.rent.avg_days_on_market));
+            updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fmtEuro);
+            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), v=>Math.round(v)+'€');
+            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), v=>v+'%');
+            updateCharts(d);
+            updateMapVisualization();
+        }
+
+        function updateCharts(d) {
+            const dates = d.history.map(h => h.date);
+            if (evolutionChart) evolutionChart.destroy();
+            evolutionChart = new Chart(document.getElementById('evolutionChart'), {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [
+                        { label: 'Venda (€/m²)', data: d.history.map(h=>h.sales.median_price_m2), borderColor: '#4f46e5', tension: 0.3, yAxisID: 'y' },
+                        { label: 'Renda (€/m²)', data: d.history.map(h=>h.rent.median_price_m2), borderColor: '#f97316', tension: 0.3, yAxisID: 'y1' }
+                    ]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y1: { position: 'right', grid: { display: false } } } }
+            });
+            const ds = d.current.sales.distributions;
+            if(energyChart) energyChart.destroy();
+            energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>ds.energy[k]||0), backgroundColor:'#10b981' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
+            if(typologyChart) typologyChart.destroy();
+            typologyChart = new Chart(document.getElementById('typologyChart'), { type:'bar', data: { labels: ['T0','T1','T2','T3','T4','T5+'], datasets:[{ data: ['T0','T1','T2','T3','T4','T5+'].map(k=>ds.typology[k]||0), backgroundColor:'#6366f1' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
+            if(agencyChart) agencyChart.destroy();
+            const ag = Object.entries(ds.agencies).filter(i => !['Particular', 'Particulares'].includes(i[0])).sort((a,b)=>b[1]-a[1]).slice(0, 3);
+            agencyChart = new Chart(document.getElementById('agencyChart'), { 
+                type: 'bar', 
+                data: { labels: ag.map(i=>i[0]), datasets:[{ data: ag.map(i=>i[1]), backgroundColor: ['#312e81', '#4f46e5', '#818cf8'] }] }, 
+                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: function(v) { let l = this.getLabelForValue(v); return l.length > 25 ? l.substring(0, 25) + '...' : l; } } } } } 
+            });
+        }
+        init();
+    </script>
+</body>
+</html>
