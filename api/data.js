@@ -6,11 +6,13 @@ export default async function handler(req, res) {
     const response = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: { Authorization: `token ${token}` },
     });
+    
+    if (!response.ok) throw new Error('Erro ao aceder ao Gist');
+    
     const data = await response.json();
     const rawContent = JSON.parse(data.files['data.json'].content);
 
-    // --- PROTEÇÃO DE DADOS ---
-    // Criamos um novo objeto enviando apenas o que o site precisa
+    // Estrutura de resposta
     const protectedData = {
       last_update: rawContent.last_update,
       locations: {}
@@ -23,19 +25,22 @@ export default async function handler(req, res) {
             active_count: loc.current.sales.active_count,
             median_price: loc.current.sales.median_price,
             median_price_m2: loc.current.sales.median_price_m2,
-            // Enviar tipologias (seguro)
             distributions: {
-              typology: loc.current.sales.distributions.typology
+              typology: loc.current.sales.distributions.typology,
+              // ENVIAR NOMES REAIS DAS AGÊNCIAS
+              agencies: loc.current.sales.distributions.agencies 
             }
-            // NOTA: Deixámos de fora 'agencies' e 'history'
-          }
+          },
+          rent: loc.current.rent
         }
+        // O histórico continua omitido aqui para proteger a tua base de dados a longo prazo
       };
     }
 
-    res.setHeader('Cache-Control', 's-maxage=3600'); // Cache de 1h para poupar recursos
+    // Cache de 1 hora para performance
+    res.setHeader('Cache-Control', 's-maxage=3600');
     res.status(200).json(protectedData);
   } catch (e) {
-    res.status(500).json({ error: "Erro ao processar dados" });
+    res.status(500).json({ error: "Erro na ponte de dados: " + e.message });
   }
 }
