@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-8NNK2SSX3C"></script>
 	<script>
 	  window.dataLayer = window.dataLayer || [];
@@ -43,32 +42,35 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f8fafc; }
         
         /* Layout dos Cartões */
-		.kpi-card { 
-			background: white; 
-			padding: 1.25rem; 
-			border-radius: 1.25rem; 
-			border: 1px solid #e2e8f0; 
-			display: flex;             /* Mudado de grid para flex */
-			flex-direction: column;    /* Elementos um por baixo do outro */
-			align-items: flex-start;   /* Alinhados à esquerda */
-			gap: 0.25rem;
-			min-height: 155px;         /* Altura fixa para manter harmonia */
-			transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-			cursor: help;
-			position: relative;
+        .kpi-card { 
+            background: white; 
+            padding: 1.25rem; 
+            border-radius: 1.25rem; 
+            border: 1px solid #e2e8f0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: flex-start; 
+            gap: 0.25rem;
+            min-height: 155px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer; /* Alterado para pointer para indicar clique */
+            position: relative;
         }
         
         .kpi-card:hover {
             transform: translateY(-4px);
             box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
-            border-color: #818cf8;
         }
+
+        /* Cores de Hover Específicas */
+        .sale-card:hover { border-color: #818cf8; }
+        .rent-card:hover { border-color: #f97316; }
 
         .kpi-card:active {
             transform: translateY(-1px);
         }
         
-        .card-left { display: flex; flex-direction: column; justify-content: space-between; height: 100%; }
+        .card-left { display: flex; flex-direction: column; justify-content: space-between; height: 100%; width: 100%; }
         .sparkline-container { width: 100%; height: 35px; margin-top: auto; opacity: 0.7; }
         .variation-badge { font-size: 0.55rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-weight: 800; display: inline-block; margin-top: 0.4rem; width: fit-content; }
         
@@ -157,7 +159,7 @@
             <div class="flex flex-col md:flex-row justify-between items-center gap-6">
                 <div>
                     <h1 class="text-2xl font-black text-slate-900 tracking-tight">Imobiliário residencial</h1>
-                    <p class="text-slate-500 font-medium mt-1">Dados do concelho do Fundão</p>
+                    <p id="lastUpdateHeader" class="text-slate-500 font-medium mt-1">Dados atualizados a ...</p>
                 </div>
                 <select id="locationSelect" class="bg-white border-2 border-slate-200 rounded-2xl p-4 min-w-[280px] font-bold text-slate-700 shadow-sm focus:border-indigo-600 outline-none transition-all cursor-pointer"></select>
             </div>
@@ -168,27 +170,27 @@
                     <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Mercado de compra</h2>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_active">...</div></div><div id="var_sale_active"></div></div><div id="spark_sale_active" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Preço Médio</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price">...</div></div><div id="var_sale_price"></div></div><div id="spark_sale_price" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price_m2">...</div></div><div id="var_sale_price_m2"></div></div><div id="spark_sale_price_m2" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_production">...</div></div><div id="var_sale_production"></div></div><div id="spark_sale_production" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">PMV</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_dom">...</div></div><div id="var_sale_dom"></div></div><div id="spark_sale_dom" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">IAH</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_effort">...</div></div><div id="var_sale_effort"></div></div><div id="spark_sale_effort" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_active">...</div></div><div id="var_sale_active"></div></div><div id="spark_sale_active" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Preço Médio</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price">...</div></div><div id="var_sale_price"></div></div><div id="spark_sale_price" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_price_m2">...</div></div><div id="var_sale_price_m2"></div></div><div id="spark_sale_price_m2" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_production">...</div></div><div id="var_sale_production"></div></div><div id="spark_sale_production" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">PMV</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_dom">...</div></div><div id="var_sale_dom"></div></div><div id="spark_sale_dom" class="sparkline-container"></div></div>
+                    <div class="kpi-card sale-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">IAH</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="sale_effort">...</div></div><div id="var_sale_effort"></div></div><div id="spark_sale_effort" class="sparkline-container"></div></div>
                 </div>
             </section>
 
             <section>
-                <div class="flex items-center gap-3	 mb-6">
+                <div class="flex items-center gap-3 mb-6">
                     <div class="h-6 w-1 bg-orange-500 rounded-full"></div>
                     <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Mercado de arrendamento</h2>
                 </div>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_active">...</div></div><div id="var_rent_active"></div></div><div id="spark_rent_active" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Renda Média</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price">...</div></div><div id="var_rent_price"></div></div><div id="spark_rent_price" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price_m2">...</div></div><div id="var_rent_price_m2"></div></div><div id="spark_rent_price_m2" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_production">...</div></div><div id="var_rent_production"></div></div><div id="spark_rent_production" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">PMA</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_dom">...</div></div><div id="var_rent_dom"></div></div><div id="spark_rent_dom" class="sparkline-container"></div></div>
-                    <div class="kpi-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">ESFORÇO</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_effort">...</div></div><div id="var_rent_effort"></div></div><div id="spark_rent_effort" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_active">...</div></div><div id="var_rent_active"></div></div><div id="spark_rent_active" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Renda Média</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price">...</div></div><div id="var_rent_price"></div></div><div id="spark_rent_price" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Média €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_price_m2">...</div></div><div id="var_rent_price_m2"></div></div><div id="spark_rent_price_m2" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_production">...</div></div><div id="var_rent_production"></div></div><div id="spark_rent_production" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">PMA</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_dom">...</div></div><div id="var_rent_dom"></div></div><div id="spark_rent_dom" class="sparkline-container"></div></div>
+                    <div class="kpi-card rent-card"><div class="card-left"><div><p class="text-[9px] text-slate-400 font-black uppercase tracking-widest">ESFORÇO</p><div class="text-lg sm:text-xl font-black text-slate-900 mt-1 tracking-tight" id="rent_effort">...</div></div><div id="var_rent_effort"></div></div><div id="spark_rent_effort" class="sparkline-container"></div></div>
                 </div>
             </section>
 
@@ -202,16 +204,16 @@
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Certificação Energética</h3>
                     <div class="h-64"><canvas id="energyChart"></canvas></div>
                 </div>
-				<div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-				<div class="flex justify-between items-center mb-8">
-					<h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Distribuição</h3>
-					<div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 scale-90">
-						<button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600">Categoria</button>
-						<button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500">Tipologia</button>
-					</div>
-				</div>
-				<div class="h-64"><canvas id="typologyChart"></canvas></div>
-			</div>
+                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Distribuição</h3>
+                    <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 scale-90">
+                        <button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600">Categoria</button>
+                        <button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500">Tipologia</button>
+                    </div>
+                </div>
+                <div class="h-64"><canvas id="typologyChart"></canvas></div>
+            </div>
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras (anúncios)</h3>
                     <div class="h-64"><canvas id="agencyChart"></canvas></div>
@@ -249,10 +251,7 @@
             <a href="mailto:geral@datacasa.pt" class="bg-white text-indigo-950 hover:bg-indigo-50 font-black py-5 px-12 rounded-2xl transition-all shadow-xl inline-block uppercase tracking-widest text-xs">Contactar datacasa</a>
         </footer>
         
-        <div class="flex justify-center pt-4 pb-8">
-            <div id="lastUpdate" class="text-[10px] font-black text-slate-400 bg-white border border-slate-200 px-4 py-2 rounded-full uppercase tracking-widest shadow-sm">...</div>
-        </div>
-    </main>
+        </main>
 
     <div id="infoModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
@@ -271,6 +270,11 @@
                 <h3 id="modalTitle" class="text-xl font-black text-slate-900">...</h3>
             </div>
             <p id="modalDesc" class="text-slate-600 leading-relaxed text-sm font-medium"></p>
+            
+            <div class="h-48 w-full mt-6">
+                <canvas id="modalChart"></canvas>
+            </div>
+
             <div class="mt-8 pt-6 border-t border-slate-100 text-center">
                 <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-lg shadow-indigo-200">Entendido</button>
             </div>
@@ -279,29 +283,29 @@
 
     <script>
         let globalData, geoDataStore;
-        let energyChart, typologyChart, agencyChart, evolutionChart;
+        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart; // modalChart adicionado
         let map, geoJsonLayer, markersLayer, legendControl;
 
-		
+        
         let currentMapMode = 'sale'; 
         let currentSelectedLoc = 'Global';
-		
-		let currentTypoMode = 'type'; // Definido 'type' como padrão
-		
-		window.toggleTypoMode = function(mode) {
-			currentTypoMode = mode;
-			const btnType = document.getElementById('btnType');
-			const btnTypo = document.getElementById('btnTypo');
+        
+        let currentTypoMode = 'type'; 
+        
+        window.toggleTypoMode = function(mode) {
+            currentTypoMode = mode;
+            const btnType = document.getElementById('btnType');
+            const btnTypo = document.getElementById('btnTypo');
 
-			if (mode === 'type') {
-				btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
-				btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
-			} else {
-				btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
-				btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
-			}
-			render(currentSelectedLoc);
-		}
+            if (mode === 'type') {
+                btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
+                btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+            } else {
+                btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
+                btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+            }
+            render(currentSelectedLoc);
+        }
 
         function switchTab(tab) {
             const dash = document.getElementById('content-dashboard');
@@ -327,13 +331,10 @@
         const fmtInt = (v) => v.toLocaleString('pt-PT').replace(/\./g, ' ');
         const fmtEuro = (v) => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).replace(/\./g, ' ');
         
-		/* --- NOVOS FORMATADORES COM 1 CASA DECIMAL (ADICIONAR ESTES) --- */
-        // Formata com 1 casa decimal e troca ponto por vírgula (ex: 7.5 -> 7,5)
+        /* --- NOVOS FORMATADORES COM 1 CASA DECIMAL --- */
         const fmtDec = (v) => v.toFixed(1).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        
-        // Igual ao de cima, mas adiciona o símbolo do Euro
         const fmtEuroDec = (v) => fmtDec(v) + " €";
-		
+        
         const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
 
         const metricDefinitions = {
@@ -348,17 +349,9 @@
             "ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
         };
 
-        function setupCardInteractions() {
-            document.querySelectorAll('.kpi-card').forEach(card => {
-                const titleEl = card.querySelector('p');
-                if (titleEl) {
-                    const title = titleEl.innerText.trim();
-                    card.onclick = () => openModal(title);
-                }
-            });
-        }
+        // NOTA: setupCardInteractions removido, lógica movida para updateCard
 
-        function openModal(title) {
+        function openModal(title, dates, data, color) {
             const modal = document.getElementById('infoModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalDesc = document.getElementById('modalDesc');
@@ -367,6 +360,81 @@
             modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
             
             modal.classList.remove('hidden');
+
+            // --- Desenhar Gráfico do Modal ---
+            const ctx = document.getElementById('modalChart');
+            if (modalChart) modalChart.destroy();
+            
+            modalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: title,
+                        data: data,
+                        borderColor: color,
+                        backgroundColor: color,
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        pointHoverRadius: 4,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            display: true,
+                            grid: { display: false, drawBorder: false },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: true,
+                                maxTicksLimit: 15,      // Permitir mais ticks para apanhar as transições de mês
+                                font: { size: 10, weight: '600' },
+                                color: '#94a3b8',
+                                callback: function(value, index, values) {
+                                    // Função auxiliar para obter o nome do mês (ex: "fev")
+                                    const getMonth = (val) => {
+                                        const d = new Date(this.getLabelForValue(val));
+                                        return d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+                                    };
+
+                                    const currMonth = getMonth(value);
+                                    
+                                    // Regra 1: Mostrar sempre o primeiro ponto do gráfico
+                                    if (index === 0) return currMonth;
+                                    
+                                    // Regra 2: Comparar com o ponto anterior (visível)
+                                    const prevVal = values[index - 1].value;
+                                    const prevMonth = getMonth(prevVal);
+
+                                    // Só mostra a label se o mês mudou em relação ao anterior
+                                    return (currMonth !== prevMonth) ? currMonth : null;
+                                }
+                            }
+                        },
+                        y: { 
+                            ticks: { 
+                                font: { size: 10, weight: '600' },
+                                color: '#94a3b8',
+                                maxTicksLimit: 5,
+                                callback: function(value) {
+                                    if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return (value/1000).toFixed(0) + 'k';
+                                    return value;
+                                }
+                            },
+                            grid: { 
+                                color: '#f1f5f9',
+                                borderDash: [4, 4],
+                                drawBorder: false 
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         function closeModal() {
@@ -415,7 +483,10 @@
                 ]);
                 globalData = await dataResp.json();
                 geoDataStore = await geoResp.json(); 
-                document.getElementById('lastUpdate').innerText = `Atualização dos dados: ${globalData.last_update}`;
+                
+                // MUDANÇA: Atualizar o novo elemento do Header
+                document.getElementById('lastUpdateHeader').innerText = `Dados atualizados a ${globalData.last_update}`;
+                
                 document.getElementById('mapLoader').style.display = 'none';
                 const sel = document.getElementById('locationSelect');
                 const locKeys = Object.keys(globalData.locations).sort();
@@ -427,7 +498,7 @@
                 });
                 sel.value = "Global";
                 initMapBase(); 
-                setupCardInteractions();
+                // setupCardInteractions removido
                 sel.addEventListener('change', (e) => {
                     currentSelectedLoc = e.target.value;
                     render(currentSelectedLoc);
@@ -478,13 +549,13 @@
                 const raw = feature.properties.fre_name || feature.properties.fre_name_long || feature.properties.NAME_3 || "";
                 const clean = normalizeStr(raw);
                 const parts = clean
-				
-				.replace(/UNIAO D[E|AS] FREGUESIAS DE/g, "") // Remove "UNIAO DE" ou "UNIAO DAS"
-				.split(/,|\sE\s/)                            // Separa por vírgula (,) OU pela palavra " E "
-				.map(p => p.trim())
-				.filter(p => p.length);
+                
+                .replace(/UNIAO D[E|AS] FREGUESIAS DE/g, "") // Remove "UNIAO DE" ou "UNIAO DAS"
+                .split(/,|\sE\s/)                            // Separa por vírgula (,) OU pela palavra " E "
+                .map(p => p.trim())
+                .filter(p => p.length);
                 let sum = 0, count = 0;
-				
+                
                 parts.forEach(p => {
                     const matchKey = Object.keys(globalData.locations).find(k => normalizeStr(k) === p);
                     if (!matchKey) return;
@@ -519,7 +590,8 @@
             legendControl.addTo(map);
         }
 
-        function updateCard(id, val, hist, fmt = fmtInt) {
+        // MUDANÇA: updateCard agora aceita dados completos para o modal
+        function updateCard(id, val, hist, fullHist, dates, colorHex, fmt = fmtInt) {
             const el = document.getElementById(id), varEl = document.getElementById('var_' + id);
             el.innerText = fmt(val);
             let cls = 'text-slate-900';
@@ -532,23 +604,45 @@
             el.className = `text-lg sm:text-2xl font-black tracking-tight ${cls}`;
             if (varEl) varEl.innerHTML = getVariation(val, hist);
             document.getElementById('spark_'+id).innerHTML = generateSparkline(hist, cls);
+
+            // Setup OnClick para o Modal com Gráfico
+            const card = document.getElementById(id).closest('.kpi-card');
+            const title = card.querySelector('p').innerText;
+            card.onclick = () => openModal(title, dates, fullHist, colorHex);
         }
 
         function render(loc) {
-            const d = globalData.locations[loc], h = d.history;
+            const d = globalData.locations[loc];
+            const h = d.history.slice(-30); // Para sparklines (últimos 30 dias)
+            
+            // Dados Completos para o Modal
+            const fullH = d.history;
+            const fullDates = fullH.map(i => i.date);
+            const fullSales = fullH.map(i => i.sales);
+            const fullRent = fullH.map(i => i.rent);
+
             const s = d.current.sales, r = d.current.rent;
-            updateCard('sale_active', s.active_count, h.map(i=>i.sales.active_count));
-            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), v=>(v>0?'+':'')+fmtInt(v));
-            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>i.sales.avg_days_on_market));
-            updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fmtEuro);
-            updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fmtEuro);
-            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fmtDec);
-            updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count));
-            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), v=>(v>0?'+':'')+fmtInt(v));
-            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>i.rent.avg_days_on_market));
-            updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fmtEuro);
-            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fmtEuroDec);
-            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), v=>fmtInt(v)+'%');
+            
+            // Cores
+            const cSale = '#4f46e5'; // Indigo
+            const cRent = '#f97316'; // Laranja
+
+            // VENDAS
+            updateCard('sale_active', s.active_count, h.map(i=>i.sales.active_count), fullSales.map(i=>i.active_count), fullDates, cSale);
+            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), fullSales.map(i=>i.net_production), fullDates, cSale, v=>(v>0?'+':'')+fmtInt(v));
+            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>i.sales.avg_days_on_market), fullSales.map(i=>i.avg_days_on_market), fullDates, cSale);
+            updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fullSales.map(i=>i.median_price), fullDates, cSale, fmtEuro);
+            updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fullSales.map(i=>i.median_price_m2), fullDates, cSale, fmtEuro);
+            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec);
+
+            // RENDAS
+            updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count), fullRent.map(i=>i.active_count), fullDates, cRent);
+            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), fullRent.map(i=>i.net_production), fullDates, cRent, v=>(v>0?'+':'')+fmtInt(v));
+            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>i.rent.avg_days_on_market), fullRent.map(i=>i.avg_days_on_market), fullDates, cRent);
+            updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fullRent.map(i=>i.median_price), fullDates, cRent, fmtEuro);
+            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fullRent.map(i=>i.median_price_m2), fullDates, cRent, fmtEuroDec);
+            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%');
+            
             updateCharts(d);
             updateMapVisualization();
         }
@@ -583,9 +677,10 @@
             const combinedAgencies = combineDist(dsS.agencies, dsR.agencies);
 
             if(energyChart) energyChart.destroy();
+            // Cor laranja aplicada
             energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), backgroundColor:'#f97316' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
             
-			if(typologyChart) typologyChart.destroy();
+            if(typologyChart) typologyChart.destroy();
 
             let labels, dataValues;
             
