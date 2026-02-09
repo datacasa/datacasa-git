@@ -324,9 +324,16 @@
         }
 
         /* Formatação com Espaço como separador de milhares */
-        const fmtInt = (v) => Math.round(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        const fmtInt = (v) => v.toLocaleString('pt-PT').replace(/\./g, ' ');
         const fmtEuro = (v) => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).replace(/\./g, ' ');
         
+		/* --- NOVOS FORMATADORES COM 1 CASA DECIMAL (ADICIONAR ESTES) --- */
+        // Formata com 1 casa decimal e troca ponto por vírgula (ex: 7.5 -> 7,5)
+        const fmtDec = (v) => v.toFixed(1).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+        
+        // Igual ao de cima, mas adiciona o símbolo do Euro
+        const fmtEuroDec = (v) => fmtDec(v) + " €";
+		
         const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
 
         const metricDefinitions = {
@@ -531,12 +538,12 @@
             updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>i.sales.avg_days_on_market));
             updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fmtEuro);
             updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fmtEuro);
-            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fmtInt);
+            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fmtDec);
             updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count));
             updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), v=>(v>0?'+':'')+fmtInt(v));
             updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>i.rent.avg_days_on_market));
             updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fmtEuro);
-            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fmtEuro);
+            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fmtEuroDec);
             updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), v=>fmtInt(v)+'%');
             updateCharts(d);
             updateMapVisualization();
