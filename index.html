@@ -192,12 +192,18 @@
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Certificação Energética</h3>
                     <div class="h-64"><canvas id="energyChart"></canvas></div>
                 </div>
+				<div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+				<div class="flex justify-between items-center mb-8">
+					<h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Distribuição</h3>
+					<div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 scale-90">
+						<button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600">Categoria</button>
+						<button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500">Tipologia</button>
+					</div>
+				</div>
+				<div class="h-64"><canvas id="typologyChart"></canvas></div>
+			</div>
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Tipologias (T5+)</h3>
-                    <div class="h-64"><canvas id="typologyChart"></canvas></div>
-                </div>
-                <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras</h3>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras (anúncios)</h3>
                     <div class="h-64"><canvas id="agencyChart"></canvas></div>
                 </div>
             </div>
@@ -265,9 +271,27 @@
         let globalData, geoDataStore;
         let energyChart, typologyChart, agencyChart, evolutionChart;
         let map, geoJsonLayer, markersLayer, legendControl;
-        
+
+		
         let currentMapMode = 'sale'; 
         let currentSelectedLoc = 'Global';
+		
+		let currentTypoMode = 'type'; // Definido 'type' como padrão
+		
+		window.toggleTypoMode = function(mode) {
+			currentTypoMode = mode;
+			const btnType = document.getElementById('btnType');
+			const btnTypo = document.getElementById('btnTypo');
+
+			if (mode === 'type') {
+				btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
+				btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+			} else {
+				btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
+				btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+			}
+			render(currentSelectedLoc);
+		}
 
         function switchTab(tab) {
             const dash = document.getElementById('content-dashboard');
@@ -367,7 +391,7 @@
         async function init() {
             try {
                 const [dataResp, geoResp] = await Promise.all([
-                    fetch('/api/data'),
+                    fetch('api/data/'),
                     fetch('freguesias_fundao.geojson')
                 ]);
                 globalData = await dataResp.json();
@@ -540,8 +564,36 @@
             if(energyChart) energyChart.destroy();
             energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), backgroundColor:'#10b981' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
             
-            if(typologyChart) typologyChart.destroy();
-            typologyChart = new Chart(document.getElementById('typologyChart'), { type:'bar', data: { labels: ['T0','T1','T2','T3','T4','T5+'], datasets:[{ data: ['T0','T1','T2','T3','T4','T5+'].map(k=>combinedTypology[k]||0), backgroundColor:'#6366f1' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
+			if(typologyChart) typologyChart.destroy();
+
+            let labels, dataValues;
+            
+            // Lógica para alternar dados com base no switch (Padrão: Categoria/Type)
+            if (currentTypoMode === 'type') {
+                const combined = combineDist(dsS.type || {}, dsR.type || {}); 
+                labels = Object.keys(combined).sort((a,b) => combined[b] - combined[a]);
+                dataValues = labels.map(k => combined[k]);
+            } else {
+                const combined = combineDist(dsS.typology, dsR.typology);
+                labels = ['T0','T1','T2','T3','T4','T5+'];
+                dataValues = labels.map(k => combined[k] || 0);
+            }
+
+            typologyChart = new Chart(document.getElementById('typologyChart'), { 
+                type: 'bar', 
+                data: { 
+                    labels: labels, 
+                    datasets: [{ 
+                        data: dataValues, 
+                        backgroundColor: '#6366f1',
+                        borderRadius: 4
+                    }] 
+                }, 
+                options: { 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: false } 
+                } 
+            });
             
             if(agencyChart) agencyChart.destroy();
             const ag = Object.entries(combinedAgencies).filter(i => !['Particular', 'Particulares'].includes(i[0])).sort((a,b)=>b[1]-a[1]).slice(0, 3);
