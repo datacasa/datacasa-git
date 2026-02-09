@@ -4,13 +4,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>datacasa Fundão | Analítica 2026</title>
+
+    <meta name="description" content="Análise em tempo real do mercado imobiliário do Fundão. Dados de preços, stock e tendências de venda e arrendamento.">
+    <meta name="author" content="Datacasa">
+
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://datacasa.pt/">
+    <meta property="og:title" content="Datacasa Fundão | Análise de Mercado Imobiliário">
+    <meta property="og:description" content="Descobre os preços reais, o stock de imóveis e as tendências de mercado no Fundão. Dados atualizados diariamente.">
+    <meta property="og:image" content="https://datacasa.pt/og-image.jpg">
+
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://datacasa.pt/">
+    <meta property="twitter:title" content="Datacasa Fundão | Análise de Mercado Imobiliário">
+    <meta property="twitter:description" content="Descobre os preços reais e as tendências de mercado no Fundão. Dados atualizados diariamente.">
+    <meta property="twitter:image" content="https://datacasa.pt/og-image.jpg">
+
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-	<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23312e81'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' fill='white' font-family='Plus Jakarta Sans, sans-serif' font-size='60' font-weight='800'>d</text></svg>">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23312e81'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' fill='white' font-family='Plus Jakarta Sans, sans-serif' font-size='60' font-weight='800'>d</text></svg>">
     
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
@@ -113,7 +129,7 @@
     <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center px-6">
         <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
             <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-indigo-200">d</div>
+                <div class="w-10 h-10 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-2xl shadow-lg shadow-indigo-200 flex-shrink-0">d</div>
                 <div class="font-extrabold text-xl tracking-tight text-indigo-950">datacasa <span class="text-slate-400 font-medium">| Fundão</span></div>
             </div>
             <div class="flex items-center gap-4">
@@ -274,24 +290,24 @@
         const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
 
         const metricDefinitions = {
-		"STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado.",
+        "STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado.",
 
-		"PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
+        "PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
 
-		"PMV": "Prazo Médio de Venda. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
+        "PMV": "Prazo Médio de Venda. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
 
-		"PMA": "Prazo Médio de Arrendamento. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
+        "PMA": "Prazo Médio de Arrendamento. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
 
-		"PREÇO MÉDIO": "Valor médio de todos os anúncios de venda ativos no período selecionado excluindo outliers.",
+        "PREÇO MÉDIO": "Valor médio de todos os anúncios de venda ativos no período selecionado excluindo outliers.",
 
-		"RENDA MÉDIA": "Valor médio de renda mensal nos anúncios de arrendamento ativos excluindo outliers.",
+        "RENDA MÉDIA": "Valor médio de renda mensal nos anúncios de arrendamento ativos excluindo outliers.",
 
-		"MÉDIA €/M²": "Preço médio por cada metro quadrado de área útil, permitindo comparar e avaliar o valor real dos imóveis.",
+        "MÉDIA €/M²": "Preço médio por cada metro quadrado de área útil, permitindo comparar e avaliar o valor real dos imóveis.",
 
-		"IAH": "Índice de Acessibilidade Habitacional. Estima quantos anos de rendimentos são necessários para comprar um imóvel médio. O rendimento anual médio no concelho do Fundão ascendia a 15.722€ em 2023 segundo dados do INE.",
+        "IAH": "Índice de Acessibilidade Habitacional. Estima quantos anos de rendimentos são necessários para comprar um imóvel médio. O rendimento anual médio no concelho do Fundão ascendia a 15.722€ em 2023 segundo dados do INE.",
 
-		"ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
-	};
+        "ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
+    };
 
         function setupCardInteractions() {
             document.querySelectorAll('.kpi-card').forEach(card => {
