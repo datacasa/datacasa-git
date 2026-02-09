@@ -127,26 +127,21 @@
 </head>
 <body class="text-slate-900">
 
-	<nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center px-4 sm:px-6">
-		<div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-			<div class="flex items-center gap-2 sm:gap-2.5">
-				<div class="w-8 h-8 sm:w-9 sm:h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-lg sm:text-xl shadow-lg shadow-indigo-200 flex-shrink-0">d</div>
-				<div class="font-extrabold text-base sm:text-lg tracking-tight text-indigo-950 truncate">
-					datacasa <span class="hidden xs:inline text-slate-400 font-medium">| Fundão</span>
-				</div>
-			</div>
-
-			<div class="flex items-center gap-2 sm:gap-4 ml-auto">
-				<div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 flex-shrink-0">
-					<button onclick="switchTab('dashboard')" id="tab-dash" class="nav-tab active px-2 sm:px-3">Dash</button>
-					<button onclick="switchTab('about')" id="tab-about-btn" class="nav-tab px-2 sm:px-3">Sobre</button>
-				</div>
-				<div id="lastUpdate" class="text-[9px] sm:text-[10px] font-black text-slate-400 bg-slate-100 px-2 sm:px-3 py-1.5 rounded-lg uppercase tracking-widest border border-slate-200 whitespace-nowrap">
-					<span class="hidden sm:inline">Atualização: </span>08-02-2026
-				</div>
-			</div>
-		</div>
-	</nav>
+    <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 h-16 flex items-center px-6">
+        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-200 flex-shrink-0">d</div>
+                <div class="font-extrabold text-lg tracking-tight text-indigo-950">datacasa <span class="text-slate-400 font-medium">| Fundão</span></div>
+            </div>
+            <div class="flex items-center gap-4">
+                <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200">
+                    <button onclick="switchTab('dashboard')" id="tab-dash" class="nav-tab active">Dashboard</button>
+                    <button onclick="switchTab('about')" id="tab-about-btn" class="nav-tab">Sobre</button>
+                </div>
+                <div id="lastUpdate" class="text-[10px] font-black text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg uppercase tracking-widest border border-slate-200">...</div>
+            </div>
+        </div>
+    </nav>
 
     <main class="max-w-7xl mx-auto px-6 py-8 space-y-10">
         
