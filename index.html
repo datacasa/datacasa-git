@@ -383,11 +383,17 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    // ADICIONADO: Padding no topo para a linha não cortar em mobile
                     layout: {
-                        padding: { top: 20, right: 10, left: 0, bottom: 0 }
+                        // Aumentei para 30px e adicionei margem à esquerda também
+                        padding: { top: 30, right: 20, left: 10, bottom: 0 }
                     },
-                    plugins: { legend: { display: false } },
+                    plugins: { 
+                        legend: { display: false },
+                        tooltip: {
+                            intersect: false, // Facilita tocar na linha em mobile
+                            mode: 'index',
+                        }
+                    },
                     scales: {
                         x: { 
                             display: true,
@@ -412,6 +418,8 @@
                             }
                         },
                         y: { 
+                            // NOVO: 'grace' cria um espaço vazio de 10% acima do ponto mais alto
+                            grace: '10%', 
                             ticks: { 
                                 font: { size: 10, weight: '600' },
                                 color: '#94a3b8',
@@ -419,9 +427,6 @@
                                 callback: function(value) {
                                     if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
                                     if (value >= 1000) return (value/1000).toFixed(0) + 'k';
-                                    
-                                    // ALTERADO: Limita a 2 casas decimais para valores pequenos (ex: Renda/m2)
-                                    // parseFloat remove zeros extra (ex: "5.50" vira 5.5)
                                     return parseFloat(value.toFixed(2));
                                 }
                             },
