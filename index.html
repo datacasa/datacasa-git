@@ -523,7 +523,9 @@
             let cls = 'text-slate-900';
             if (hist.length >= 2) {
                 const prev = hist[hist.length-2];
-                if (val > prev) cls = 'text-emerald-600'; else if (val < prev) cls = 'text-rose-600';
+                if (val > prev) cls = 'text-emerald-600'; 
+                else if (val < prev) cls = 'text-rose-600';
+                else cls = 'text-indigo-600'; // Estável: Azul do tema
             }
             el.className = `text-lg sm:text-2xl font-black tracking-tight ${cls}`;
             if (varEl) varEl.innerHTML = getVariation(val, hist);
@@ -579,7 +581,7 @@
             const combinedAgencies = combineDist(dsS.agencies, dsR.agencies);
 
             if(energyChart) energyChart.destroy();
-            energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), backgroundColor:'#10b981' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
+            energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), backgroundColor:'#f97316' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
             
 			if(typologyChart) typologyChart.destroy();
 
