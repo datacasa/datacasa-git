@@ -383,6 +383,10 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    // ADICIONADO: Padding no topo para a linha não cortar em mobile
+                    layout: {
+                        padding: { top: 20, right: 10, left: 0, bottom: 0 }
+                    },
                     plugins: { legend: { display: false } },
                     scales: {
                         x: { 
@@ -391,26 +395,18 @@
                             ticks: {
                                 maxRotation: 0,
                                 autoSkip: true,
-                                maxTicksLimit: 15,      // Permitir mais ticks para apanhar as transições de mês
+                                maxTicksLimit: 15,
                                 font: { size: 10, weight: '600' },
                                 color: '#94a3b8',
                                 callback: function(value, index, values) {
-                                    // Função auxiliar para obter o nome do mês (ex: "fev")
                                     const getMonth = (val) => {
                                         const d = new Date(this.getLabelForValue(val));
                                         return d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
                                     };
-
                                     const currMonth = getMonth(value);
-                                    
-                                    // Regra 1: Mostrar sempre o primeiro ponto do gráfico
                                     if (index === 0) return currMonth;
-                                    
-                                    // Regra 2: Comparar com o ponto anterior (visível)
                                     const prevVal = values[index - 1].value;
                                     const prevMonth = getMonth(prevVal);
-
-                                    // Só mostra a label se o mês mudou em relação ao anterior
                                     return (currMonth !== prevMonth) ? currMonth : null;
                                 }
                             }
@@ -423,7 +419,10 @@
                                 callback: function(value) {
                                     if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
                                     if (value >= 1000) return (value/1000).toFixed(0) + 'k';
-                                    return value;
+                                    
+                                    // ALTERADO: Limita a 2 casas decimais para valores pequenos (ex: Renda/m2)
+                                    // parseFloat remove zeros extra (ex: "5.50" vira 5.5)
+                                    return parseFloat(value.toFixed(2));
                                 }
                             },
                             grid: { 
