@@ -388,9 +388,11 @@
                 const cp2x = prev[0] + (curr[0] - prev[0]) / 2, cp2y = curr[1];
                 d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr[0]} ${curr[1]}`;
             }
-            let stroke = '#cbd5e1';
-            if (colorClass.includes('emerald')) stroke = '#10b981'; 
-            else if (colorClass.includes('rose')) stroke = '#ef4444';
+            let stroke = '#cbd5e1'; // Cinzento por defeito
+            if (colorClass.includes('emerald')) stroke = '#10b981';      // Verde (Sobe)
+            else if (colorClass.includes('rose')) stroke = '#ef4444';    // Vermelho (Desce)
+            else if (colorClass.includes('indigo')) stroke = '#4f46e5';  // Azul (Estável)
+            
             return `<svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         }
 
