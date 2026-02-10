@@ -199,26 +199,35 @@
                 <div class="h-80"><canvas id="evolutionChart"></canvas></div>
             </div>
 
+            <section>
+            <div class="flex items-center gap-3 mb-6">
+                <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
+                <h2 class="text-sm font-black text-slate-400 uppercase tracking-widest">Caracterização dos anúncios ativos</h2>
+            </div>
+
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
                     <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Certificação Energética</h3>
                     <div class="h-64"><canvas id="energyChart"></canvas></div>
                 </div>
+
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Distribuição</h3>
-                    <div class="flex bg-slate-100 p-1 rounded-lg border border-slate-200 scale-90">
-                        <button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600">Categoria</button>
-                        <button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500">Tipologia</button>
+                    <div class="flex justify-between items-baseline mb-8">
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Distribuição</h3>
+                        <div class="flex bg-slate-100 p-1 rounded-xl border border-slate-200 scale-90 origin-right">
+                            <button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md">Categoria</button>
+                            <button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500">Tipologia</button>
+                        </div>
                     </div>
+                    <div class="h-64"><canvas id="typologyChart"></canvas></div>
                 </div>
-                <div class="h-64"><canvas id="typologyChart"></canvas></div>
-            </div>
+
                 <div class="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras (anúncios)</h3>
+                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-8">Top 3 Mediadoras</h3>
                     <div class="h-64"><canvas id="agencyChart"></canvas></div>
                 </div>
             </div>
+        </section>
 
             <div class="space-y-4">
                 <div class="flex items-center gap-3">
@@ -236,14 +245,59 @@
         </div>
 
         <div id="content-about" class="hidden space-y-8 max-w-4xl mx-auto py-10">
-            <div class="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm space-y-6">
-                <h2 class="text-2xl font-black text-slate-900">Sobre o datacasa | Fundão</h2>
-                <p class="text-slate-600 leading-relaxed">O projeto pretende disponibilizar ao público dados imobiliários centralizados do concelho do Fundão, uma região com particular interesse estatístico devido à crescente pressão do mercado e falta de informação pública agregada. O objetivo é fornecer transparência a proprietários, compradores e mediadores. O datacasa não está afiliado a qualquer entidade, mediadora ou intermediário de crédito.</p>
-                <div class="h-px bg-slate-100"></div>
-                <h3 class="text-lg font-bold text-slate-900">Metodologia</h3>
-                <p class="text-slate-600 leading-relaxed">Os dados de imóveis são processados duas vezes por semana através da consulta de sites públicos de agências de mediação imobiliária do concelho do Fundão. São aplicados filtros rigorosos (guardrails) para garantir que apenas imóveis residenciais válidos são analisados, removendo duplicados, imóveis atípicos e valores errados que possam distorcer a realidade do mercado. Entre em contacto para mais informação sobre a metodologia e valores concretos.</p>
+    <div class="bg-white p-10 rounded-3xl border border-slate-200 shadow-sm space-y-8">
+        <section class="space-y-4">
+            <h2 class="text-2xl font-black tracking-tight text-indigo-950">
+                datacasa <span class="text-slate-400 font-medium">| Fundão</span>
+            </h2>
+            <p class="text-slate-600 leading-relaxed">
+                O <span class="font-bold text-indigo-950">datacasa</span> é uma iniciativa independente que nasce da necessidade de centralizar e democratizar o acesso a dados do mercado imobiliário no concelho do Fundão. Numa região que enfrenta uma pressão de mercado crescente e onde a informação pública agregada é escassa, pretende-se conferir <strong>transparência e objetividade</strong> a todos os intervenientes: proprietários, compradores e profissionais do setor.
+            </p>
+            <p class="text-slate-600 leading-relaxed">
+                O datacasa é um projeto independente e pessoal, sem afiliação a mediadoras, instituições bancárias ou intermediários de crédito.
+            </p>
+        </section>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <section class="space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Metodologia</h3>
+            <p class="text-slate-600 leading-relaxed">
+                A análise baseia-se numa monitorização bissemanal de fontes digitais de acesso público, abrangendo as principais agências de mediação a operar no concelho. Para garantir a fiabilidade dos indicadores, os dados brutos são submetidos a um processamento rigoroso que inclui:
+            </p>
+            <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-600">
+                <li class="flex gap-2">
+                    <span class="text-indigo-600 font-bold">•</span>
+                    <span><strong>Filtros de qualidade:</strong> Exclusão de anúncios com valores manifestamente inconsistentes.</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="text-indigo-600 font-bold">•</span>
+                    <span><strong>Tratamento de outliers:</strong> Remoção de imóveis atípicos que possam distorcer as médias.</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="text-indigo-600 font-bold">•</span>
+                    <span><strong>Deduplicação:</strong> Identificação e unificação de anúncios repetidos do mesmo imóvel.</span>
+                </li>
+                <li class="flex gap-2">
+                    <span class="text-indigo-600 font-bold">•</span>
+                    <span><strong>Foco residencial:</strong> Exclusão de terrenos e espaços comerciais da análise principal.</span>
+                </li>
+            </ul>
+        </section>
+
+        <div class="h-px bg-slate-100"></div>
+
+        <section class="space-y-4">
+            <h3 class="text-lg font-bold text-slate-900">Disclaimers</h3>
+            <div class="grid grid-cols-1 gap-4 text-xs text-slate-500 leading-relaxed">
+                <p><strong>Natureza informativa:</strong> Os dados apresentados têm caráter meramente informativo e estatístico, não constituindo aconselhamento financeiro ou recomendações de investimento.</p>
+                <p><strong>Preços de oferta vs. transação:</strong> Os valores referem-se aos <i>asking prices</i> (preços de anúncio). Estes podem não corresponder aos valores finais de escritura, que dependem de negociações privadas.</p>
+                <p><strong>Atualização:</strong> Embora a recolha seja frequente, pode existir um hiato temporal entre a alteração de um anúncio na fonte original e a sua atualização neste painel.</p>
+                <p><strong>Responsabilidade:</strong> O datacasa não se responsabiliza por qualquer consequência da utilização dos dados para outros fins.</p>
             </div>
-        </div>
+        </section>
+    </div>
+</div>
 
         <footer class="bg-indigo-950 text-white rounded-[2.5rem] p-12 text-center shadow-2xl relative">
             <h2 class="text-4xl font-black mb-4 tracking-tight">Precisa de dados específicos?</h2>
@@ -302,11 +356,11 @@
             const btnTypo = document.getElementById('btnTypo');
 
             if (mode === 'type') {
-                btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
-                btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+                btnType.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md";
+                btnTypo.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500";
             } else {
-                btnTypo.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all bg-white shadow-sm text-indigo-600";
-                btnType.className = "px-3 py-1 rounded-md text-[10px] font-bold transition-all text-slate-500";
+                btnTypo.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md";
+                btnType.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500";
             }
             render(currentSelectedLoc);
         }
@@ -344,8 +398,8 @@
         const metricDefinitions = {
             "STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado.",
             "PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
-            "PMV": "Prazo Médio de Venda. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
-            "PMA": "Prazo Médio de Arrendamento. Média de dias que um imóvel demora a ser retirado do mercado. Mede a velocidade de absorção.",
+            "PMV": "Prazo Médio de Venda. Média de dias no mercado de imóveis removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
+            "PMA": "Prazo Médio de Arrendamento. Média de dias no mercado dos arrendamentos removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
             "PREÇO MÉDIO": "Valor médio de todos os anúncios de venda ativos no período selecionado excluindo outliers.",
             "RENDA MÉDIA": "Valor médio de renda mensal nos anúncios de arrendamento ativos excluindo outliers.",
             "MÉDIA €/M²": "Preço médio por cada metro quadrado de área útil, permitindo comparar e avaliar o valor real dos imóveis.",
@@ -523,9 +577,15 @@
         }
 
         async function init() {
-            try {
+            
+			Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+			Chart.defaults.color = '#64748b'; // Opcional: uniformiza a cor do texto dos gráficos para o cinzento do site
+			Chart.defaults.font.weight = '400';
+			Chart.defaults.font.size = 10
+			
+			try {
                 const [dataResp, geoResp] = await Promise.all([
-                    fetch('api/data/'),
+                    fetch('web_dashboard_data.json'),
                     fetch('freguesias_fundao.geojson')
                 ]);
                 globalData = await dataResp.json();
@@ -724,8 +784,30 @@
             const combinedAgencies = combineDist(dsS.agencies, dsR.agencies);
 
             if(energyChart) energyChart.destroy();
-            // Cor laranja aplicada
-            energyChart = new Chart(document.getElementById('energyChart'), { type:'bar', data: { labels: ['A+','B','C','D','E','F','G'], datasets:[{ data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), backgroundColor:'#f97316' }] }, options: { maintainAspectRatio:false, plugins:{legend:false} } });
+            energyChart = new Chart(document.getElementById('energyChart'), { 
+                type:'bar', 
+                data: { 
+                    labels: ['A+','B','C','D','E','F','G'], 
+                    datasets:[{ 
+                        data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), 
+                        backgroundColor: [
+                            '#fff7ed', // A+ (Suave/Morto)
+                            '#ffedd5', // B
+                            '#fed7aa', // C
+                            '#fdba74', // D
+                            '#fb923c', // E
+                            '#f97316', // F
+                            '#ea580c'  // G (Vibrante/Vivo)
+                        ],
+                        borderRadius: 4
+                    }] 
+                }, 
+                options: { 
+                    maintainAspectRatio:false, 
+                    plugins:{legend:false},
+                    scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
+                } 
+            });
             
             if(typologyChart) typologyChart.destroy();
 
@@ -759,11 +841,43 @@
             });
             
             if(agencyChart) agencyChart.destroy();
-            const ag = Object.entries(combinedAgencies).filter(i => !['Particular', 'Particulares'].includes(i[0])).sort((a,b)=>b[1]-a[1]).slice(0, 3);
+            const ag = Object.entries(combinedAgencies)
+                .filter(i => !['Particular', 'Particulares'].includes(i[0]))
+                .sort((a,b) => b[1] - a[1])
+                .slice(0, 3);
+
             agencyChart = new Chart(document.getElementById('agencyChart'), { 
                 type: 'bar', 
-                data: { labels: ag.map(i=>i[0]), datasets:[{ data: ag.map(i=>i[1]), backgroundColor: ['#312e81', '#4f46e5', '#818cf8'] }] }, 
-                options: { indexAxis: 'y', maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { callback: function(v) { let l = this.getLabelForValue(v); return l.length > 20 ? l.substring(0, 20) + '...' : l; } } } } } 
+                data: { 
+                    labels: ag.map(i => i[0]), 
+                    datasets: [{ 
+                        data: ag.map(i => i[1]), 
+                        backgroundColor: ['#312e81', '#4f46e5', '#818cf8'],
+                        borderRadius: 4, // Curvatura aplicada
+                        borderSkipped: false
+                    }] 
+                }, 
+                options: { 
+                    indexAxis: 'y', 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } }, 
+                    scales: { 
+                        x: { 
+                            display: false, // Remove eixo X para limpar o visual
+                            grid: { display: false } 
+                        },
+                        y: { 
+                            grid: { display: false },
+                            ticks: { 
+                                font: { weight: '600', size: 10 },
+                                callback: function(v) { 
+                                    let l = this.getLabelForValue(v); 
+                                    return l.length > 15 ? l.substring(0, 15) + '...' : l; 
+                                } 
+                            } 
+                        } 
+                    } 
+                } 
             });
         }
         init();
