@@ -29,6 +29,11 @@
     <meta property="twitter:description" content="Consulta preços, stock de imóveis e tendências do mercado no concelho do Fundão">
     <meta property="twitter:image" content="https://datacasa.pt/og-image.jpg">
 
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="white">
     <script src="https://cdn.tailwindcss.com"></script>
     
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -881,6 +886,14 @@
             });
         }
         init();
+		// ADICIONAR ESTE BLOCO DE REGISTO
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(reg => console.log('SW registado:', reg.scope))
+                    .catch(err => console.log('SW falhou:', err));
+            });
+        }
     </script>
 </body>
 </html>
