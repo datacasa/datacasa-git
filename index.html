@@ -268,12 +268,15 @@
                     </svg>
                 </div>
                 <h3 id="modalTitle" class="text-xl font-black text-slate-900">...</h3>
-                <span id="modalYtd" class="hidden ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full"></span>
             </div>
             <p id="modalDesc" class="text-slate-600 leading-relaxed text-sm font-medium"></p>
             
             <div class="h-48 w-full mt-6">
                 <canvas id="modalChart"></canvas>
+            </div>
+
+            <div class="flex justify-end mt-2">
+                <span id="modalYtd" class="hidden text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full"></span>
             </div>
 
             <div class="mt-8 pt-6 border-t border-slate-100 text-center">
@@ -356,18 +359,16 @@
             const modal = document.getElementById('infoModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalDesc = document.getElementById('modalDesc');
-            const ytdEl = document.getElementById('modalYtd'); // Elemento YTD
+            const ytdEl = document.getElementById('modalYtd');
             
             modalTitle.innerText = title;
             modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
             
-            // --- CÁLCULO YTD (Year to Date) ---
-            ytdEl.classList.add('hidden'); // Esconde por defeito
+            // --- CÁLCULO YTD ---
+            ytdEl.classList.add('hidden');
             if (dates.length > 0 && data.length > 0) {
                 const lastDate = dates[dates.length - 1];
-                const currentYear = lastDate.split('-')[0]; // Ex: "2026"
-                
-                // Encontra o primeiro índice que pertence a este ano
+                const currentYear = lastDate.split('-')[0];
                 const firstIndex = dates.findIndex(d => d.startsWith(currentYear));
                 
                 if (firstIndex !== -1 && firstIndex < data.length) {
@@ -379,19 +380,18 @@
                         const isUp = diff > 0;
                         const sign = isUp ? '+' : '';
                         
-                        // Se for quase zero, mostra cinzento
+                        // Classes atualizadas (sem ml-auto)
                         if (Math.abs(diff) < 0.1) {
                             ytdEl.innerText = "YTD: 0.0%";
-                            ytdEl.className = "ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full bg-slate-100 text-slate-500";
+                            ytdEl.className = "text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full bg-slate-100 text-slate-500";
                         } else {
                             ytdEl.innerText = `YTD: ${sign}${diff.toFixed(1)}%`;
-                            ytdEl.className = `ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full ${isUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`;
+                            ytdEl.className = `text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full ${isUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`;
                         }
                         ytdEl.classList.remove('hidden');
                     }
                 }
             }
-            // ----------------------------------
 
             modal.classList.remove('hidden');
 
