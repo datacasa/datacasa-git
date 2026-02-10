@@ -268,6 +268,7 @@
                     </svg>
                 </div>
                 <h3 id="modalTitle" class="text-xl font-black text-slate-900">...</h3>
+                <span id="modalYtd" class="hidden ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full"></span>
             </div>
             <p id="modalDesc" class="text-slate-600 leading-relaxed text-sm font-medium"></p>
             
@@ -355,13 +356,45 @@
             const modal = document.getElementById('infoModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalDesc = document.getElementById('modalDesc');
+            const ytdEl = document.getElementById('modalYtd'); // Elemento YTD
             
             modalTitle.innerText = title;
             modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
             
+            // --- CÁLCULO YTD (Year to Date) ---
+            ytdEl.classList.add('hidden'); // Esconde por defeito
+            if (dates.length > 0 && data.length > 0) {
+                const lastDate = dates[dates.length - 1];
+                const currentYear = lastDate.split('-')[0]; // Ex: "2026"
+                
+                // Encontra o primeiro índice que pertence a este ano
+                const firstIndex = dates.findIndex(d => d.startsWith(currentYear));
+                
+                if (firstIndex !== -1 && firstIndex < data.length) {
+                    const startVal = data[firstIndex];
+                    const endVal = data[data.length - 1];
+                    
+                    if (startVal > 0) {
+                        const diff = ((endVal - startVal) / startVal) * 100;
+                        const isUp = diff > 0;
+                        const sign = isUp ? '+' : '';
+                        
+                        // Se for quase zero, mostra cinzento
+                        if (Math.abs(diff) < 0.1) {
+                            ytdEl.innerText = "YTD: 0.0%";
+                            ytdEl.className = "ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full bg-slate-100 text-slate-500";
+                        } else {
+                            ytdEl.innerText = `YTD: ${sign}${diff.toFixed(1)}%`;
+                            ytdEl.className = `ml-auto text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full ${isUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}`;
+                        }
+                        ytdEl.classList.remove('hidden');
+                    }
+                }
+            }
+            // ----------------------------------
+
             modal.classList.remove('hidden');
 
-            // --- Desenhar Gráfico do Modal ---
             const ctx = document.getElementById('modalChart');
             if (modalChart) modalChart.destroy();
             
@@ -384,15 +417,11 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     layout: {
-                        // Aumentei para 30px e adicionei margem à esquerda também
                         padding: { top: 30, right: 20, left: 10, bottom: 0 }
                     },
                     plugins: { 
                         legend: { display: false },
-                        tooltip: {
-                            intersect: false, // Facilita tocar na linha em mobile
-                            mode: 'index',
-                        }
+                        tooltip: { intersect: false, mode: 'index' }
                     },
                     scales: {
                         x: { 
@@ -418,7 +447,6 @@
                             }
                         },
                         y: { 
-                            // NOVO: 'grace' cria um espaço vazio de 10% acima do ponto mais alto
                             grace: '10%', 
                             ticks: { 
                                 font: { size: 10, weight: '600' },
