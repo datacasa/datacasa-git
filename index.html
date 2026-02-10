@@ -585,7 +585,7 @@
 			
 			try {
                 const [dataResp, geoResp] = await Promise.all([
-                    fetch('web_dashboard_data.json'),
+                    fetch('api/data/'),
                     fetch('freguesias_fundao.geojson')
                 ]);
                 globalData = await dataResp.json();
