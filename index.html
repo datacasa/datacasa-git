@@ -499,18 +499,33 @@
         function getVariation(current, history) {
             if (!history || history.length < 2) return '';
             const prev = history[history.length - 2];
-            if (prev === 0) return '';
-            const diff = ((current - prev) / prev) * 100;
-            if (Math.abs(diff) < 0.1) return '';
+            
+            // Se o valor não mudou, não mostra badge
+            if (current === prev) return '';
+
+            let diff;
+            if (prev === 0) {
+                // Se ontem era 0 e hoje é 1, a variação é infinita, mas mostramos 100% como convenção
+                diff = current > 0 ? 100 : -100;
+            } else if (prev < 0) {
+                // Lógica para números negativos (Produção)
+                // Se passou de -1 para -2, a diferença real é negativa
+                diff = ((current - prev) / Math.abs(prev)) * 100;
+            } else {
+                // Lógica normal para números positivos
+                diff = ((current - prev) / prev) * 100;
+            }
+
             const isUp = diff > 0;
             const color = isUp ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700';
+            
             return `<span class="variation-badge ${color}">${isUp ? '↑' : '↓'} ${Math.abs(diff).toFixed(1)}%</span>`;
         }
 
         async function init() {
             try {
                 const [dataResp, geoResp] = await Promise.all([
-                    fetch('api/data/'),
+                    fetch('web_dashboard_data.json'),
                     fetch('freguesias_fundao.geojson')
                 ]);
                 globalData = await dataResp.json();
