@@ -816,7 +816,37 @@
                         { label: 'Renda (€/m²)', data: d.history.map(h=>h.rent.median_price_m2), borderColor: '#f97316', tension: 0.3, yAxisID: 'y1' }
                     ]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } }, scales: { y1: { position: 'right', grid: { display: false } } } }
+                options: { 
+                    responsive: true, 
+                    maintainAspectRatio: false, 
+                    plugins: { legend: { position: 'top' } }, 
+                    scales: { 
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                maxRotation: 0,
+                                autoSkip: false, // Forçamos o controlo manual via callback
+                                font: { size: 10, weight: '600' },
+                                callback: function(value, index) {
+                                    const dateStr = this.getLabelForValue(value);
+                                    const d = new Date(dateStr);
+                                    const month = d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+                                    
+                                    if (index === 0) return month;
+                                    
+                                    // Só mostra o label se o mês da data atual for diferente do mês da data anterior
+                                    const prevDateStr = this.getLabelForValue(index - 1);
+                                    const prevD = new Date(prevDateStr);
+                                    const prevMonth = prevD.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
+                                    
+                                    return month !== prevMonth ? month : null;
+                                }
+                            }
+                        },
+                        y: { ticks: { font: { size: 10 } } },
+                        y1: { position: 'right', grid: { display: false }, ticks: { font: { size: 10 } } } 
+                    } 
+                }
             });
 
             /* Agregação de Distribuições (Venda + Arrendamento) */
