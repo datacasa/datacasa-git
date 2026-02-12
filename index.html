@@ -34,20 +34,20 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="white">
     <script src="https://cdn.tailwindcss.com"></script>
-    
+      
     <script>
         tailwind.config = {
             darkMode: 'class', // Ativa modo dark via classe CSS
             theme: { extend: {} }
         }
     </script>
-    
+      
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-    
+      
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23312e81'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' fill='white' font-family='Plus Jakarta Sans, sans-serif' font-size='60' font-weight='800'>d</text></svg>">
-    
+      
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
         
@@ -176,11 +176,38 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
 
+        /* Custom scrollbar para o arquivo */
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
+        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; }
+
+        /* Estilo para os itens da lista de arquivo */
+        .archive-item {
+            padding: 1.5rem;
+            border-radius: 1.25rem;
+            border: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .dark .archive-item { border-color: #1e293b; }
+        .archive-item:hover { background: #f8fafc; transform: translateX(4px); }
+        .dark .archive-item:hover { background: #0f172a; }
+
+        /* Formatação do conteúdo do artigo */
+		#artContent p { margin-bottom: 1.2rem; }
+        #artContent b { color: #312e81; font-weight: 800; }
+        .dark #artContent b { color: #818cf8; }
+        #artContent h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        
+        /* CORREÇÃO DAS LISTAS (BULLETS) */
+        #artContent ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
+        #artContent li { margin-bottom: 0.5rem; padding-left: 0.5rem; }
+		
     </style>
 </head>
 <body class="text-slate-900 bg-slate-50 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
 
-    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 h-16 flex items-center px-6 transition-colors">
+    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-[5000] h-16 flex items-center px-6 transition-colors">
         <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
             <div class="flex items-center gap-2.5">
                 <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-200 dark:shadow-none flex-shrink-0">d</div>
@@ -253,6 +280,22 @@
                 <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Evolução do Preço por m² (Venda vs Renda)</h3>
                 <div class="h-80"><canvas id="evolutionChart"></canvas></div>
             </div>
+
+            <section id="observatorio" class="space-y-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
+                        <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observatório datacasa</h2>
+                    </div>
+                    <button onclick="openArticleList()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-all outline-none">
+                        Ver arquivo →
+                    </button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="articlesGrid">
+                    <div class="text-slate-400 text-xs animate-pulse">A carregar análises...</div>
+                </div>
+            </section>
 
             <section>
             <div class="flex items-center gap-3 mb-6">
@@ -366,7 +409,40 @@
             <a href="mailto:geral@datacasa.pt" class="bg-white text-indigo-950 hover:bg-indigo-50 font-black py-5 px-12 rounded-2xl transition-all shadow-xl inline-block uppercase tracking-widest text-xs">Contactar datacasa</a>
         </footer>
         
-        </main>
+        <div id="articleListModal" class="fixed inset-0 z-[2500] flex items-center justify-center hidden">
+            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeArticleList()"></div>
+            <div class="modal-content bg-white dark:bg-slate-900 w-full max-w-2xl mx-6 p-8 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[80vh]">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Arquivo de Análises</h3>
+                    <button onclick="closeArticleList()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div id="archiveContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                    </div>
+            </div>
+        </div>
+
+        <div id="articleReaderModal" class="fixed inset-0 z-[3000] flex items-center justify-center hidden">
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xl" onclick="closeArticle()"></div>
+            <div class="modal-content bg-white dark:bg-slate-950 w-full max-w-3xl h-[90vh] md:h-[85vh] mx-4 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
+                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-slate-950/50 backdrop-blur-md">
+                    <span id="artCategory" class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full"></span>
+                    <button onclick="closeArticle()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+                <div class="flex-1 overflow-y-auto p-8 md:p-16 scroll-smooth">
+                    <h2 id="artTitle" class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6"></h2>
+                    <div id="artMeta" class="flex gap-4 text-xs font-bold text-slate-400 mb-12 pb-6 border-b border-slate-100 dark:border-slate-800"></div>
+                    
+                    <div id="artContent" class="text-slate-600 dark:text-slate-300 leading-relaxed text-lg space-y-6">
+                        </div>
+                </div>
+            </div>
+        </div>
+        
+    </main>
 
     <div id="infoModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
         <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
@@ -385,7 +461,7 @@
                 <h3 id="modalTitle" class="text-xl font-black text-slate-900 dark:text-white">...</h3>
             </div>
             <p id="modalDesc" class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm font-medium"></p>
-            
+              
             <div class="h-48 w-full mt-6">
                 <canvas id="modalChart"></canvas>
             </div>
@@ -402,9 +478,12 @@
 
     <script>
         let globalData, geoDataStore;
-        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart; // modalChart adicionado
+        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart;
         let map, geoJsonLayer, markersLayer, legendControl;
 
+        // Variáveis globais para os Artigos
+        let datacasaArticles = [];
+        let articleChartInstance = null;
         
         let currentMapMode = 'sale'; 
         let currentSelectedLoc = 'Global';
@@ -515,8 +594,6 @@
             "ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
         };
 
-        // NOTA: setupCardInteractions removido, lógica movida para updateCard
-
         function openModal(title, dates, data, color) {
             const modal = document.getElementById('infoModal');
             const modalTitle = document.getElementById('modalTitle');
@@ -540,9 +617,7 @@
                     const startVal = data[firstIndex];
                     const endVal = data[data.length - 1];
                     
-                    // CORREÇÃO: Verifica se é diferente de 0 (permite negativos para produção e evita erro div/0)
                     if (startVal !== 0) {
-                        // CORREÇÃO: Math.abs no denominador para lidar corretamente com variações a partir de números negativos
                         const diff = ((endVal - startVal) / Math.abs(startVal)) * 100;
                         
                         const isUp = diff > 0;
@@ -682,43 +757,42 @@
         }
 
         function getVariation(current, history, dates) {
-    if (!history || history.length < 2) return '';
-    const prev = history[history.length - 2];
-    
-    // Se o valor não mudou, não mostra badge
-    if (current === prev) return '';
+            if (!history || history.length < 2) return '';
+            const prev = history[history.length - 2];
+            
+            // Se o valor não mudou, não mostra badge
+            if (current === prev) return '';
 
-    // Calcular a data anterior (penúltimo registo)
-    let dateLabel = "ant.";
-    if (dates && dates.length >= 2) {
-        const prevDateStr = dates[dates.length - 2];
-        const d = new Date(prevDateStr);
-        // Formata para "12/02" (dia/mês)
-        dateLabel = d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
-    }
+            // Calcular a data anterior (penúltimo registo)
+            let dateLabel = "ant.";
+            if (dates && dates.length >= 2) {
+                const prevDateStr = dates[dates.length - 2];
+                const d = new Date(prevDateStr);
+                // Formata para "12/02" (dia/mês)
+                dateLabel = d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
+            }
 
-    let diff;
-    if (prev === 0) {
-        diff = current > 0 ? 100 : -100;
-    } else if (prev < 0) {
-        diff = ((current - prev) / Math.abs(prev)) * 100;
-    } else {
-        diff = ((current - prev) / prev) * 100;
-    }
+            let diff;
+            if (prev === 0) {
+                diff = current > 0 ? 100 : -100;
+            } else if (prev < 0) {
+                diff = ((current - prev) / Math.abs(prev)) * 100;
+            } else {
+                diff = ((current - prev) / prev) * 100;
+            }
 
-    const isUp = diff > 0;
-    const color = isUp 
-    ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
-    : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
-    
-    // ALTERAÇÃO AQUI: adicionado 'dark:text-slate-600' para reduzir o brilho no modo dark
-    return `
-        <div class="flex items-center gap-1.5 mt-1.5" title="Variação face a ${dateLabel}">
-            <span class="variation-badge ${color} !mt-0">${isUp ? '↑' : '↓'} ${Math.abs(diff).toFixed(1)}%</span>
-            <span class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-wider">vs ${dateLabel}</span>
-        </div>
-    `;
-}
+            const isUp = diff > 0;
+            const color = isUp 
+            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
+            : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
+            
+            return `
+                <div class="flex items-center gap-1.5 mt-1.5" title="Variação face a ${dateLabel}">
+                    <span class="variation-badge ${color} !mt-0">${isUp ? '↑' : '↓'} ${Math.abs(diff).toFixed(1)}%</span>
+                    <span class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-wider">vs ${dateLabel}</span>
+                </div>
+            `;
+        }
 
         async function init() {
             
@@ -773,21 +847,18 @@
                     sel.appendChild(opt);
                 });
 
-                // --- LÓGICA DE FAVORITO & URL PARAM (ALTERAÇÃO 1/2) ---
+                // --- LÓGICA DE FAVORITO & URL PARAM ---
                 const urlParams = new URLSearchParams(window.location.search);
                 const locParam = urlParams.get('loc');
                 const savedFav = localStorage.getItem('datacasa_fav');
 
                 if (locParam && globalData.locations[locParam]) {
-                    // Prioridade 1: Link partilhado
                     sel.value = locParam;
                     currentSelectedLoc = locParam;
                 } else if (savedFav && globalData.locations[savedFav]) {
-                    // Prioridade 2: Favorito guardado
                     sel.value = savedFav;
                     currentSelectedLoc = savedFav;
                 } else {
-                    // Default
                     sel.value = "Global";
                     currentSelectedLoc = "Global";
                 }
@@ -815,6 +886,9 @@
                 document.getElementById('iconSun').classList.toggle('hidden', !isDark);
                 document.getElementById('iconMoon').classList.toggle('hidden', isDark);
                 updateChartTheme(isDark);
+                
+                // Carregar Artigos
+                await fetchArticles();
 
             } catch (e) { 
                 console.error("Erro fatal:", e);
@@ -884,7 +958,7 @@
                     if (!matchKey) return;
                     
                     const locData = globalData.locations[matchKey].current;
-    
+     
                     if (currentMapMode === 'yield') {
                         const pSale = locData.sales.median_price;
                         const pRent = locData.rent.median_price;
@@ -923,7 +997,6 @@
                     
                     layer.bindTooltip(`<div class="text-center"><div class="font-bold text-slate-800 text-xs mb-1">${name}</div><div class="${colorClass} font-black text-sm">${p}</div></div>`, { className: 'custom-tooltip', sticky: true });
 
-                    // --- CLIQUE NO MAPA (ALTERAÇÃO 2/2) ---
                     layer.on('click', function() {
                         const raw = f.properties.fre_name || f.properties.fre_name_long || f.properties.NAME_3 || "";
                         const clean = normalizeStr(raw);
@@ -952,7 +1025,6 @@
 
                             updateFavIcon();
                             render(currentSelectedLoc);
-                            // Sem zoom interativo (flyTo removido conforme pedido)
                         }
                     });
                 }
@@ -963,11 +1035,11 @@
                 let grades, title;
                 
                 if (currentMapMode === 'yield') {
-                     grades = [5.0, 6.0, 7.0, 8.0];
-                     title = 'Yield Bruta (%)';
+                      grades = [5.0, 6.0, 7.0, 8.0];
+                      title = 'Yield Bruta (%)';
                 } else {
-                     grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
-                     title = `Preço Médio (${currentMapMode==='sale'?'Venda':'Renda'})`;
+                      grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
+                      title = `Preço Médio (${currentMapMode==='sale'?'Venda':'Renda'})`;
                 }
                 
                 div.innerHTML = `<div class="font-bold mb-2 text-xs uppercase tracking-wide">${title}</div>`;
@@ -975,7 +1047,7 @@
                 for (let i = 0; i < grades.length; i++) {
                     let label;
                     if (currentMapMode === 'yield') {
-                         label = `> ${grades[i]}%`; // Simplificado para Yield
+                         label = `> ${grades[i]}%`; 
                     } else {
                          label = fmtEuro(grades[i]) + (grades[i + 1] ? ' &ndash; ' + fmtEuro(grades[i + 1]) : '+');
                     }
@@ -986,7 +1058,6 @@
             legendControl.addTo(map);
         }
 
-        // MUDANÇA: updateCard agora aceita dados completos para o modal
         function updateCard(id, val, hist, fullHist, dates, colorHex, fmt = fmtInt) {
             const el = document.getElementById(id), varEl = document.getElementById('var_' + id);
             el.innerText = fmt(val);
@@ -999,7 +1070,6 @@
             }
             el.className = `text-lg sm:text-2xl font-black tracking-tight ${cls}`;
             
-            // ALTERAÇÃO AQUI: Passamos 'dates' como terceiro argumento
             if (varEl) varEl.innerHTML = getVariation(val, hist, dates);
             
             document.getElementById('spark_'+id).innerHTML = generateSparkline(hist, cls);
@@ -1323,9 +1393,182 @@
                 icon.classList.add('text-slate-300');
             }
         }
+
+        /* ==========================================================
+            GESTÃO DE ARTIGOS E ARQUIVO
+            ========================================================== */
+
+        // 1. Carregar o ficheiro JSON
+        async function fetchArticles() {
+            try {
+                const response = await fetch('articles.json');
+                datacasaArticles = await response.json();
+                renderArticlesHome();
+
+                // VERIFICAR SE EXISTE UM ARTIGO NO URL AO CARREGAR
+                const urlParams = new URLSearchParams(window.location.search);
+                const artSlug = urlParams.get('art');
+                
+                if (artSlug) {
+                    const art = datacasaArticles.find(a => a.slug === artSlug);
+                    if (art) {
+                        // Pequeno delay para garantir que o DOM está pronto e a transição é suave
+                        setTimeout(() => openArticle(art.id), 100);
+                    }
+                }
+
+            } catch (e) {
+                console.error("Erro ao carregar articles.json:", e);
+                document.getElementById('articlesGrid').innerHTML = '<div class="text-rose-500 text-xs font-bold">Falha ao carregar análises.</div>';
+            }
+        }
+
+        // 2. Renderizar os 2 cards na página principal
+        function renderArticlesHome() {
+            const grid = document.getElementById('articlesGrid');
+            if (!datacasaArticles || datacasaArticles.length === 0) {
+                grid.innerHTML = '<div class="text-slate-400 text-xs">Sem artigos disponíveis.</div>';
+                return;
+            }
+
+            const art1 = datacasaArticles[0]; // O mais recente (Destaque)
+            const art2 = datacasaArticles[1]; // O anterior (Pequeno)
+
+            let html = `
+                <div onclick="openArticle(${art1.id})" class="md:col-span-2 group bg-white dark:bg-slate-900 border-2 border-indigo-500/20 dark:border-indigo-400/10 rounded-[2.5rem] p-8 hover:border-indigo-500/40 transition-all cursor-pointer relative overflow-hidden shadow-sm">
+                    <div class="relative z-10 flex flex-col h-full">
+                        <div class="flex items-center gap-3 mb-6">
+                            <span class="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                            <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">${art1.category}</span>
+                        </div>
+                        <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 transition-colors leading-tight">${art1.title}</h3>
+                        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 line-clamp-3 md:max-w-[90%]">${art1.excerpt}</p>
+                        <div class="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">${art1.date} • ${art1.readTime}</div>
+                            <span class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-indigo-700 transition-all">Ler Artigo</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (art2) {
+                html += `
+                <div onclick="openArticle(${art2.id})" class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 hover:shadow-xl transition-all cursor-pointer flex flex-col">
+                    <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">${art2.date}</span>
+                    <h3 class="text-lg font-black text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 transition-colors leading-snug">${art2.title}</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">${art2.excerpt}</p>
+                    <div class="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800/50 text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Ver →</div>
+                </div>
+                `;
+            }
+
+            grid.innerHTML = html;
+        }
+
+        // 3. Abrir o leitor de artigo
+        function openArticle(id) {
+            const art = datacasaArticles.find(a => a.id === id);
+            if (!art) return;
+
+            // 1. ATUALIZAR URL (DEEP LINKING)
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.set('art', art.slug); // Adiciona ?art=slug-do-artigo
+            window.history.pushState({}, '', newUrl);
+
+            document.getElementById('artTitle').innerText = art.title;
+            document.getElementById('artCategory').innerText = art.category;
+            document.getElementById('artMeta').innerText = `${art.date} • ${art.readTime} de leitura`;
+            
+            // 2. PROCESSAMENTO DE TEXTO (CORREÇÃO DE LISTAS E CABEÇALHOS)
+            let processedContent = art.content
+                // Headers ###
+                .replace(/###\s(.*?)(?:\n|$)/g, '<h3 class="text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight">$1</h3>')
+                // Negrito **
+                .replace(/\*\*(.*?)\*\*/g, '<b class="text-indigo-900 dark:text-indigo-200">$1</b>')
+                // Listas (Deteta linhas começadas por "- " e converte em <li>)
+                .replace(/^\s*-\s+(.*)/gm, '<li>$1</li>')
+                // Envolve <li> consecutivos num <ul>
+                .replace(/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/g, '<ul>$1</ul>');
+
+            // Injeção do Gráfico (se necessário)
+            if (art.hasChart && !processedContent.includes('id="chartInArticle"')) {
+                processedContent += '<div class="h-64 my-8 w-full"><canvas id="chartInArticle"></canvas></div>';
+            }
+
+            document.getElementById('artContent').innerHTML = processedContent;
+
+            document.getElementById('articleReaderModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+
+            // Gerar gráfico
+            if (art.hasChart && art.chartConfig) {
+                setTimeout(() => {
+                    const canvas = document.getElementById('chartInArticle');
+                    if(canvas) {
+                        const ctx = canvas.getContext('2d');
+                        if (articleChartInstance) articleChartInstance.destroy();
+                        
+                        const finalConfig = {
+                            type: art.chartConfig.type,
+                            data: {
+                                labels: art.chartConfig.labels,
+                                datasets: art.chartConfig.datasets
+                            },
+                            options: art.chartConfig.options || {} 
+                        };
+
+                        const isDark = document.documentElement.classList.contains('dark');
+                        if(isDark) {
+                            finalConfig.options.scales = finalConfig.options.scales || {};
+                            if(!finalConfig.options.scales.x) finalConfig.options.scales.x = {};
+                            if(!finalConfig.options.scales.y) finalConfig.options.scales.y = {};
+                            finalConfig.options.scales.x.grid = { color: '#1e293b' };
+                            finalConfig.options.scales.y.grid = { color: '#1e293b' };
+                            Chart.defaults.color = '#94a3b8';
+                        }
+                        articleChartInstance = new Chart(ctx, finalConfig);
+                    }
+                }, 100);
+            }
+        }
+
+        function closeArticle() {
+            document.getElementById('articleReaderModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+
+            // REMOVER O PARÂMETRO 'art' DO URL AO FECHAR
+            const newUrl = new URL(window.location);
+            newUrl.searchParams.delete('art');
+            window.history.pushState({}, '', newUrl);
+        }
+
+        // 4. Abrir o Arquivo (Lista Completa)
+        function openArticleList() {
+            const container = document.getElementById('archiveContainer');
+            if (!datacasaArticles || datacasaArticles.length === 0) return;
+
+            container.innerHTML = datacasaArticles.map(art => `
+                <div onclick="openArticle(${art.id}); closeArticleList();" class="archive-item group">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">${art.category}</span>
+                        <span class="text-[10px] text-slate-400 font-bold">${art.date}</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">${art.title}</h4>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${art.excerpt}</p>
+                </div>
+            `).join('');
+
+            document.getElementById('articleListModal').classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeArticleList() {
+            document.getElementById('articleListModal').classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
         
         init();
-        // ADICIONAR ESTE BLOCO DE REGISTO
+        
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('sw.js')

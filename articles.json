@@ -1,0 +1,81 @@
+[
+    {
+        "title": "Estado do Mercado: Primeiras impressões do Imobiliário no Fundão em 2026",
+        "date": "12 Fev 2026",
+        "category": "Análise de Mercado",
+        "slug": "estado-mercado-fundao-2026",
+        "priority": "high",
+        "readTime": "3 min",
+        "excerpt": "Após iniciado este projeto, e analisados os primeiros dados de 2026, analisamos o stock residencial no concelho. Onde estão as oportunidades e como se comporta o preço médio?",
+        "hasChart": true,
+        "content": "<p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">O mercado imobiliário no concelho do <b class=\"text-indigo-900 dark:text-indigo-200\">Fundão</b> apresenta-se, neste início de 2026, com uma dinâmica de stock interessante mas altamente concentrada. A análise dos dados brutos da primeira extração revela um mercado onde a tipologia e a localização definem barreiras de preço muito claras.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Atualmente, o stock é dominado por <b class=\"text-indigo-900 dark:text-indigo-200\">Moradias</b>, que representam a esmagadora maioria da oferta face aos apartamentos. Este é um indicador clássico de um mercado do interior do país, que no Fundão ganha contornos específicos devido à pressão pela elevada procura por apartamentos no centro da cidade, para habitação própria ou investimento.</p><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">Preços e Tipologias</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">O preço médio de oferta global ronda os <b class=\"text-indigo-900 dark:text-indigo-200\">140.000€</b>, mas este valor é influenciado por uma dispersão grande: desde ruínas para recuperar em aldeias periféricas até quintas de luxo com valores de milhões de euros.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">A tipologia <b class=\"text-indigo-900 dark:text-indigo-200\">T3</b> é a \"rainha\" do stock, sendo a mais procurada por famílias locais. No entanto, confirma-se a conhecida escassez de <b class=\"text-indigo-900 dark:text-indigo-200\">T1 e T2</b> modernos no centro da cidade, o que pode explicar em parte a pressão que se faz sentir no mercado de arrendamento.</p><div class=\"h-64 my-8\"><canvas id=\"chartInArticle\"></canvas></div><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">Eficiência Energética: O grande desafio</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Um dado preocupante nesta primeira leitura é a predominância de certificados energéticos de classe <b class=\"text-indigo-900 dark:text-indigo-200\">E e F</b>. Num contexto de custos de energia crescentes, o mercado do Fundão carece de renovação profunda.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Imóveis com classe <b class=\"text-indigo-900 dark:text-indigo-200\">A ou B</b> são raros e apresentam um prémio de preço (Preço/m²) significativo, comparativamente com a média do concelho.</p><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">Conclusão</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Para quem procura investir, o Concelho do Fundão continua a apresentar rácios de <b class=\"text-indigo-900 dark:text-indigo-200\">Yield</b> atrativos em comparação com as capitais de distrito, mas o segredo reside na seleção criteriosa da freguesia e da oportunidade.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">A união de freguesias do Fundão continua a ser o porto seguro, mas áreas periféricas com boas acessibilidades estão a começar a ganhar tração.</p>",
+        "chartConfig": {
+            "type": "bar",
+            "labels": [
+                "T0/T1",
+                "T2",
+                "T3",
+                "T4",
+                "T5+"
+            ],
+            "datasets": [
+                {
+                    "label": "Distribuição de Stock por Tipologia",
+                    "data": [
+                        12,
+                        45,
+                        88,
+                        32,
+                        15
+                    ],
+                    "backgroundColor": "#4f46e5",
+                    "borderRadius": 4
+                }
+            ]
+        },
+        "id": 1
+    },
+    {
+        "title": "A Crise Silenciosa dos Apartamentos no Fundão",
+        "date": "10 Fev 2026",
+        "category": "Tendências",
+        "slug": "crise-stock-apartamentos-fundao",
+        "priority": "high",
+        "readTime": "4 min",
+        "excerpt": "Num mercado dominado por Quintas e Moradias, os apartamentos tornam-se o 'unicórnio' do imobiliário no Fundão. O impacto nas rendas é imediato.",
+        "hasChart": true,
+        "content": "<p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Quem abre os portais imobiliários à procura de casa no concelho do Fundão depara-se rapidamente com uma realidade estatística inegável: <b class=\"text-indigo-900 dark:text-indigo-200\">o Fundão é uma terra de Moradias e Quintas.</b></p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">A análise mais recente aos dados de stock ativo revela um desequilíbrio estrutural que ajuda a explicar a subida vertiginosa das rendas nos últimos meses. Para quem procura a comodidade de um apartamento no centro da cidade, ou até na periferia, as opções são assustadoramente escassas.</p><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">A Disparidade da Oferta</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Os dados indicam que, por cada <b class=\"text-indigo-900 dark:text-indigo-200\">Apartamento</b> colocado à venda no concelho, existem aproximadamente <b class=\"text-indigo-900 dark:text-indigo-200\">4 a 5 Moradias ou Quintas</b> disponíveis.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Este fenómeno é natural numa região de interior com vasta área rural, mas torna-se problemático quando a procura se concentra quase exclusivamente na malha urbana da cidade (freguesia do Fundão), impulsionada por novos residentes e trabalhadores deslocados que necessitam de soluções práticas e prontas a habitar.</p><div class=\"h-64 my-8\"><canvas id=\"chartInArticle\"></canvas></div><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">Causas e Consequências</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Aqui estão os principais fatores identificados para este cenário:</p><ul class=\"list-disc pl-6 mb-6 space-y-2 text-slate-700 dark:text-slate-300\"><li><b class=\"text-indigo-900 dark:text-indigo-200\">Desequilíbrio:</b> Famílias que não encontram apartamentos a preços acessíveis para comprar (ou que não querem viver em moradias isoladas nas freguesias periféricas) são forçados a permanecer no mercado de arrendamento.</li><li><b class=\"text-indigo-900 dark:text-indigo-200\">Stock Estagnado:</b> Sem nova construção significativa de edifícios multifamiliares nos últimos anos, o stock de arrendamento não se renova.</li><li><b class=\"text-indigo-900 dark:text-indigo-200\">Preço Premium:</b> O pouco que aparece no mercado é disputado ferozmente, permitindo aos proprietários subir as rendas para valores que começam a rivalizar com cidades de maior dimensão.</li></ul><h3 class=\"text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight\">Onde está a solução?</h3><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">A solução a curto prazo passa inevitavelmente pela <b class=\"text-indigo-900 dark:text-indigo-200\">reabilitação urbana</b> no centro histórico, convertendo edifícios devolutos em frações habitacionais. Algo que já se verifica, mas que leva o seu tempo.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">No entanto, para estancar a subida de preços a longo prazo, o Fundão necessitará de desbloquear nova construção de média densidade.</p><p class=\"mb-4 text-slate-600 dark:text-slate-300 leading-relaxed\">Até lá, quem detém um apartamento no Fundão tem na mão um ativo cada vez mais valioso e líquido.</p>",
+        "chartConfig": {
+            "type": "doughnut",
+            "labels": [
+                "Moradias e Quintas",
+                "Apartamentos",
+                "Outros"
+            ],
+            "datasets": [
+                {
+                    "label": "Distribuição do Stock de Venda",
+                    "data": [
+                        72,
+                        22,
+                        6
+                    ],
+                    "backgroundColor": [
+                        "#f97316",
+                        "#4f46e5",
+                        "#94a3b8"
+                    ],
+                    "hoverOffset": 4
+                }
+            ],
+            "options": {
+                "plugins": {
+                    "legend": {
+                        "position": "bottom"
+                    }
+                }
+            }
+        },
+        "id": 2
+    }
+]
