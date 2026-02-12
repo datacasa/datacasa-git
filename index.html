@@ -1402,8 +1402,12 @@
         // 1. Carregar o ficheiro JSON
         async function fetchArticles() {
             try {
-                const response = await fetch('articles.json');
+                // CORREÇÃO 1: Mantive apenas uma chamada fetch com o timestamp (cache buster)
                 const response = await fetch('articles.json?t=' + Date.now());
+                
+                // CORREÇÃO 2: Faltava converter a resposta para JSON e guardar na variável global
+                datacasaArticles = await response.json();
+
                 renderArticlesHome();
 
                 // VERIFICAR SE EXISTE UM ARTIGO NO URL AO CARREGAR
