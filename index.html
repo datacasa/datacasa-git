@@ -260,10 +260,10 @@
                 <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Perfil de anúncios ativos</h2>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Certificação Energética</h3>
-                    <div class="h-64"><canvas id="energyChart"></canvas></div>
+                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Raio-X de Mercado</h3>
+                    <div class="h-64"><canvas id="radarChart"></canvas></div>
                 </div>
 
                 <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -275,6 +275,11 @@
                         </div>
                     </div>
                     <div class="h-64"><canvas id="typologyChart"></canvas></div>
+                </div>
+
+                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Certificação Energética</h3>
+                    <div class="h-64"><canvas id="energyChart"></canvas></div>
                 </div>
 
                 <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -290,10 +295,11 @@
                     <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Geografia do Mercado</h2>
                 </div>
                 <div id="map" class="shadow-2xl shadow-indigo-100 dark:shadow-none relative">
-                    <div class="map-toggle">
-                        <button id="btnSale" class="toggle-btn active-sale" onclick="toggleMapMode('sale')">Venda</button>
-                        <button id="btnRent" class="toggle-btn inactive" onclick="toggleMapMode('rent')">Renda</button>
-                    </div>
+                <div class="map-toggle">
+                    <button id="btnSale" class="toggle-btn active-sale" onclick="toggleMapMode('sale')">Venda</button>
+                    <button id="btnRent" class="toggle-btn inactive" onclick="toggleMapMode('rent')">Renda</button>
+                    <button id="btnYield" class="toggle-btn inactive" onclick="toggleMapMode('yield')">Yield</button>
+                </div>
                     <div id="mapLoader" class="absolute inset-0 bg-slate-50 dark:bg-slate-900 z-[1000] flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest">A carregar mapa...</div>
                 </div>
             </div>
@@ -396,7 +402,7 @@
 
     <script>
         let globalData, geoDataStore;
-        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart; // modalChart adicionado
+        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart; // modalChart adicionado
         let map, geoJsonLayer, markersLayer, legendControl;
 
         
@@ -434,11 +440,19 @@
             Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0'; 
             Chart.defaults.scale.grid.color = isDark ? '#1e293b' : '#f1f5f9'; 
 
-            [energyChart, typologyChart, agencyChart, evolutionChart, modalChart].forEach(chart => {
+            [energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart].forEach(chart => {
                 if (chart) {
                     if(chart.options.scales.x) chart.options.scales.x.grid.color = isDark ? '#1e293b' : '#f1f5f9';
                     if(chart.options.scales.y) chart.options.scales.y.grid.color = isDark ? '#1e293b' : '#f1f5f9';
                     if(chart.options.scales.y1) chart.options.scales.y1.grid.color = isDark ? '#1e293b' : '#f1f5f9';
+                    
+                    // Radar Chart Specifics
+                    if (chart.config.type === 'radar') {
+                        chart.options.scales.r.angleLines.color = isDark ? '#334155' : '#e2e8f0';
+                        chart.options.scales.r.grid.color = isDark ? '#334155' : '#e2e8f0';
+                        chart.options.scales.r.pointLabels.color = isDark ? '#94a3b8' : '#64748b';
+                    }
+                    
                     chart.update('none'); 
                 }
             });
@@ -824,18 +838,29 @@
 
         window.toggleMapMode = function(mode) {
             currentMapMode = mode;
-            const btnSale = document.getElementById('btnSale'), btnRent = document.getElementById('btnRent');
-            if (mode === 'sale') { btnSale.className = 'toggle-btn active-sale'; btnRent.className = 'toggle-btn inactive'; }
-            else { btnSale.className = 'toggle-btn inactive'; btnRent.className = 'toggle-btn active-rent'; }
+            // Reset classes
+            ['btnSale', 'btnRent', 'btnYield'].forEach(id => {
+                document.getElementById(id).className = 'toggle-btn inactive';
+            });
+
+            // Ativar botão correto
+            if (mode === 'sale') document.getElementById('btnSale').className = 'toggle-btn active-sale';
+            else if (mode === 'rent') document.getElementById('btnRent').className = 'toggle-btn active-rent';
+            else document.getElementById('btnYield').className = 'toggle-btn bg-emerald-600 text-white'; // Estilo para Yield
+
             updateMapVisualization();
         }
 
         function getColor(value) {
             if (!value) return '#f1f5f9';
+            
             if (currentMapMode === 'sale') {
                 return value > 250000 ? '#4338ca' : value > 180000 ? '#4f46e5' : value > 120000 ? '#6366f1' : value > 60000 ? '#818cf8' : '#c7d2fe';
-            } else {
+            } else if (currentMapMode === 'rent') {
                 return value > 800 ? '#c2410c' : value > 600 ? '#ea580c' : value > 400 ? '#f97316' : value > 200 ? '#fb923c' : '#fed7aa';
+            } else {
+                // Escala de Yield (Rentabilidade) - Cores Emerald (Verde)
+                return value > 8.0 ? '#064e3b' : value > 7.0 ? '#065f46' : value > 6.0 ? '#059669' : value > 5.0 ? '#34d399' : '#a7f3d0';
             }
         }
 
@@ -857,10 +882,24 @@
                 parts.forEach(p => {
                     const matchKey = Object.keys(globalData.locations).find(k => normalizeStr(k) === p);
                     if (!matchKey) return;
-                    const dataset = currentMapMode === 'sale' ? globalData.locations[matchKey].current.sales : globalData.locations[matchKey].current.rent;
-                    if (dataset.median_price && dataset.active_count) {
-                        sum += dataset.median_price * dataset.active_count;
-                        count += dataset.active_count;
+                    
+                    const locData = globalData.locations[matchKey].current;
+    
+                    if (currentMapMode === 'yield') {
+                        const pSale = locData.sales.median_price;
+                        const pRent = locData.rent.median_price;
+                        // Yield = (Renda * 12 / Venda) * 100
+                        if (pSale > 0 && pRent > 0) {
+                            // Ponderado pelo stock de vendas
+                            sum += (((pRent * 12) / pSale) * 100) * locData.sales.active_count; 
+                            count += locData.sales.active_count;
+                        }
+                    } else {
+                        const dataset = currentMapMode === 'sale' ? locData.sales : locData.rent;
+                        if (dataset.median_price && dataset.active_count) {
+                            sum += dataset.median_price * dataset.active_count;
+                            count += dataset.active_count;
+                        }
                     }
                 });
                 feature.properties.current_mode_price = count ? sum / count : 0;
@@ -871,9 +910,18 @@
                 pane: 'polygonsPane',
                 onEachFeature: function(f, layer) {
                     const name = f.properties.display_name || "Freguesia";
-                    const p = f.properties.current_mode_price > 0 ? fmtEuro(f.properties.current_mode_price) : 'S/ Dados';
+                    let p;
+                    if (f.properties.current_mode_price > 0) {
+                        p = currentMapMode === 'yield' 
+                            ? f.properties.current_mode_price.toFixed(1) + '%' 
+                            : fmtEuro(f.properties.current_mode_price);
+                    } else {
+                        p = 'S/ Dados';
+                    }
                     
-                    layer.bindTooltip(`<div class="text-center"><div class="font-bold text-slate-800 text-xs mb-1">${name}</div><div class="${currentMapMode==='sale'?'text-indigo-600':'text-orange-600'} font-black text-sm">${p}</div></div>`, { className: 'custom-tooltip', sticky: true });
+                    const colorClass = currentMapMode === 'yield' ? 'text-emerald-600' : (currentMapMode==='sale'?'text-indigo-600':'text-orange-600');
+                    
+                    layer.bindTooltip(`<div class="text-center"><div class="font-bold text-slate-800 text-xs mb-1">${name}</div><div class="${colorClass} font-black text-sm">${p}</div></div>`, { className: 'custom-tooltip', sticky: true });
 
                     // --- CLIQUE NO MAPA (ALTERAÇÃO 2/2) ---
                     layer.on('click', function() {
@@ -912,10 +960,26 @@
             legendControl = L.control({position: 'bottomright'});
             legendControl.onAdd = function () {
                 const div = L.DomUtil.create('div', 'info legend');
-                const grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
-                div.innerHTML = `<div class="font-bold mb-2 text-xs uppercase tracking-wide">Preço Médio (${currentMapMode==='sale'?'Venda':'Renda'})</div>`;
+                let grades, title;
+                
+                if (currentMapMode === 'yield') {
+                     grades = [5.0, 6.0, 7.0, 8.0];
+                     title = 'Yield Bruta (%)';
+                } else {
+                     grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
+                     title = `Preço Médio (${currentMapMode==='sale'?'Venda':'Renda'})`;
+                }
+                
+                div.innerHTML = `<div class="font-bold mb-2 text-xs uppercase tracking-wide">${title}</div>`;
+                
                 for (let i = 0; i < grades.length; i++) {
-                    div.innerHTML += '<div class="flex items-center gap-2 mb-1"><i style="background:' + getColor(grades[i] + 1) + '"></i> ' + fmtEuro(grades[i]) + (grades[i + 1] ? ' &ndash; ' + fmtEuro(grades[i + 1]) : '+') + '</div>';
+                    let label;
+                    if (currentMapMode === 'yield') {
+                         label = `> ${grades[i]}%`; // Simplificado para Yield
+                    } else {
+                         label = fmtEuro(grades[i]) + (grades[i + 1] ? ' &ndash; ' + fmtEuro(grades[i + 1]) : '+');
+                    }
+                    div.innerHTML += '<div class="flex items-center gap-2 mb-1"><i style="background:' + getColor(grades[i] + (currentMapMode === 'yield' ? 0.1 : 1)) + '"></i> ' + label + '</div>';
                 }
                 return div;
             };
@@ -1145,6 +1209,88 @@
                         } 
                     } 
                 } 
+            });
+
+            // --- RADAR CHART LOGIC ---
+            if (radarChart) radarChart.destroy();
+
+            // Cálculo simplificado de pontuação relativa (Base: Média Global = 50)
+            const globalStats = globalData.locations['Global'].current.sales;
+            const localStats = d.current.sales;
+            const localYield = (d.current.rent.median_price * 12 / d.current.sales.median_price) * 100 || 0;
+            const globalYield = (globalData.locations['Global'].current.rent.median_price * 12 / globalStats.median_price) * 100 || 0;
+
+            // Score Preço: Se for mais caro que a média, score > 50 (Premium)
+            const scorePrice = (localStats.median_price / globalStats.median_price) * 50;
+            // Score Liquidez: Se vender mais rápido (menor DOM), score > 50
+            const scoreSpeed = (globalStats.avg_days_on_market / (localStats.avg_days_on_market || 1)) * 50;
+            // Score Stock: Volume relativo
+            const scoreStock = Math.min((localStats.active_count / globalStats.active_count) * 200, 100); // 200 para escalar melhor freguesias pequenas
+            // Score Yield
+            const scoreYield = (localYield / globalYield) * 50;
+            // Qualidade (Fictício/Exemplo baseia-se em % de certificados A/B se houvesse, aqui hardcoded relativo ou aleatório para demonstração visual, usando Energy A+B como proxy)
+            // Vamos usar a % de eficiencia A e B do gráfico de energia
+            const localEnergyHigh = (combinedEnergy['A+'] || 0) + (combinedEnergy['B'] || 0);
+            const totalEnergy = Object.values(combinedEnergy).reduce((a,b)=>a+b,0);
+            const scoreQuality = totalEnergy ? (localEnergyHigh / totalEnergy) * 200 : 50; // Multiplicador para dar escala
+
+            radarChart = new Chart(document.getElementById('radarChart'), {
+                type: 'radar',
+                data: {
+                    labels: ['Preço', 'Liquidez', 'Stock', 'Yield', 'Qualidade'],
+                    datasets: [{
+                        label: 'Localização Atual',
+                        data: [scorePrice, scoreSpeed, scoreStock, scoreYield, scoreQuality],
+                        fill: true,
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo
+                        borderColor: '#4f46e5',
+                        pointBackgroundColor: '#4f46e5',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: '#4f46e5'
+                    }, {
+                        label: 'Média Concelho',
+                        data: [50, 50, 50, 50, 50], // Base line
+                        fill: true,
+                        backgroundColor: 'rgba(148, 163, 184, 0.2)', // Slate
+                        borderColor: '#94a3b8',
+                        pointRadius: 0
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    elements: { line: { borderWidth: 3 } },
+                    scales: {
+                        r: {
+                            angleLines: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' },
+                            grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' },
+                            pointLabels: {
+                                font: { size: 10, weight: '700' },
+                                color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 100,
+                            ticks: { display: false } 
+                        }
+                    },
+                    plugins: { 
+                        legend: { position: 'top', labels: { font: { size: 10 } } },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (context.datasetIndex === 0) { // Local
+                                         let val = context.raw;
+                                         let delta = ((val - 50) / 50) * 100;
+                                         let sign = delta > 0 ? '+' : '';
+                                         return label + ': ' + sign + delta.toFixed(1) + '% vs Concelho';
+                                    }
+                                    return label + ': Média (Base)';
+                                }
+                            }
+                        }
+                    }
+                }
             });
         }
         
