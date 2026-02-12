@@ -804,10 +804,11 @@
             
             try {
                 // ATENÇÃO: Verifica se o URL do fetch está correto (link Vercel ou local)
-                const [dataResp, geoResp] = await Promise.all([
-                    fetch('api/data/'), 
-                    fetch('freguesias_fundao.geojson')
-                ]);
+				const timestamp = new Date().getTime(); // Cria um número único (agora)
+				const [dataResp, geoResp] = await Promise.all([
+					fetch('api/data/?t=' + timestamp), 
+					fetch('freguesias_fundao.geojson?t=' + timestamp)
+				]);
                 globalData = await dataResp.json();
                 geoDataStore = await geoResp.json(); 
                 
@@ -1402,7 +1403,7 @@
         async function fetchArticles() {
             try {
                 const response = await fetch('articles.json');
-                datacasaArticles = await response.json();
+                const response = await fetch('articles.json?t=' + Date.now());
                 renderArticlesHome();
 
                 // VERIFICAR SE EXISTE UM ARTIGO NO URL AO CARREGAR
@@ -1570,12 +1571,21 @@
         init();
         
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js')
-                    .then(reg => console.log('SW registado:', reg.scope))
-                    .catch(err => console.log('SW falhou:', err));
+        // CÓDIGO DE LIMPEZA: Remove Service Workers antigos que estejam a bloquear atualizações
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for(let registration of registrations) {
+                console.log('Service Worker antigo encontrado. A remover...', registration);
+                registration.unregister();
+            }
+        });
+        
+        // Limpa a cache de ficheiros do browser
+        if(window.caches) {
+            caches.keys().then(function(names) {
+                for (let name of names) caches.delete(name);
             });
         }
+    }
     </script>
 </body>
 </html>
