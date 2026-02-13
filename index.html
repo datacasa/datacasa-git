@@ -8,6 +8,14 @@
       gtag('js', new Date());
       gtag('config', 'G-8NNK2SSX3C');
     </script>
+	
+	<script>
+    (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+    .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+    n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+    (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+    ml('account', '2105452');
+	</script>
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -421,14 +429,31 @@
                         Subscreva a newsletter para receber análises exclusivas e relatórios do mercado imobiliário do Fundão.
                     </p>
                     
-                    <form action="https://assets.mailerlite.com/jsonp/2105452/forms/179304461639877998/subscribe" method="post" target="_blank" class="flex flex-col sm:flex-row gap-2 w-full">
-                        <input type="email" name="fields[email]" placeholder="O seu endereço de email" required
-                            class="w-full px-4 py-3 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-all font-medium text-sm border-0 text-center sm:text-left">
-                        <button type="submit" 
-                            class="bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg uppercase tracking-widest text-[10px] md:text-xs flex-shrink-0">
-                            Subscrever
-                        </button>
-                    </form>
+                    <div id="mlb2-37113851" class="ml-subscribe-form ml-subscribe-form-37113851 w-full">
+    <div class="row-form">
+        <form action="https://assets.mailerlite.com/jsonp/2105452/forms/179304461639877998/subscribe" data-code="" method="post" target="_blank" class="ml-block-form flex flex-col sm:flex-row gap-2 w-full">
+            
+            <input type="email" name="fields[email]" placeholder="O seu endereço de email" required
+                class="w-full px-4 py-3 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-all font-medium text-sm border-0 text-center sm:text-left">
+            
+            <input type="hidden" name="ml-submit" value="1">
+            <input type="hidden" name="anticsrf" value="true">
+
+            <button type="submit" class="primary bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg uppercase tracking-widest text-[10px] md:text-xs flex-shrink-0">
+                Subscrever
+            </button>
+            
+            <button disabled="disabled" style="display: none;" type="button" class="loading bg-indigo-600/70 text-white font-black py-3 px-6 rounded-xl uppercase tracking-widest text-[10px] md:text-xs flex-shrink-0 cursor-not-allowed">
+                Aguarde...
+            </button>
+        </form>
+    </div>
+
+    <div class="row-success hidden w-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 p-4 rounded-xl text-center mt-2">
+        <h4 class="font-black text-lg mb-1">Obrigado!</h4>
+        <p class="text-xs font-medium">Juntou-se à nossa lista com sucesso.</p>
+    </div>
+</div>
                     <p class="text-[9px] text-indigo-400/60 font-bold uppercase tracking-wider mt-3">Garantimos a sua privacidade. Sem spam.</p>
                 </div>
             </div>
@@ -1632,5 +1657,15 @@
         }
     }
     </script>
+	
+	<script>
+		function ml_webform_success_37113851() {
+			var $ = ml_jQuery || jQuery;
+			$('.ml-subscribe-form-37113851 .row-success').removeClass('hidden').show();
+			$('.ml-subscribe-form-37113851 .row-form').hide();
+		}
+	</script>
+	<script src="https://groot.mailerlite.com/js/w/webforms.min.js?v95037e5bac78f29ed026832ca21a7c7b" type="text/javascript"></script>
+
 </body>
 </html>
