@@ -412,7 +412,7 @@
                 <h3 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">Disclaimers Importantes</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
                     <p><strong class="text-slate-700 dark:text-slate-300">Valores de transação:</strong> Os preços apresentados baseiam-se nos <em>asking prices</em> de mercado (anúncios públicos) e não refletem o valor final de transação acordado em escritura.</p>
-                    <p><strong class="text-slate-700 dark:text-slate-300">Decisões financeiras:</strong> Os dados são puramente estátisticos e de caráter informativo, não constituindo em momento algum qualquer avaliação oficial ou aconselhamento financeiro.</p>
+                    <p><strong class="text-slate-700 dark:text-slate-300">Decisões financeiras:</strong> Os dados são puramente estatisticos e de caráter informativo, não constituindo em momento algum qualquer avaliação oficial ou aconselhamento financeiro.</p>
                     <p><strong class="text-slate-700 dark:text-slate-300">Latência de dados:</strong> Embora a recolha de dados seja frequente, pode existir um hiato temporal entre a alteração de um anúncio na fonte original e a sua atualização neste painel.</p>
                     <p><strong class="text-slate-700 dark:text-slate-300">Responsabilidade:</strong> O datacasa não se responsabiliza direta ou indiretamente por conclusões, estudos paralelos ou investimentos com base nas métricas apresentadas.</p>
                 </div>
@@ -649,7 +649,7 @@
         const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
 
         const metricDefinitions = {
-            "STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado.",
+            "STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado excluindo outliers.",
             "PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
             "PMV": "Prazo Médio de Venda. Média de dias no mercado de imóveis removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
             "PMA": "Prazo Médio de Arrendamento. Média de dias no mercado dos arrendamentos removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
