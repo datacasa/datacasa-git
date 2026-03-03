@@ -1224,7 +1224,7 @@
             updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>Math.round(i.sales.avg_days_on_market)), fullSales.map(i=>Math.round(i.avg_days_on_market)), fullDates, cSale, fmtInt, { inverse: true });
             updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fullSales.map(i=>i.median_price), fullDates, cSale, fmtEuro);
             updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fullSales.map(i=>i.median_price_m2), fullDates, cSale, fmtEuro);
-            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec, { inverse: true });
+            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec);
 
             // RENDAS
             updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count), fullRent.map(i=>i.active_count), fullDates, cRent);
@@ -1232,7 +1232,7 @@
             updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>Math.round(i.rent.avg_days_on_market)), fullRent.map(i=>Math.round(i.avg_days_on_market)), fullDates, cRent, fmtInt, { inverse: true });
             updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fullRent.map(i=>i.median_price), fullDates, cRent, fmtEuro);
             updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fullRent.map(i=>i.median_price_m2), fullDates, cRent, fmtEuroDec);
-            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%', { inverse: true });
+            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%');
             
             updateCharts(d);
             updateMapVisualization();
