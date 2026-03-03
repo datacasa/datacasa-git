@@ -310,10 +310,14 @@
                 <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
                 <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Perfil de anúncios ativos</h2>
             </div>
-
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Raio-X de Mercado</h3>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                <div onclick="openRadarModal()" class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition-all group">
+                    <div class="flex justify-between items-start mb-8">
+                        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Raio-X de Mercado</h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </div>
                     <div class="h-64"><canvas id="radarChart"></canvas></div>
                 </div>
 
@@ -337,6 +341,7 @@
                     <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Top 3 Mediadoras</h3>
                     <div class="h-64"><canvas id="agencyChart"></canvas></div>
                 </div>
+
             </div>
         </section>
 
@@ -541,6 +546,40 @@
             </div>
         </div>
     </div>
+	
+	<div id="radarModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRadarModal()"></div>
+    
+    <div class="modal-content bg-white w-full max-w-md mx-6 p-8 rounded-3xl shadow-2xl relative z-10">
+        
+        <button onclick="closeRadarModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+        <div class="flex items-center gap-3 mb-6">
+            <div class="w-10 h-10 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <h3 class="text-xl font-black text-slate-900 dark:text-white">Raio-X de Mercado</h3>
+        </div>
+        <div class="text-slate-600 dark:text-slate-400 text-sm font-medium space-y-4">
+            <p>O <strong>Raio-X de Mercado</strong> compara o desempenho da localização selecionada face à média do concelho do Fundão em 5 dimensões:</p>
+            <ul class="list-disc pl-5 space-y-2">
+                <li><strong class="text-slate-700 dark:text-slate-300">Preço:</strong> Custo relativo dos imóveis.</li>
+                <li><strong class="text-slate-700 dark:text-slate-300">Liquidez:</strong> Velocidade de escoamento no mercado.</li>
+                <li><strong class="text-slate-700 dark:text-slate-300">Stock:</strong> Volume de oferta disponível.</li>
+                <li><strong class="text-slate-700 dark:text-slate-300">Yield:</strong> Rentabilidade teórica face ao arrendamento.</li>
+                <li><strong class="text-slate-700 dark:text-slate-300">Qualidade:</strong> Peso de imóveis com alta eficiência energética.</li>
+            </ul>
+        </div>
+        <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
+            <button onclick="closeRadarModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-lg shadow-indigo-200 dark:shadow-none">Entendido</button>
+        </div>
+    </div>
+	</div>
 
     <script>
         let globalData, geoDataStore;
@@ -660,7 +699,7 @@
             "ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
         };
 
-        function openModal(title, dates, data, color) {
+        function openModal(title, dates, data, colorHex, config = {}) {
             const modal = document.getElementById('infoModal');
             const modalTitle = document.getElementById('modalTitle');
             const modalDesc = document.getElementById('modalDesc');
@@ -669,12 +708,14 @@
             modalTitle.innerText = title;
             modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
             
-            // Cor base (Azul) para caso neutro (0%)
+            // CORREÇÃO: Forçar o Índigo (Azul) para TODOS os gráficos quando não há variação
             let chartColor = '#4f46e5'; 
 
             // --- CÁLCULO YTD ---
             ytdEl.classList.add('hidden');
-            if (dates.length > 0 && data.length > 0) {
+            if (config.isFlow) {
+                // Não calculamos YTD para a Produção para evitar confusão
+            } else if (dates.length > 0 && data.length > 0) {
                 const lastDate = dates[dates.length - 1];
                 const currentYear = lastDate.split('-')[0];
                 const firstIndex = dates.findIndex(d => d.startsWith(currentYear));
@@ -685,34 +726,28 @@
                     
                     if (startVal !== 0) {
                         const diff = ((endVal - startVal) / Math.abs(startVal)) * 100;
-                        
                         const isUp = diff > 0;
                         const sign = isUp ? '+' : '';
                         
-                        // Detetar dark mode para escolher HEX codes
+                        // Lógica invertida para o YTD do Modal
+                        const isGood = config.inverse ? !isUp : isUp;
                         const isDark = document.documentElement.classList.contains('dark');
                         
                         if (Math.abs(diff) < 0.1) {
                             ytdEl.innerText = "YTD: 0.0%";
-                            // Neutro no Dark Mode
                             ytdEl.className = "text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400";
-                            chartColor = '#4f46e5'; // Azul (Neutro)
+                            chartColor = '#4f46e5'; // Mantém-se Índigo quando é 0%
                         } else {
                             ytdEl.innerText = `YTD: ${sign}${diff.toFixed(1)}%`;
                             
-                            // 1. Badge do Modal (Igual aos KPI cards)
-                            const badgeClasses = isUp 
+                            const badgeClasses = isGood 
                                 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
                                 : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
                             
                             ytdEl.className = `text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full ${badgeClasses}`;
                             
-                            // 2. Linha do Gráfico
-                            if (isUp) {
-                                chartColor = isDark ? '#34d399' : '#10b981'; // Emerald
-                            } else {
-                                chartColor = isDark ? '#fb7185' : '#ef4444'; // Rose
-                            }
+                            // Apenas muda para Verde ou Vermelho se houver variação
+                            chartColor = isGood ? (isDark ? '#34d399' : '#10b981') : (isDark ? '#fb7185' : '#ef4444');
                         }
                         ytdEl.classList.remove('hidden');
                     }
@@ -731,8 +766,8 @@
                     datasets: [{
                         label: title,
                         data: data,
-                        borderColor: chartColor,      // Usa a cor dinâmica calculada acima
-                        backgroundColor: chartColor, // Usa a cor dinâmica calculada acima
+                        borderColor: chartColor,
+                        backgroundColor: chartColor,
                         borderWidth: 2,
                         pointRadius: 0,
                         pointHoverRadius: 4,
@@ -822,19 +857,16 @@
             return `<svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
         }
 
-        function getVariation(current, history, dates) {
+        function getVariation(current, history, dates, config = {}) {
             if (!history || history.length < 2) return '';
             const prev = history[history.length - 2];
             
-            // Se o valor não mudou, não mostra badge
             if (current === prev) return '';
 
-            // Calcular a data anterior (penúltimo registo)
             let dateLabel = "ant.";
             if (dates && dates.length >= 2) {
                 const prevDateStr = dates[dates.length - 2];
                 const d = new Date(prevDateStr);
-                // Formata para "12/02" (dia/mês)
                 dateLabel = d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
             }
 
@@ -848,7 +880,11 @@
             }
 
             const isUp = diff > 0;
-            const color = isUp 
+            
+            // LÓGICA SEMÂNTICA: Se for "inverse", Subir (isUp) é MAU (Falso)
+            const isGood = config.inverse ? !isUp : isUp;
+            
+            const color = isGood 
             ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
             : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
             
@@ -1125,25 +1161,43 @@
             legendControl.addTo(map);
         }
 
-        function updateCard(id, val, hist, fullHist, dates, colorHex, fmt = fmtInt) {
+        function updateCard(id, val, hist, fullHist, dates, colorHex, fmt = fmtInt, config = {}) {
             const el = document.getElementById(id), varEl = document.getElementById('var_' + id);
             el.innerText = fmt(val);
             let cls = 'text-slate-900 dark:text-white';
+            
             if (hist.length >= 2) {
                 const prev = hist[hist.length-2];
-                if (val > prev) cls = 'text-emerald-600'; 
-                else if (val < prev) cls = 'text-rose-600';
-                else cls = 'text-indigo-600 dark:text-indigo-400'; 
+                
+                if (config.isFlow) {
+                    // Métricas de FLUXO (Produção): A cor depende do valor em si
+                    if (val > 0) cls = 'text-emerald-600'; 
+                    else if (val < 0) cls = 'text-rose-600';
+                    else cls = 'text-indigo-600 dark:text-indigo-400'; 
+                } else {
+                    // Métricas NORMAIS: A cor depende da variação (+ Lógica Invertida)
+                    if (val > prev) cls = config.inverse ? 'text-rose-600' : 'text-emerald-600'; 
+                    else if (val < prev) cls = config.inverse ? 'text-emerald-600' : 'text-rose-600';
+                    else cls = 'text-indigo-600 dark:text-indigo-400'; 
+                }
             }
+            
             el.className = `text-lg sm:text-2xl font-black tracking-tight ${cls}`;
             
-            if (varEl) varEl.innerHTML = getVariation(val, hist, dates);
+            if (varEl) {
+                if (config.isFlow) {
+                    // Ocultar a percentagem absurda para a Produção
+                    varEl.innerHTML = '';
+                } else {
+                    varEl.innerHTML = getVariation(val, hist, dates, config);
+                }
+            }
             
             document.getElementById('spark_'+id).innerHTML = generateSparkline(hist, cls);
 
             const card = document.getElementById(id).closest('.kpi-card');
             const title = card.querySelector('p').innerText;
-            card.onclick = () => openModal(title, dates, fullHist, colorHex);
+            card.onclick = () => openModal(title, dates, fullHist, colorHex, config);
         }
 
         function render(loc) {
@@ -1166,19 +1220,19 @@
 
             // VENDAS
             updateCard('sale_active', s.active_count, h.map(i=>i.sales.active_count), fullSales.map(i=>i.active_count), fullDates, cSale);
-            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), fullSales.map(i=>i.net_production), fullDates, cSale, v=>(v>0?'+':'')+fmtInt(v));
-            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>i.sales.avg_days_on_market), fullSales.map(i=>i.avg_days_on_market), fullDates, cSale);
+            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), fullSales.map(i=>i.net_production), fullDates, cSale, v=>(v>0?'+':'')+fmtInt(v), { isFlow: true });
+            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>Math.round(i.sales.avg_days_on_market)), fullSales.map(i=>Math.round(i.avg_days_on_market)), fullDates, cSale, fmtInt, { inverse: true });
             updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fullSales.map(i=>i.median_price), fullDates, cSale, fmtEuro);
             updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fullSales.map(i=>i.median_price_m2), fullDates, cSale, fmtEuro);
-            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec);
+            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec, { inverse: true });
 
             // RENDAS
             updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count), fullRent.map(i=>i.active_count), fullDates, cRent);
-            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), fullRent.map(i=>i.net_production), fullDates, cRent, v=>(v>0?'+':'')+fmtInt(v));
-            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>i.rent.avg_days_on_market), fullRent.map(i=>i.avg_days_on_market), fullDates, cRent);
+            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), fullRent.map(i=>i.net_production), fullDates, cRent, v=>(v>0?'+':'')+fmtInt(v), { isFlow: true });
+            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>Math.round(i.rent.avg_days_on_market)), fullRent.map(i=>Math.round(i.avg_days_on_market)), fullDates, cRent, fmtInt, { inverse: true });
             updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fullRent.map(i=>i.median_price), fullDates, cRent, fmtEuro);
             updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fullRent.map(i=>i.median_price_m2), fullDates, cRent, fmtEuroDec);
-            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%');
+            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%', { inverse: true });
             
             updateCharts(d);
             updateMapVisualization();
@@ -1638,6 +1692,14 @@
             document.body.style.overflow = 'auto';
         }
         
+					function openRadarModal() {
+				document.getElementById('radarModal').classList.remove('hidden');
+			}
+
+			function closeRadarModal() {
+				document.getElementById('radarModal').classList.add('hidden');
+			}
+		
         init();
         
         if ('serviceWorker' in navigator) {
