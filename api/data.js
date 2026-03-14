@@ -3,7 +3,6 @@ export default async function handler(req, res) {
   const token = process.env.GITHUB_TOKEN;
 
   try {
-    // 1. Vai buscar o Gist ao GitHub
     const response = await fetch(`https://api.github.com/gists/${gistId}`, {
       headers: { Authorization: `token ${token}` },
     });
@@ -12,17 +11,26 @@ export default async function handler(req, res) {
     
     const data = await response.json();
     
-    // 2. Identifica o ficheiro dentro do Gist e extrai o conteúdo
     const fileName = Object.keys(data.files)[0]; 
-    const rawContent = JSON.parse(data.files[fileName].content);
+    const fileInfo = data.files[fileName];
 
-    // 3. ENVIAR TUDO: Sem filtros, sem mapeamento. 
-    // O site recebe o JSON exatamente como o teu scraper o gerou.
-    res.setHeader('Cache-Control', 's-maxage=3600'); // Mantém cache de 1h para performance
+    let rawContent;
+
+    if (fileInfo.truncated) {
+        const rawResponse = await fetch(fileInfo.raw_url, {
+            headers: { Authorization: `token ${token}` } // Necessário se o Gist for privado
+        });
+        
+        if (!rawResponse.ok) throw new Error('Falha ao descarregar o ficheiro raw do Gist.');
+        rawContent = await rawResponse.json();
+    } else {
+        rawContent = JSON.parse(fileInfo.content);
+    }
+
+    res.setHeader('Cache-Control', 's-maxage=3600'); 
     res.status(200).json(rawContent);
 
   } catch (e) {
-    // Caso algo falhe, envia o erro para diagnóstico
     res.status(500).json({ error: "Erro na API: " + e.message });
   }
 }
