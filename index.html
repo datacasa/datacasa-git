@@ -722,7 +722,7 @@
             // --- CÁLCULO YTD ---
             ytdEl.classList.add('hidden');
             if (config.isFlow) {
-                // Não calculamos YTD para a Produção para evitar confusão
+                // Não calcula YTD para a Produção para evitar confusão
             } else if (dates.length > 0 && data.length > 0) {
                 const lastDate = dates[dates.length - 1];
                 const currentYear = lastDate.split('-')[0];
@@ -913,8 +913,7 @@
             Chart.defaults.font.size = 10;
             
             try {
-                // ATENÇÃO: Verifica se o URL do fetch está correto (link Vercel ou local)
-				const timestamp = new Date().getTime(); // Cria um número único (agora)
+				const timestamp = new Date().getTime();
 				const [dataResp, geoResp] = await Promise.all([
 					fetch('api/data/?t=' + timestamp), 
 					fetch('freguesias_fundao.geojson?t=' + timestamp)
@@ -1212,7 +1211,7 @@
             const d = globalData.locations[loc];
             if (!d) return; 
 
-            const h = d.history.slice(-30); // Últimos 30 dias para sparklines
+            const h = d.history.slice(-24); // Últimos 3 meses (2 pontos/semana * 12 semanas)
             
             // Dados Completos para o Modal
             const fullH = d.history;
