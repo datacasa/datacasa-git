@@ -1,1744 +1,934 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-8NNK2SSX3C"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-8NNK2SSX3C');
-    </script>
-	
-	<script>
-    (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
-    .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
-    n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
-    (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
-    ml('account', '2105452');
-	</script>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>datacasa Fundão | Analítica do Mercado Imobiliário</title>
-
-    <meta name="description" content="Dados do mercado imobiliário do concelho do Fundão. Preços, stock e tendências de venda e arrendamento.">
-    <meta name="author" content="datacasa">
-
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://datacasa.pt/">
-    <meta property="og:title" content="datacasa Fundão | Analítica do Mercado Imobiliário">
-    <meta property="og:description" content="Consulta preços, stock de imóveis e tendências do mercado no concelho do Fundão.">
-    <meta property="og:image" content="https://datacasa.pt/og-image.jpg">
-
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://datacasa.pt/">
-    <meta property="twitter:title" content="datacasa Fundão | Analítica do Mercado Imobiliário">
-    <meta property="twitter:description" content="Consulta preços, stock de imóveis e tendências do mercado no concelho do Fundão">
-    <meta property="twitter:image" content="https://datacasa.pt/og-image.jpg">
-
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="white">
-    <script src="https://cdn.tailwindcss.com"></script>
-      
-    <script>
-        tailwind.config = {
-            darkMode: 'class', // Ativa modo dark via classe CSS
-            theme: { extend: {} }
-        }
-    </script>
-      
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-      
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23312e81'/><text x='50%' y='50%' dominant-baseline='central' text-anchor='middle' fill='white' font-family='Plus Jakarta Sans, sans-serif' font-size='60' font-weight='800'>d</text></svg>">
-      
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
-        
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* Transição suave de cores para todo o site */
-        body, .kpi-card, .bg-white, select, button, nav, .modal-content {
-            transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        /* Layout dos Cartões */
-        .kpi-card { 
-            background: white; 
-            padding: 1.25rem; 
-            border-radius: 1.25rem; 
-            border: 1px solid #e2e8f0; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: flex-start; 
-            gap: 0.25rem;
-            min-height: 155px; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            cursor: pointer;
-            position: relative;
-        }
-        
-        .kpi-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 25px -5px rgba(79, 70, 229, 0.15), 0 8px 10px -6px rgba(79, 70, 229, 0.1);
-        }
-
-        /* Cores de Hover Específicas */
-        .sale-card:hover { border-color: #818cf8; }
-        .rent-card:hover { border-color: #f97316; }
-
-        .kpi-card:active {
-            transform: translateY(-1px);
-        }
-        
-        .card-left { display: flex; flex-direction: column; justify-content: space-between; height: 100%; width: 100%; }
-        .sparkline-container { width: 100%; height: 35px; margin-top: auto; opacity: 0.7; }
-        .variation-badge { font-size: 0.5rem; padding: 0.15rem 0.4rem; border-radius: 9999px; font-weight: 800; display: inline-block; margin-top: 0.4rem; width: fit-content; }
-        
-        #map { height: 650px; border-radius: 1.5rem; border: 1px solid #e2e8f0; z-index: 1; background: #eef2f6; position: relative; }
-        
-        /* DARK MODE MAPA */
-        .dark #map { background: #0f172a; border-color: #1e293b; }
-        .dark .leaflet-tile-pane { filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%); }
-        .dark .leaflet-control-zoom a { background-color: #1e293b; color: #e2e8f0; border-color: #334155; }
-        .dark .leaflet-bar { border-color: #334155; }
-
-        /* Legenda do Mapa */
-        .info.legend { background: white; padding: 12px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); font-size: 11px; line-height: 18px; color: #475569; font-weight: 600; }
-        .dark .info.legend { background: #0f172a; color: #cbd5e1; border: 1px solid #1e293b; }
-        
-        .info.legend i { width: 16px; height: 16px; float: left; margin-right: 8px; opacity: 0.9; border-radius: 4px; }
-        
-        /* Tooltip do Mapa */
-        .custom-tooltip { background: rgba(255, 255, 255, 0.98); border: 1px solid #e2e8f0; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); border-radius: 8px; padding: 8px 12px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 12px; text-align: center; pointer-events: none; }
-        .dark .custom-tooltip { background: rgba(15, 23, 42, 0.98); border: 1px solid #334155; color: #f1f5f9; }
-        .dark .custom-tooltip .text-slate-800 { color: #f1f5f9 !important; }
-
-        /* Toggle Button no Mapa */
-        .map-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 1000;
-            background: white;
-            padding: 4px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 4px;
-            border: 1px solid #e2e8f0;
-        }
-        .dark .map-toggle { background: #0f172a; border-color: #334155; }
-
-        .toggle-btn {
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        .toggle-btn.active-sale { background-color: #4f46e5; color: white; }
-        .toggle-btn.active-rent { background-color: #f97316; color: white; }
-        .toggle-btn.inactive { background-color: transparent; color: #64748b; }
-        .dark .toggle-btn.inactive { color: #94a3b8; }
-        .toggle-btn.inactive:hover { background-color: #f1f5f9; }
-        .dark .toggle-btn.inactive:hover { background-color: #1e293b; }
-
-        /* Estilos do Modal */
-        #infoModal { transition: opacity 0.3s ease-in-out; }
-        #infoModal.hidden { pointer-events: none; opacity: 0; }
-        #infoModal:not(.hidden) { pointer-events: auto; opacity: 1; }
-        .modal-content { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        #infoModal.hidden .modal-content { transform: scale(0.95); }
-        #infoModal:not(.hidden) .modal-content { transform: scale(1); }
-        
-        /* Dark Modal */
-        .dark .modal-content { background-color: #0f172a; border: 1px solid #1e293b; }
-
-        /* Estilos das Abas no Nav */
-        .nav-tab {
-            font-size: 10px;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            padding: 6px 12px;
-            border-radius: 8px;
-            transition: all 0.2s;
-        }
-        .nav-tab.active { background: #4f46e5; color: white; }
-        .nav-tab:not(.active) { color: #64748b; }
-        .dark .nav-tab:not(.active) { color: #94a3b8; }
-        .nav-tab:not(.active):hover { background: #f1f5f9; }
-        .dark .nav-tab:not(.active):hover { background: #1e293b; }
-
-        /* Scrollbar Personalizada */
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #475569; }
-
-        /* Custom scrollbar para o arquivo */
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
-        .dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #1e293b; }
-
-        /* Estilo para os itens da lista de arquivo */
-        .archive-item {
-            padding: 1.5rem;
-            border-radius: 1.25rem;
-            border: 1px solid #f1f5f9;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .dark .archive-item { border-color: #1e293b; }
-        .archive-item:hover { background: #f8fafc; transform: translateX(4px); }
-        .dark .archive-item:hover { background: #0f172a; }
-
-        /* Formatação do conteúdo do artigo */
-		#artContent p { margin-bottom: 1.2rem; }
-        #artContent b { color: #312e81; font-weight: 800; }
-        .dark #artContent b { color: #818cf8; }
-        #artContent h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
-        
-        /* CORREÇÃO DAS LISTAS (BULLETS) */
-        #artContent ul { list-style-type: disc; padding-left: 1.5rem; margin-bottom: 1.5rem; }
-        #artContent li { margin-bottom: 0.5rem; padding-left: 0.5rem; }
-		
-    </style>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-8NNK2SSX3C"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-8NNK2SSX3C');
+</script>
+<script>
+  (function(w,d,e,u,f,l,n){w[f]=w[f]||function(){(w[f].q=w[f].q||[])
+  .push(arguments);},l=d.createElement(e),l.async=1,l.src=u,
+  n=d.getElementsByTagName(e)[0],n.parentNode.insertBefore(l,n);})
+  (window,document,'script','https://assets.mailerlite.com/js/universal.js','ml');
+  ml('account', '2105452');
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>datacasa · Bolsa do Fundão | Mercado imobiliário em tempo real</title>
+<meta name="description" content="A bolsa do imobiliário do concelho do Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield, atualizados a cada recolha.">
+<meta name="author" content="datacasa">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://datacasa.pt/">
+<meta property="og:title" content="datacasa · Bolsa do Fundão">
+<meta property="og:description" content="Cotações do imobiliário no Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield.">
+<meta property="og:image" content="https://datacasa.pt/og-image.png">
+<meta property="twitter:card" content="summary_large_image">
+<meta property="twitter:url" content="https://datacasa.pt/">
+<meta property="twitter:title" content="datacasa · Bolsa do Fundão">
+<meta property="twitter:description" content="Cotações do imobiliário no Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield.">
+<meta property="twitter:image" content="https://datacasa.pt/og-image.png">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d0c17">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='24' fill='%234f46e5'/><text x='50%' y='54%' dominant-baseline='central' text-anchor='middle' font-family='Arial' font-weight='bold' font-size='64' fill='white'>d</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
+<style>
+:root{
+  --bg:#0d0c17;--panel:#151424;--panel2:#1b1a30;--line:#26243d;--line2:#201f33;--line3:#2c2a45;
+  --tx:#e7e6f2;--tx2:#d6d5e6;--mu:#9a98b3;--mu2:#b9b7cf;--wh:#fff;
+  --up:#a5a7ff;--acc:#8b8cff;--brand:#4f46e5;--dn:#ff6b85;--warn:#f5c26b;--rent:#ffb36b;--yld:#7fe0b8;--pink:#e39bff;
+  --sans:'Bricolage Grotesque',system-ui,sans-serif;--mono:'JetBrains Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html{color-scheme:dark}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);-webkit-font-smoothing:antialiased}
+a{color:var(--up);text-decoration:none}a:hover{color:#c7c8ff}
+button{font:inherit;color:inherit}
+.m{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu)}.wh{color:var(--wh)}
+.wrap{max-width:1480px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;min-width:0}
+.pill{background:transparent;border:0;color:var(--mu2);font:600 12px var(--sans);padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
+.pill:hover{color:var(--wh)}
+.pill.on{background:var(--tx);color:var(--bg)}
+.pill.ol{border:1px solid var(--line3)}
+.seg{display:inline-flex;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
+.lbl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.flap{position:relative;display:inline-flex;align-items:center;background:var(--bg);border:1px solid var(--line3);border-radius:4px;padding:3px 6px;color:var(--wh);font-weight:700;overflow:hidden}
+.flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#000}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line3);color:var(--tx2);white-space:nowrap}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--yld);display:inline-block}
+.bdg{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;padding:4px 0;border-radius:6px;display:inline-block;min-width:58px}
+.bdg.u{background:#26265a;color:#c7c8ff}.bdg.d{background:#4a1626;color:#ffb3c1}.bdg.z{background:var(--line);color:var(--mu2)}
+.r{text-align:right}
+.hide{display:none!important}
+h1,h2,h3{margin:0}
+/* header */
+header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:2px 4px}
+.brand{display:flex;align-items:center;gap:10px;color:inherit}
+.logo{width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:21px}
+.brand b{display:block;font-weight:800;color:#fff;font-size:18px;letter-spacing:-.02em;line-height:1.05}
+.brand small{display:block;font-size:12px;color:var(--up);font-weight:500}
+nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:6px 14px;flex:0 1 320px;min-width:200px}
+.search input{background:transparent;border:0;outline:0;color:var(--tx);font:13px var(--sans);width:100%}
+.search input::placeholder{color:var(--mu)}
+.spacer{flex:1}
+/* ticker */
+.tape{display:flex;align-items:center;gap:0;overflow:hidden;padding:0}
+.tape .lbl{padding:9px 14px;white-space:nowrap;border-right:1px solid var(--line);font-family:var(--sans)}
+.tape-in{display:flex;gap:22px;padding:9px 14px;white-space:nowrap;animation:tape 70s linear infinite;width:max-content}
+.tape:hover .tape-in{animation-play-state:paused}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tape-in{animation:none}}
+.tk{display:inline-flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
+/* index cards */
+.ixrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
+.ix{padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;text-align:left;border:1px solid var(--line)}
+.ix:hover{border-color:var(--line3);background:#181729}
+.ix .t{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;gap:6px}
+.ix .v{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
+.ix .v .m:first-child{font-size:20px;font-weight:700;color:#fff}
+.ix svg{width:100%;height:26px;display:block}
+/* main grid */
+.grid3{display:grid;grid-template-columns:330px minmax(0,1fr) 320px;gap:12px;align-items:start}
+.wl{padding:8px 6px 10px;display:flex;flex-direction:column;max-height:760px;overflow:auto}
+.wl-h{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px}
+.grp{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:12px 12px 4px;display:flex;justify-content:space-between}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 58px 64px 66px;gap:8px;align-items:center;padding:7px 12px;border-radius:10px;font-size:13px;color:inherit;cursor:pointer;background:none;border:0;text-align:left;width:100%}
+.row:hover{background:var(--panel2)}
+.row.sel{background:#232149;box-shadow:inset 3px 0 0 var(--acc)}
+.row.micro{opacity:.72}
+.sym{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+.sym b{font-family:var(--mono);font-size:12px;color:#fff}
+.sym span{font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.quote{display:flex;flex-direction:column;overflow:hidden}
+.q-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 18px 4px}
+.q-sym{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--bg);background:var(--acc);padding:3px 7px;border-radius:5px}
+.q-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.q-px{font-family:var(--mono);font-size:40px;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1.1}
+.q-ctl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:8px 18px}
+.chart{position:relative;width:100%}
+.chart svg{display:block;width:100%}
+.tip{position:absolute;pointer-events:none;background:#0b0a14ee;border:1px solid var(--line3);border-radius:8px;padding:6px 9px;font:11px/1.45 var(--mono);color:var(--tx);white-space:nowrap;z-index:5;transform:translate(-50%,-100%);display:none}
+.stats{padding:16px 18px;display:flex;flex-direction:column;gap:4px}
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line2);font-size:13px}
+.kv span:first-child{color:var(--mu);font-family:var(--sans);font-size:12px}
+.note{margin-top:10px;padding:12px;border-radius:12px;background:var(--panel2);font-size:12px;line-height:1.5;color:var(--tx2)}
+.rng{height:4px;background:var(--line3);border-radius:2px;margin:10px 0 6px;position:relative}
+.rng i{position:absolute;left:0;top:0;height:4px;background:var(--acc);border-radius:2px}
+.rng b{position:absolute;top:-5px;width:2px;height:14px;background:#fff;border-radius:1px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);gap:12px;align-items:start}
+.sec{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
+.sec-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px}
+.sec-h h2{font-size:16px;font-weight:700;color:#fff}
+.lg{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.lg i{width:14px;height:3px;border-radius:2px;display:inline-block}
+.mv{display:grid;grid-template-columns:44px minmax(0,1fr) 70px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2);font-size:13px;cursor:pointer}
+.mv b{color:#fff;font-family:var(--mono)}
+.brk{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}
+.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
+.agent{padding:10px 12px;border-radius:12px;background:var(--panel2);display:flex;flex-direction:column;gap:2px}
+.agent b{font-weight:600;font-size:13px;color:#fff;font-family:var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent .m{font-size:18px;color:#fff}
+/* setores */
+.sgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
+#map{height:460px;border-radius:12px;background:#11101d}
+.leaflet-container{background:#11101d;font-family:var(--sans)}
+.leaflet-tooltip.dc-tip{background:#0b0a14;border:1px solid var(--line3);color:var(--tx);border-radius:8px;box-shadow:none;font:12px/1.4 var(--sans)}
+.leaflet-tooltip.dc-tip::before{display:none}
+.legend{display:flex;align-items:center;gap:8px;font-size:11px;flex-wrap:wrap}
+.legend .sw{display:flex;height:8px;width:160px;border-radius:4px;overflow:hidden}
+table.tb{width:100%;border-collapse:collapse;font-size:13px}
+table.tb th{font:600 10px var(--sans);color:var(--mu);text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
+table.tb td{padding:9px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
+table.tb tr{cursor:pointer}table.tb tbody tr:hover{background:var(--panel2)}
+.bar{display:flex;height:12px;border-radius:4px;overflow:hidden;gap:2px}
+/* artigos e sobre */
+.arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.art{padding:18px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left}
+.art:hover{border-color:var(--line3);background:#181729}
+.art h3{font-size:18px;line-height:1.25;color:#fff;letter-spacing:-.01em}
+.art p{margin:0;color:var(--mu2);font-size:13px;line-height:1.55}
+.prose{max-width:760px;font-size:15px;line-height:1.7;color:var(--tx2)}
+.prose p{margin:0 0 14px}.prose h3{font-size:19px;color:#fff;margin:26px 0 10px}
+.prose b,.prose strong{color:#fff}.prose ul{padding-left:20px}.prose li{margin:4px 0}
+.modal{position:fixed;inset:0;background:#05040bcc;backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:flex-start;justify-content:center;padding:40px 14px;overflow:auto}
+.modal .card{max-width:860px;width:100%;padding:26px 28px}
+.about{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.about .card{padding:18px}
+.about h3{font-size:16px;color:#fff;margin-bottom:8px}
+.about p{margin:0;font-size:13px;line-height:1.6;color:var(--mu2)}
+.nl{display:flex;gap:8px;flex-wrap:wrap}
+.nl input[type=email]{flex:1 1 220px;background:var(--bg);border:1px solid var(--line3);border-radius:999px;padding:11px 16px;color:var(--tx);font:14px var(--sans);outline:0}
+.nl input[type=email]:focus{border-color:var(--acc)}
+.btn{background:var(--brand);color:#fff;border:0;border-radius:999px;padding:11px 18px;font:700 13px var(--sans);cursor:pointer}
+.btn:hover{background:#6158f0}
+footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:4px 6px 18px;font-size:11px;line-height:1.5}
+.loading{padding:60px;text-align:center;color:var(--mu)}
+@media (max-width:1180px){
+  .grid3{grid-template-columns:300px minmax(0,1fr)}
+  .stats{grid-column:1 / -1}
+  .ixrow{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media (max-width:860px){
+  .grid3,.grid2,.sgrid{grid-template-columns:minmax(0,1fr)}
+  .quote{order:1}.stats{order:2}.wl{order:3;max-height:none}
+  .about{grid-template-columns:minmax(0,1fr)}
+  .search{flex:1 1 100%;order:5}
+  .q-px{font-size:32px}
+  #map{height:380px}
+}
+@media (max-width:560px){
+  .wrap{padding:10px}
+  .ixrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .hide-sm{display:none!important}
+  .row{grid-template-columns:minmax(0,1fr) 64px 62px}
+  .row svg{display:none}
+  .modal .card{padding:20px 16px}
+}
+</style>
 </head>
-<body class="text-slate-900 bg-slate-50 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+<body>
+<div class="wrap">
 
-    <nav class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-[5000] h-16 flex items-center px-6 transition-colors">
-        <div class="max-w-7xl mx-auto w-full flex justify-between items-center">
-            <div class="flex items-center gap-2.5">
-                <div class="w-9 h-9 bg-indigo-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-200 dark:shadow-none flex-shrink-0">d</div>
-                <div class="font-extrabold text-lg tracking-tight text-indigo-950 dark:text-indigo-100">datacasa <span class="text-slate-400 dark:text-slate-500 font-medium">| Fundão</span></div>
-            </div>
-            <div class="flex items-center gap-2.5">
-                <button onclick="toggleDarkMode()" class="p-2 text-slate-400 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-yellow-400 transition-colors" title="Alternar tema">
-                    <svg id="iconSun" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd" /></svg>
-                    <svg id="iconMoon" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
-                </button>
+<header class="top">
+  <a class="brand" href="#mercado" aria-label="datacasa, início">
+    <span class="logo">d</span>
+    <span><b>datacasa</b><small>Bolsa do Fundão</small></span>
+  </a>
+  <nav class="tabs" aria-label="Secções">
+    <a class="pill on" href="#mercado" data-view="mercado">Mercado</a>
+    <a class="pill" href="#setores" data-view="setores">Setores e mapa</a>
+    <a class="pill" href="#artigos" data-view="artigos">Artigos</a>
+    <a class="pill" href="#sobre" data-view="sobre">Sobre</a>
+  </nav>
+  <label class="search">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9a98b3" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" list="symlist" placeholder="Símbolo ou freguesia…" autocomplete="off" aria-label="Procurar símbolo ou freguesia">
+    <datalist id="symlist"></datalist>
+  </label>
+  <span class="spacer"></span>
+  <span class="chip m" id="session"><span class="dot"></span>a carregar…</span>
+  <a class="btn hide-sm" href="#sobre" data-view="sobre" style="padding:8px 14px">Newsletter</a>
+</header>
 
-                <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <button onclick="switchTab('dashboard')" id="tab-dash" class="nav-tab active">Dados</button>
-                    <button onclick="switchTab('about')" id="tab-about-btn" class="nav-tab">Sobre</button>
-                </div>
-            </div>
-        </div>
-    </nav>
+<div class="card tape m" aria-label="Cotações da última recolha">
+  <span class="lbl" id="tapeLbl">Recolha</span>
+  <div style="overflow:hidden;flex:1"><div class="tape-in" id="tape"></div></div>
+</div>
 
-    <main class="max-w-7xl mx-auto px-6 py-8 space-y-10">
-        
-        <div id="content-dashboard" class="space-y-10">
-            <div class="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div>
-                    <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Imobiliário residencial</h1>
-                    <p id="lastUpdateHeader" class="text-slate-500 dark:text-slate-400 font-medium mt-1">Dados atualizados a ...</p>
-                </div>
-                <div class="flex items-center gap-2 w-full md:w-auto">
-            <button id="btnFav" onclick="toggleFavorite()" class="bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-4 shadow-sm transition-all flex-shrink-0 group" title="Guardar como localização favorita">
-                <svg xmlns="http://www.w3.org/2000/svg" id="iconFav" class="h-6 w-6 text-slate-300 transition-colors group-hover:text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-            </button>
+<main id="view-mercado">
+  <div class="loading" id="loading">A carregar cotações…</div>
+  <div id="mercado" class="hide" style="display:flex;flex-direction:column;gap:12px">
+    <div class="ixrow" id="ixrow"></div>
+    <div class="grid3">
+      <aside class="card wl" id="wl" aria-label="Lista de observação"></aside>
+      <section class="card quote" id="quote"></section>
+      <aside class="card stats" id="stats"></aside>
+    </div>
+    <div class="grid2">
+      <section class="card sec" id="perf"></section>
+      <section class="card sec" id="moves"></section>
+    </div>
+    <div class="grid2">
+      <section class="card sec" id="agents"></section>
+      <a class="card sec" href="#setores" data-view="setores" style="flex-direction:row;align-items:center;justify-content:space-between;color:inherit">
+        <span style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700;font-size:16px;color:#fff">Setores e mapa</span><span class="mu" style="font-size:12px;line-height:1.4" id="mapTeaser">Mapa das freguesias, velas mensais por setor e saúde dos dados</span></span>
+        <span style="font-size:22px;color:var(--up)" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+</main>
 
-            <select id="locationSelect" class="bg-white dark:bg-slate-900 dark:text-slate-100 border-2 border-slate-200 dark:border-slate-700 rounded-2xl p-4 w-full md:min-w-[280px] font-bold text-slate-700 shadow-sm  outline-none transition-all cursor-pointer"></select>
-        </div>
-            </div>
+<main id="view-setores" class="hide" style="flex-direction:column;gap:12px">
+  <div class="sgrid">
+    <section class="card sec" id="candles"></section>
+    <aside class="card sec" id="ficha"></aside>
+  </div>
+  <div class="sgrid">
+    <section class="card sec">
+      <div class="sec-h"><h2>Mapa das freguesias</h2>
+        <div class="seg" id="mapMode"><button class="pill on" data-mode="m2">€/m² venda</button><button class="pill" data-mode="n">Anúncios</button><button class="pill" data-mode="chg">Var. 1M</button></div></div>
+      <div id="map" role="img" aria-label="Mapa das freguesias do concelho do Fundão"></div>
+      <div class="legend" id="legend"></div>
+    </section>
+    <aside class="card sec" id="health"></aside>
+  </div>
+  <section class="card sec" id="sectorTable"></section>
+</main>
 
-            <section>
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
-                    <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Mercado de compra</h2>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_active">...</div></div><div id="var_sale_active"></div></div><div id="spark_sale_active" class="sparkline-container"></div></div>
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Preço Mediano</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_price">...</div></div><div id="var_sale_price"></div></div><div id="spark_sale_price" class="sparkline-container"></div></div>
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Mediana €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_price_m2">...</div></div><div id="var_sale_price_m2"></div></div><div id="spark_sale_price_m2" class="sparkline-container"></div></div>
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_production">...</div></div><div id="var_sale_production"></div></div><div id="spark_sale_production" class="sparkline-container"></div></div>
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">PMV</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_dom">...</div></div><div id="var_sale_dom"></div></div><div id="spark_sale_dom" class="sparkline-container"></div></div>
-                    <div class="kpi-card sale-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">IAH</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="sale_effort">...</div></div><div id="var_sale_effort"></div></div><div id="spark_sale_effort" class="sparkline-container"></div></div>
-                </div>
-            </section>
+<main id="view-artigos" class="hide" style="flex-direction:column;gap:12px">
+  <div class="sec-h" style="padding:6px 4px"><h2 style="font-size:22px">Artigos e análises</h2><span class="mu" style="font-size:12px">Leituras sobre o mercado do Fundão, com dados do datacasa</span></div>
+  <div class="arts" id="arts"><div class="loading">A carregar artigos…</div></div>
+</main>
 
-            <section>
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="h-6 w-1 bg-orange-500 rounded-full"></div>
-                    <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Mercado de arrendamento</h2>
-                </div>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Stock</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_active">...</div></div><div id="var_rent_active"></div></div><div id="spark_rent_active" class="sparkline-container"></div></div>
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Renda Mediana</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_price">...</div></div><div id="var_rent_price"></div></div><div id="spark_rent_price" class="sparkline-container"></div></div>
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Mediana €/m²</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_price_m2">...</div></div><div id="var_rent_price_m2"></div></div><div id="spark_rent_price_m2" class="sparkline-container"></div></div>
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">Produção</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_production">...</div></div><div id="var_rent_production"></div></div><div id="spark_rent_production" class="sparkline-container"></div></div>
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">PMA</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_dom">...</div></div><div id="var_rent_dom"></div></div><div id="spark_rent_dom" class="sparkline-container"></div></div>
-                    <div class="kpi-card rent-card dark:bg-slate-900 dark:border-slate-800"><div class="card-left"><div><p class="text-[9px] text-slate-400 dark:text-slate-500 font-black uppercase tracking-widest">ESFORÇO</p><div class="text-lg sm:text-xl font-black text-slate-900 dark:text-white mt-1 tracking-tight" id="rent_effort">...</div></div><div id="var_rent_effort"></div></div><div id="spark_rent_effort" class="sparkline-container"></div></div>
-                </div>
-            </section>
-
-            <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Evolução do Preço por m² (Venda vs Renda)</h3>
-                <div class="h-80"><canvas id="evolutionChart"></canvas></div>
-            </div>
-
-            <section id="observatorio" class="space-y-6">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
-                        <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Observatório datacasa</h2>
-                    </div>
-                    <button onclick="openArticleList()" class="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline transition-all outline-none">
-                        Ver arquivo →
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="articlesGrid">
-                    <div class="text-slate-400 text-xs animate-pulse">A carregar análises...</div>
-                </div>
-            </section>
-
-            <section>
-            <div class="flex items-center gap-3 mb-6">
-                <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
-                <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Perfil de anúncios ativos</h2>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
-                <div onclick="openRadarModal()" class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm cursor-pointer hover:shadow-md transition-all group">
-                    <div class="flex justify-between items-start mb-8">
-                        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Raio-X de Mercado</h3>
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-300 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                    </div>
-                    <div class="h-64"><canvas id="radarChart"></canvas></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <div class="flex justify-between items-baseline mb-8">
-                        <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Distribuição</h3>
-                        <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl border border-slate-200 dark:border-slate-700 scale-90 origin-right">
-                            <button onclick="toggleTypoMode('type')" id="btnType" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md">Categoria</button>
-                            <button onclick="toggleTypoMode('typology')" id="btnTypo" class="px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500 dark:text-slate-400">Tipologia</button>
-                        </div>
-                    </div>
-                    <div class="h-64"><canvas id="typologyChart"></canvas></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Certificação Energética</h3>
-                    <div class="h-64"><canvas id="energyChart"></canvas></div>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
-                    <h3 class="text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-8">Top 3 Mediadoras</h3>
-                    <div class="h-64"><canvas id="agencyChart"></canvas></div>
-                </div>
-
-            </div>
-        </section>
-
-            <div class="space-y-4">
-                <div class="flex items-center gap-3">
-                    <div class="h-6 w-1 bg-indigo-600 rounded-full"></div>
-                    <h2 class="text-sm font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">Geografia do Mercado</h2>
-                </div>
-                <div id="map" class="shadow-2xl shadow-indigo-100 dark:shadow-none relative">
-                <div class="map-toggle">
-                    <button id="btnSale" class="toggle-btn active-sale" onclick="toggleMapMode('sale')">Venda</button>
-                    <button id="btnRent" class="toggle-btn inactive" onclick="toggleMapMode('rent')">Renda</button>
-                    <button id="btnYield" class="toggle-btn inactive" onclick="toggleMapMode('yield')">Yield</button>
-                </div>
-                    <div id="mapLoader" class="absolute inset-0 bg-slate-50 dark:bg-slate-900 z-[1000] flex items-center justify-center text-slate-400 text-xs font-bold uppercase tracking-widest">A carregar mapa...</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="content-about" class="hidden space-y-8 pb-4">
-            
-            <div class="bg-indigo-900 dark:bg-indigo-950 text-white rounded-[2.5rem] p-10 md:p-14 shadow-xl relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-10">
-                <div class="relative z-10 flex-1 space-y-5">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-800/50 text-indigo-200 text-[10px] font-black uppercase tracking-widest border border-indigo-700/50">O Projeto</div>
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-black tracking-tight leading-[1.1]">
-                        Democratizar o acesso a <br><span class="text-indigo-400">dados imobiliários</span> no Fundão
-                    </h2>
-                    <p class="text-indigo-100/80 text-sm md:text-base leading-relaxed max-w-2xl font-medium">
-                        Numa região que enfrenta uma forte dinâmica habitacional e onde a informação pública agregada é escassa, o <strong class="text-white">datacasa</strong> pretende conferir transparência e objetividade ao mercado do concelho do Fundão. 
-                    </p>
-                </div>
-                <div class="hidden md:flex w-32 h-32 lg:w-40 lg:h-40 bg-indigo-600 rounded-[2.5rem] items-center justify-center text-white font-black text-7xl lg:text-[6rem] shadow-2xl rotate-3 relative z-10 flex-shrink-0 pb-2">
-                    d
-                </div>
-                <div class="absolute -top-20 -right-20 w-80 h-80 bg-indigo-600/30 blur-3xl rounded-full pointer-events-none"></div>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-3">100% Independente</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                        Iniciativa sem afiliações a agências de mediação, instituições de crédito ou fundos. O datacasa é um projeto pessoal e particular. 
-                    </p>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-2xl flex items-center justify-center mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-3">Metodologia Rigorosa</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                        Monitorização periódica de fontes públicas como websites de agências. Os algoritmos excluem duplicados, valores atípicos (outliers) e filtram o mercado não-residencial.
-                    </p>
-                </div>
-
-                <div class="bg-white dark:bg-slate-900 p-8 rounded-[2rem] border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
-                    <div class="w-12 h-12 bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 rounded-2xl flex items-center justify-center mb-6">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-900 dark:text-white tracking-tight mb-3">Foco Exclusivo</h3>
-                    <p class="text-slate-500 dark:text-slate-400 text-xs leading-relaxed">
-                        O painel analítico é construído de raiz para as características, geografia e freguesias específicas do Fundão, permitindo extrair nuances detalhadas que outros portais não conseguem captar.
-                    </p>
-                </div>
-
-            </div>
-
-            <div class="bg-slate-100/60 dark:bg-slate-800/40 p-8 rounded-[2rem] border border-slate-200/80 dark:border-slate-700/50">
-                <h3 class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-5">Disclaimers Importantes</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                    <p><strong class="text-slate-700 dark:text-slate-300">Valores de transação:</strong> Os preços apresentados baseiam-se nos <em>asking prices</em> de mercado (anúncios públicos) e não refletem o valor final de transação acordado em escritura.</p>
-                    <p><strong class="text-slate-700 dark:text-slate-300">Decisões financeiras:</strong> Os dados são puramente estatisticos e de caráter informativo, não constituindo em momento algum qualquer avaliação oficial ou aconselhamento financeiro.</p>
-                    <p><strong class="text-slate-700 dark:text-slate-300">Latência de dados:</strong> Embora a recolha de dados seja frequente, pode existir um hiato temporal entre a alteração de um anúncio na fonte original e a sua atualização neste painel.</p>
-                    <p><strong class="text-slate-700 dark:text-slate-300">Responsabilidade:</strong> O datacasa não se responsabiliza direta ou indiretamente por conclusões, estudos paralelos ou investimentos com base nas métricas apresentadas.</p>
-                </div>
-            </div>
-
-        </div>
-
-        <footer class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            <div class="lg:col-span-2 bg-indigo-950 text-white rounded-[2.5rem] p-8 md:p-10 shadow-xl flex flex-col justify-center relative overflow-hidden">
-                <div class="relative z-10 w-full max-w-xl">
-                    <h2 class="text-2xl md:text-3xl font-black tracking-tight mb-2">NÃO PERCA ATUALIZAÇÕES</h2>
-                    <p class="text-indigo-200 font-medium text-xs md:text-sm leading-relaxed mb-6">
-                        Subscreva a newsletter para receber análises exclusivas e relatórios do mercado imobiliário do Fundão.
-                    </p>
-                    
-                    <div id="mlb2-37113851" class="ml-subscribe-form ml-subscribe-form-37113851 w-full">
-    <div class="row-form">
-        <form action="https://assets.mailerlite.com/jsonp/2105452/forms/179304461639877998/subscribe" data-code="" method="post" target="_blank" class="ml-block-form flex flex-col sm:flex-row gap-2 w-full">
-            
-            <input type="email" name="fields[email]" placeholder="O seu endereço de email" required
-                class="w-full px-4 py-3 rounded-xl text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-4 focus:ring-indigo-500/50 transition-all font-medium text-sm border-0 text-center sm:text-left">
-            
+<main id="view-sobre" class="hide" style="flex-direction:column;gap:12px">
+  <section class="card sec" style="gap:14px">
+    <h2 style="font-size:22px;color:#fff">Como ler a Bolsa do Fundão</h2>
+    <div class="prose" style="font-size:14px">
+      <p>Cada <b>cotação</b> é o preço por metro quadrado <b>mediano</b> pedido nos anúncios públicos de venda ativos nessa freguesia ou setor, no dia da recolha. Mediano quer dizer o anúncio do meio: metade pede menos, metade pede mais. Ao contrário da média, não é puxado para cima por meia dúzia de imóveis muito caros.</p>
+      <p><b>IDF</b> é o índice do concelho inteiro. <b>CID</b> é a cidade (UF Fundão, Valverde, Donas, Aldeia de Joanes e Aldeia Nova do Cabo). <b>SUL</b>, <b>NOR</b> e <b>POE</b> agrupam as restantes freguesias por geografia. <b>RNT</b> é a renda mensal mediana, <b>YLD</b> a yield bruta da cidade (renda anual por m² a dividir pelo preço por m²), <b>OFR</b> o número de casas à venda e <b>IAH</b> os anos de rendimento médio necessários para comprar uma casa de preço mediano.</p>
+      <p>As variações comparam com a recolha mais próxima de há 1 ou 3 meses. Freguesias com menos de 10 anúncios aparecem como <span style="color:var(--warn)">⚠ micro-caps</span>: com amostras pequenas, um único anúncio novo pode mexer muito a mediana.</p>
+    </div>
+  </section>
+  <div class="about">
+    <div class="card"><h3>100% independente</h3><p>Iniciativa sem afiliações a agências de mediação, instituições de crédito ou fundos. O datacasa é um projeto pessoal e particular.</p></div>
+    <div class="card"><h3>Metodologia</h3><p>Recolha periódica de anúncios públicos. Excluímos duplicados, áreas fora de 20 a 1 000 m², preços por m² implausíveis e o mercado não residencial. Todas as métricas usam as datas reais de cada recolha.</p></div>
+    <div class="card"><h3>Foco exclusivo</h3><p>Construído de raiz para as freguesias do Fundão, para captar nuances que os portais nacionais não mostram.</p></div>
+  </div>
+  <section class="card sec">
+    <span class="lbl">Avisos importantes</span>
+    <div class="about" style="grid-template-columns:repeat(2,minmax(0,1fr))" id="disc">
+      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Valores de transação:</b> os preços baseiam-se nos preços pedidos em anúncios públicos e não refletem o valor final acordado em escritura.</p>
+      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Decisões financeiras:</b> os dados são estatísticos e informativos. Não constituem avaliação oficial nem aconselhamento financeiro.</p>
+      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Latência:</b> pode existir um intervalo entre a alteração de um anúncio na fonte e a sua atualização aqui.</p>
+      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Responsabilidade:</b> o datacasa não se responsabiliza por conclusões, estudos ou investimentos feitos com base nestas métricas.</p>
+    </div>
+  </section>
+  <div class="grid2">
+    <section class="card sec" style="background:linear-gradient(135deg,#1f1c4a,#151424)">
+      <h2 style="font-size:20px;color:#fff">Não perca atualizações</h2>
+      <p class="mu" style="margin:0;font-size:13px">Subscreva a newsletter para receber análises e relatórios do mercado imobiliário do Fundão.</p>
+      <div id="mlb2-37113851" class="ml-subscribe-form ml-subscribe-form-37113851">
+        <div class="row-form">
+          <form action="https://assets.mailerlite.com/jsonp/2105452/forms/179304461639877998/subscribe" data-code="" method="post" target="_blank" class="ml-block-form nl">
+            <input type="email" name="fields[email]" placeholder="O seu endereço de email" required aria-label="Email">
             <input type="hidden" name="ml-submit" value="1">
             <input type="hidden" name="anticsrf" value="true">
+            <button type="submit" class="primary btn">Subscrever</button>
+            <button disabled="disabled" style="display:none" type="button" class="loading btn">Aguarde…</button>
+          </form>
+        </div>
+        <div class="row-success" style="display:none;padding:10px 14px;border-radius:12px;background:#0d2a20;color:var(--yld);font-size:13px"><b>Obrigado!</b> Juntou-se à lista com sucesso.</div>
+      </div>
+      <span class="mu" style="font-size:11px">Garantimos a sua privacidade. Sem spam.</span>
+    </section>
+    <section class="card sec" style="justify-content:center">
+      <h2 style="font-size:18px;color:#fff">Contacto</h2>
+      <p class="mu" style="margin:0;font-size:13px;line-height:1.6">Sugestões, correções ou parcerias de dados:</p>
+      <a class="m" href="mailto:geral@datacasa.pt" style="font-size:15px">geral@datacasa.pt</a>
+    </section>
+  </div>
+</main>
 
-            <button type="submit" class="primary bg-indigo-600 hover:bg-indigo-500 text-white font-black py-3 px-6 rounded-xl transition-all shadow-lg uppercase tracking-widest text-[10px] md:text-xs flex-shrink-0">
-                Subscrever
-            </button>
-            
-            <button disabled="disabled" style="display: none;" type="button" class="loading bg-indigo-600/70 text-white font-black py-3 px-6 rounded-xl uppercase tracking-widest text-[10px] md:text-xs flex-shrink-0 cursor-not-allowed">
-                Aguarde...
-            </button>
-        </form>
-    </div>
-
-    <div class="row-success hidden w-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-200 p-3 rounded-xl text-left mt-2">
-    <span class="font-black text-sm mr-1">Obrigado!</span>
-    <span class="text-xs font-medium">Juntou-se à nossa lista com sucesso.</span>
+<footer class="ft m mu">
+  <span>Cotações = €/m² mediano pedido em anúncios públicos, não valores de escritura. Não é aconselhamento financeiro.</span>
+  <span>datacasa · Fundão · <span id="yr">2026</span></span>
+</footer>
 </div>
+
+<div class="modal hide" id="reader" role="dialog" aria-modal="true" aria-labelledby="artTitle">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+      <div style="display:flex;flex-direction:column;gap:8px"><span class="lbl" id="artCat"></span><h2 id="artTitle" style="font-size:26px;line-height:1.2;color:#fff;letter-spacing:-.02em"></h2><span class="mu m" style="font-size:12px" id="artMeta"></span></div>
+      <button class="pill ol" id="artClose" aria-label="Fechar">✕</button>
+    </div>
+    <div class="prose" id="artBody" style="margin-top:20px"></div>
+  </div>
 </div>
-                    <p class="text-[9px] text-indigo-400/60 font-bold uppercase tracking-wider mt-3">Garantimos a sua privacidade. Sem spam.</p>
-                </div>
-            </div>
 
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 md:p-10 shadow-sm flex flex-col justify-center items-center text-center hover:shadow-md transition-shadow">
-                <div class="w-12 h-12 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-2xl flex items-center justify-center mb-5">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                    </svg>
-                </div>
-                <h3 class="text-lg font-black tracking-tight text-slate-900 dark:text-white mb-2">DADOS ESPECÍFICOS?</h3>
-                <p class="text-slate-500 dark:text-slate-400 text-[11px] font-medium leading-relaxed mb-6">
-                    Análises personalizadas, métricas para investidores ou dados de concelhos vizinhos.
-                </p>
-                <a href="mailto:geral@datacasa.pt" class="w-full bg-slate-100 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white font-black py-3 px-4 rounded-xl transition-all uppercase tracking-widest text-[10px]">
-                    Contactar datacasa
-                </a>
-            </div>
+<script>
+'use strict';
+/* ------------------------------------------------------------------ util */
+const $ = s => document.querySelector(s);
+const NB = ' ';
+function fmt(n, dec = 0) {
+  if (n == null || !isFinite(n)) return '–';
+  const neg = n < 0; n = Math.abs(n);
+  let [i, f] = n.toFixed(dec).split('.');
+  i = i.replace(/\B(?=(\d{3})+(?!\d))/g, NB);
+  return (neg ? '−' : '') + i + (f ? ',' + f : '');
+}
+const pctS = (p, dec = 1) => p == null || !isFinite(p) ? '–' : (p > 0 ? '+' : p < 0 ? '−' : '') + fmt(Math.abs(p), dec) + '%';
+const cls = p => p == null || Math.abs(p) < 0.05 ? 'z' : p > 0 ? 'u' : 'd';
+const tcls = p => p == null || Math.abs(p) < 0.05 ? 'mu' : p > 0 ? 'up' : 'dn';
+const arrow = p => p == null || Math.abs(p) < 0.05 ? '●' : p > 0 ? '▲' : '▼';
+const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const Mes = m => MES[m][0].toUpperCase() + MES[m].slice(1);
+const dd = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
+const ddmmyyyy = d => dd(d) + '/' + d.getFullYear();
+const parseD = s => { const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
+const DAY = 86400000;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const store = { get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+                set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
 
-        </footer>
-        
-		<div class="mt-8 text-center">
-            <p class="text-[10px] text-slate-400/80 dark:text-slate-500/80 font-medium tracking-wide">
-                &copy; 2026 | Criado por Diogo Amaral
-            </p>
-        </div>
-        
-		</main>
-		
-        <div id="articleListModal" class="fixed inset-0 z-[2500] flex items-center justify-center hidden">
-            <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-md" onclick="closeArticleList()"></div>
-            <div class="modal-content bg-white dark:bg-slate-900 w-full max-w-2xl mx-6 p-8 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col max-h-[80vh]">
-                <div class="flex justify-between items-center mb-8">
-                    <h3 class="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">Arquivo de Análises</h3>
-                    <button onclick="closeArticleList()" class="text-slate-400 hover:text-slate-600 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-                <div id="archiveContainer" class="space-y-4 overflow-y-auto pr-2 custom-scrollbar">
-                    </div>
-            </div>
-        </div>
+/* ----------------------------------------------------------- símbolos */
+const CODES = {'Fundão':'FUN','Valverde':'VLV','Donas':'DON','Aldeia de Joanes':'ADJ','Aldeia Nova do Cabo':'ANC','Alcaide':'ALC',
+  'Alcaria':'ACR','Alcongosta':'ALG','Alpedrinha':'ALP','Barroca':'BAR','Bogas de Cima':'BGC','Bogas de Baixo':'BGB','Capinha':'CAP',
+  'Castelejo':'CSJ','Castelo Novo':'CNV','Enxames':'ENX','Fatela':'FAT','Janeiro de Cima':'JDC','Lavacolhos':'LAV','Mata da Rainha':'MDR',
+  'Orca':'ORC','Pêro Viseu':'PVS','Póvoa de Atalaia':'PDA','Atalaia do Campo':'ADC','Silvares':'SIL','Soalheira':'SOA',
+  'Souto da Casa':'SDC','Telhado':'TEL','Três Povos':'TPV','Vale de Prazeres':'VPZ'};
+const SEC_COLORS = {CID:'#8b8cff', SUL:'#f5c26b', NOR:'#7fe0b8', POE:'#e39bff'};
+const norm = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().trim();
+let D, SYMS = {}, ORDER = [], DATES = [], sel = 'CID', range = 'ALL', mode = 'line', cmp = 'IDF', favs = store.get('dc_favs', []);
 
-        <div id="articleReaderModal" class="fixed inset-0 z-[3000] flex items-center justify-center hidden">
-            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-xl" onclick="closeArticle()"></div>
-            <div class="modal-content bg-white dark:bg-slate-950 w-full max-w-3xl h-[90vh] md:h-[85vh] mx-4 rounded-[2.5rem] shadow-2xl relative z-10 overflow-hidden flex flex-col">
-                <div class="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-white/50 dark:bg-slate-950/50 backdrop-blur-md">
-                    <span id="artCategory" class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full"></span>
-                    <button onclick="closeArticle()" class="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12" /></svg>
-                    </button>
-                </div>
-                <div class="flex-1 overflow-y-auto p-8 md:p-16 scroll-smooth">
-                    <h2 id="artTitle" class="text-3xl md:text-4xl font-black text-slate-900 dark:text-white leading-[1.1] mb-6"></h2>
-                    <div id="artMeta" class="flex gap-4 text-xs font-bold text-slate-400 mb-12 pb-6 border-b border-slate-100 dark:border-slate-800"></div>
-                    
-                    <div id="artContent" class="text-slate-600 dark:text-slate-300 leading-relaxed text-lg space-y-6">
-                        </div>
-                </div>
-            </div>
-        </div>
-        
-    </main>
+function seriesFrom(hist, pick) {
+  return hist.map(h => { const d = parseD(h.date); const o = pick(h); return { d, t: d.getTime(), ...o, v: o.v > 0 ? o.v : null }; });
+}
+const salesPick = h => ({ v: h.sales.median_price_m2, n: h.sales.sample_size ?? h.sales.active_count, act: h.sales.active_count,
+  price: h.sales.median_price, dom: h.sales.avg_days_on_market, neu: h.sales.new_entries, net: h.sales.net_production });
 
-    <div id="infoModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
-        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeModal()"></div>
-        <div class="modal-content bg-white w-full max-w-md mx-6 p-8 rounded-3xl shadow-2xl relative z-10">
-            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-            </button>
-            <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <h3 id="modalTitle" class="text-xl font-black text-slate-900 dark:text-white">...</h3>
-            </div>
-            <p id="modalDesc" class="text-slate-600 dark:text-slate-400 leading-relaxed text-sm font-medium"></p>
-              
-            <div class="h-48 w-full mt-6">
-                <canvas id="modalChart"></canvas>
-            </div>
+function buildSymbols() {
+  const L = D.locations, S = D.sectors || {};
+  const add = (code, o) => { SYMS[code] = { code, unit: '€/m²', dec: 0, color: '#8b8cff', ...o }; ORDER.push(code); };
+  add('IDF', { name: 'Índice do concelho', sub: 'Concelho do Fundão', grp: 'Índices', loc: 'Global', s: seriesFrom(L.Global.history, salesPick), raw: L.Global });
+  const cid = S.CID || null;
+  add('CID', { name: 'Cidade do Fundão', sub: 'Cidade · UF Fundão', grp: 'Índices', loc: 'UF_FUNDAO', s: seriesFrom((cid || L.UF_FUNDAO).history, salesPick), raw: L.UF_FUNDAO, color: SEC_COLORS.CID,
+        desc: 'UF Fundão, Valverde, Donas, A. de Joanes e A. Nova do Cabo' });
+  for (const k of ['SUL','NOR','POE']) if (S[k]) add(k, { name: S[k].name, sub: S[k].desc, grp: 'Setores', sector: k, s: seriesFrom(S[k].history, salesPick), raw: S[k], color: SEC_COLORS[k], parishes: S[k].parishes });
+  const fregs = Object.keys(L).filter(k => k !== 'Global' && k !== 'UF_FUNDAO');
+  for (const f of fregs) {
+    const code = CODES[f] || norm(f).replace(/[^A-Z]/g,'').slice(0,3);
+    const last = L[f].current.sales;
+    if (!last.active_count && !L[f].history.some(h => h.sales.active_count)) continue;
+    const sector = Object.keys(S).find(k => (S[k].parishes||[]).includes(f)) || null;
+    const ser = seriesFrom(L[f].history, salesPick);
+    if (!ser.length || ser[ser.length - 1].v == null) continue; // sem oferta válida na última recolha
+    add(code, { name: f, sub: f, grp: 'Freguesias', loc: f, sector, s: ser, raw: L[f] });
+  }
+  const G = L.Global.history, C = (cid || L.UF_FUNDAO).history;
+  add('RNT', { name: 'Renda mediana', sub: 'Renda mensal mediana · €', grp: 'Macro', unit: '€', color: '#ffb36b',
+    s: seriesFrom(G, h => ({ v: h.rent.median_price, n: h.rent.sample_size ?? h.rent.active_count, act: h.rent.active_count, dom: h.rent.avg_days_on_market })) });
+  add('YLD', { name: 'Yield bruta da cidade', sub: 'Yield bruta · cidade', grp: 'Macro', unit: '%', dec: 2, color: '#7fe0b8',
+    s: seriesFrom(C, h => ({ v: h.rent.median_price_m2 > 0 && h.sales.median_price_m2 > 0 ? h.rent.median_price_m2 * 12 / h.sales.median_price_m2 * 100 : null, n: Math.min(h.rent.sample_size ?? 0, h.sales.sample_size ?? 0) })) });
+  add('OFR', { name: 'Oferta ativa', sub: 'Casas à venda no concelho', grp: 'Macro', unit: '', color: '#9a98b3',
+    s: seriesFrom(G, h => ({ v: h.sales.active_count, n: h.sales.active_count })) });
+  add('IAH', { name: 'Anos de salário', sub: 'Índice de acessibilidade', grp: 'Macro', unit: 'anos', dec: 1, color: '#9a98b3',
+    s: seriesFrom(G, h => ({ v: h.sales.affordability_index, n: h.sales.sample_size })) });
+  DATES = (D.scrape_dates || G.map(h => h.date)).map(parseD);
+}
+const lastPt = s => { for (let i = s.length - 1; i >= 0; i--) if (s[i].v != null) return s[i]; return null; };
+function ptAtOrBefore(s, t) { let best = null; for (const p of s) { if (p.t <= t && p.v != null) best = p; if (p.t > t) break; } return best; }
+function chg(sym, days) {
+  const s = SYMS[sym].s, L = lastPt(s); if (!L) return null;
+  const P = days === 'ALL' ? s.find(p => p.v != null) : ptAtOrBefore(s, L.t - days * DAY);
+  if (!P || P === L) return null;
+  return SYMS[sym].unit === '%' ? L.v - P.v : (L.v / P.v - 1) * 100;
+}
+function prevChg(sym) {
+  const s = SYMS[sym].s.filter(p => p.v != null); if (s.length < 2) return null;
+  const a = s[s.length-2].v, b = s[s.length-1].v; return SYMS[sym].unit === '%' ? b - a : (b / a - 1) * 100;
+}
+const isMicro = sym => SYMS[sym].grp === 'Freguesias' && (lastPt(SYMS[sym].s)?.n ?? 0) < 10;
+const valS = (sym, v) => { const S = SYMS[sym]; return S.unit === '%' ? fmt(v, S.dec) + '%' : S.unit === '€' ? fmt(v, 0) + ' €' : fmt(v, S.dec); };
+const chgS = (sym, p) => SYMS[sym].unit === '%' ? (p == null ? '–' : (p > 0 ? '+' : p < 0 ? '−' : '') + fmt(Math.abs(p), 2) + 'pp') : pctS(p);
 
-            <div class="flex justify-end mt-2">
-                <span id="modalYtd" class="hidden text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full"></span>
-            </div>
+/* --------------------------------------------------------- mini gráficos */
+function spark(s, color, w = 64, h = 22, days = 90, dash = false) {
+  const L = lastPt(s); if (!L) return '';
+  const pts = s.filter(p => p.v != null && p.t >= L.t - days * DAY);
+  if (pts.length < 2) return '';
+  const lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v)), t0 = pts[0].t, t1 = L.t;
+  const xy = pts.map(p => `${((p.t - t0) / (t1 - t0 || 1) * w).toFixed(1)},${(h - 2 - (p.v - lo) / (hi - lo || 1) * (h - 4)).toFixed(1)}`).join(' ');
+  return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline vector-effect="non-scaling-stroke" points="${xy}" fill="none" stroke="${color}" stroke-width="1.5"${dash ? ' stroke-dasharray="2 2"' : ''}/></svg>`;
+}
 
-            <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-                <button onclick="closeModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-lg shadow-indigo-200 dark:shadow-none">Entendido</button>
-            </div>
-        </div>
+/* ---------------------------------------------------- gráfico principal */
+function niceTicks(lo, hi, n = 5) {
+  const span = hi - lo || Math.abs(hi) || 1, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(s => s >= raw) || 10 * mag;
+  const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6)); return out;
+}
+function monthTicks(t0, t1) {
+  const out = [], d = new Date(t0); d.setDate(1); d.setMonth(d.getMonth() + (new Date(t0).getDate() > 1 ? 1 : 0));
+  while (d.getTime() <= t1) { out.push(new Date(d)); d.setMonth(d.getMonth() + 1); }
+  return out;
+}
+/* lineChart: séries com pontos {t,v}; opts.bars = pontos {t,v} para volume */
+function lineChart(el, opt) {
+  const W = Math.max(280, el.clientWidth || 600), H = opt.h || 300, padR = opt.padR ?? 76, padL = opt.padL ?? 4, top = 18, bot = 22;
+  const volH = opt.bars ? 54 : 0, ph = H - top - bot - volH - (volH ? 8 : 0);
+  const all = opt.series.flatMap(s => s.pts.filter(p => p.v != null));
+  if (!all.length) { el.innerHTML = '<div class="loading">Sem dados neste período.</div>'; return; }
+  const t0 = Math.min(...all.map(p => p.t)), t1 = Math.max(...all.map(p => p.t));
+  let lo = Math.min(...all.map(p => p.v)), hi = Math.max(...all.map(p => p.v)); const pad = (hi - lo) * 0.08 || Math.abs(hi) * 0.05 || 1; lo -= pad; hi += pad;
+  const X = t => padL + (t - t0) / (t1 - t0 || 1) * (W - padL - padR), Y = v => top + (hi - v) / (hi - lo) * ph;
+  const ticks = niceTicks(lo, hi, 5);
+  let g = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(opt.label || '')}" font-family="JetBrains Mono, monospace">`;
+  g += `<defs><linearGradient id="af${opt.id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${opt.series[0].color}" stop-opacity=".32"/><stop offset="1" stop-color="${opt.series[0].color}" stop-opacity="0"/></linearGradient></defs>`;
+  g += `<g stroke="#201f33" stroke-dasharray="2 5">${ticks.map(v => `<line x1="${padL}" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}"/>`).join('')}</g>`;
+  g += opt.axisLeft ? `<g font-size="10" fill="#9a98b3">${ticks.map(v => `<text x="${padL + 2}" y="${Y(v) - 4}">${opt.yFmt(v)}</text>`).join('')}</g>`
+    : `<g font-size="11" fill="#9a98b3">${ticks.map(v => `<text x="${W - padR + 10}" y="${Y(v) + 4}">${opt.yFmt(v)}</text>`).join('')}</g>`;
+  if (opt.base != null) g += `<line x1="${padL}" x2="${W - padR}" y1="${Y(opt.base)}" y2="${Y(opt.base)}" stroke="#4a4870"/>`;
+  opt.series.forEach((s, i) => {
+    const segs = []; let cur = [];
+    s.pts.forEach(p => { if (p.v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push(p); }); if (cur.length) segs.push(cur);
+    segs.forEach(seg => {
+      const pts = seg.map(p => `${X(p.t).toFixed(1)},${Y(p.v).toFixed(1)}`).join(' ');
+      if (s.area && seg.length > 1) g += `<path d="M${X(seg[0].t)},${top + ph} L${pts.replace(/ /g, ' L')} L${X(seg[seg.length-1].t)},${top + ph} Z" fill="url(#af${opt.id})"/>`;
+      g += `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="${s.w || 2}" stroke-linejoin="round"${s.dash ? ` stroke-dasharray="${s.dash}"` : ''}${s.op ? ` stroke-opacity="${s.op}"` : ''}/>`;
+    });
+    if (s.endLabel) { const L = [...s.pts].reverse().find(p => p.v != null); if (L) s._end = { y: Y(L.v), text: s.endLabel, color: s.color }; }
+  });
+  // etiquetas no fim das linhas, afastadas para não se sobreporem
+  const ends = opt.series.filter(s => s._end).map(s => s._end).sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i-1].y < 13) ends[i].y = ends[i-1].y + 13;
+  g += `<g font-size="11" font-weight="700">${ends.map(e => `<text x="${W - padR + 8}" y="${e.y + 4}" fill="${e.color}">${esc(e.text)}</text>`).join('')}</g>`;
+  (opt.marks || []).forEach(mk => {
+    const x = X(mk.t), y = Y(mk.v), right = x < W * 0.7, below = mk.below && y + 16 < top + ph - 2;
+    g += `<circle cx="${x}" cy="${y}" r="4" fill="#0d0c17" stroke="#e7e6f2" stroke-width="1.5"/><text x="${right ? x + 8 : x - 8}" y="${below ? y + 16 : y - 7}" font-size="10.5" fill="#e7e6f2" text-anchor="${right ? 'start' : 'end'}">${esc(mk.text)}</text>`;
+  });
+  if (opt.badge) {
+    const s0 = opt.series[0], L = [...s0.pts].reverse().find(p => p.v != null);
+    if (L) { const x = X(L.t), y = Y(L.v); g += `<circle cx="${x}" cy="${y}" r="9" fill="${s0.color}" opacity=".25"/><circle cx="${x}" cy="${y}" r="4" fill="${s0.color}"/><rect x="${W - padR + 4}" y="${y - 12}" width="${padR - 6}" height="24" rx="12" fill="${s0.color}"/><text x="${W - padR + 4 + (padR - 6) / 2}" y="${y + 4}" text-anchor="middle" font-size="12" font-weight="700" fill="#0d0c17">${opt.yFmt(L.v)}</text>`; }
+  }
+  const mt = monthTicks(t0, t1), step = Math.ceil(mt.length / Math.max(2, Math.floor((W - padR) / 70)));
+  g += `<g font-size="11" fill="#9a98b3">${mt.filter((_, i) => i % step === 0).map(d => `<text x="${X(d.getTime())}" y="${H - 6}" text-anchor="middle">${Mes(d.getMonth())}</text>`).join('')}</g>`;
+  if (opt.bars) {
+    const bt = top + ph + 8, bmax = Math.max(...opt.bars.map(b => b.v || 0)) || 1, bw = Math.max(2, Math.min(9, (W - padL - padR) / opt.bars.length * 0.7));
+    g += `<line x1="${padL}" x2="${W - padR}" y1="${bt - 4}" y2="${bt - 4}" stroke="#26243d" stroke-dasharray="3 4"/>`;
+    g += `<g fill="${opt.series[0].color}" opacity=".4">${opt.bars.map(b => b.v ? `<rect x="${X(b.t) - bw/2}" y="${bt + volH - b.v / bmax * (volH - 15)}" width="${bw}" height="${b.v / bmax * (volH - 15)}"/>` : '').join('')}</g>`;
+    g += `<text x="${padL + 2}" y="${bt + 10}" font-size="10.5" fill="#9a98b3">${esc(opt.barsLabel || '')}</text><text x="${W - padR + 10}" y="${bt + 10}" font-size="11" fill="#9a98b3">${fmt(bmax)}</text>`;
+  }
+  g += `<line class="cx" x1="0" x2="0" y1="${top}" y2="${top + ph}" stroke="#e7e6f2" stroke-opacity=".35" style="display:none"/><rect class="hit" x="${padL}" y="0" width="${W - padL - padR}" height="${H}" fill="transparent"/></svg><div class="tip"></div>`;
+  el.innerHTML = g;
+  const svg = el.querySelector('svg'), cx = el.querySelector('.cx'), tip = el.querySelector('.tip'), main = opt.series[0].pts.filter(p => p.v != null);
+  const move = ev => {
+    const r = svg.getBoundingClientRect(), x = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left, sx = x * W / r.width;
+    let best = main[0]; for (const p of main) if (Math.abs(X(p.t) - sx) < Math.abs(X(best.t) - sx)) best = p;
+    const px = X(best.t); cx.setAttribute('x1', px); cx.setAttribute('x2', px); cx.style.display = '';
+    tip.style.display = 'block'; tip.style.left = (px * r.width / W) + 'px'; tip.style.top = (Y(best.v) * r.height / H - 10) + 'px';
+    tip.innerHTML = opt.tip(best);
+  };
+  const out = () => { cx.style.display = 'none'; tip.style.display = 'none'; };
+  svg.addEventListener('mousemove', move); svg.addEventListener('touchmove', move, { passive: true });
+  svg.addEventListener('mouseleave', out); svg.addEventListener('touchend', out);
+}
+/* velas mensais: abertura = 1.ª recolha do mês, fecho = última */
+function monthlyCandles(s) {
+  const by = new Map();
+  s.filter(p => p.v != null).forEach(p => { const k = p.d.getFullYear() * 12 + p.d.getMonth(); if (!by.has(k)) by.set(k, []); by.get(k).push(p); });
+  return [...by.entries()].map(([k, ps]) => ({ k, y: Math.floor(k / 12), m: k % 12, o: ps[0].v, c: ps[ps.length-1].v, h: Math.max(...ps.map(p => p.v)), l: Math.min(...ps.map(p => p.v)), n: ps.length, last: ps[ps.length-1] }));
+}
+function candleChart(el, cs, opt) {
+  const W = Math.max(280, el.clientWidth || 600), H = opt.h || 300, padR = 64, top = 16, bot = 24, ph = H - top - bot;
+  if (!cs.length) { el.innerHTML = '<div class="loading">Sem dados.</div>'; return; }
+  let lo = Math.min(...cs.map(c => c.l)), hi = Math.max(...cs.map(c => c.h)); const pad = (hi - lo) * .08 || 1; lo -= pad; hi += pad;
+  const n = cs.length, bw = Math.min(46, (W - padR) / n * 0.55), X = i => (i + 0.5) * (W - padR) / n, Y = v => top + (hi - v) / (hi - lo) * ph;
+  const ticks = niceTicks(lo, hi, 5);
+  // média móvel de 3 meses sobre os fechos
+  const ma = cs.map((c, i) => i < 2 ? null : (cs[i].c + cs[i-1].c + cs[i-2].c) / 3);
+  let g = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(opt.label)}" font-family="JetBrains Mono, monospace">`;
+  g += `<g stroke="#201f33" stroke-dasharray="2 5">${ticks.map(v => `<line x1="0" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}"/>`).join('')}</g>`;
+  g += `<g font-size="11" fill="#9a98b3">${ticks.map(v => `<text x="${W - padR + 10}" y="${Y(v) + 4}">${fmt(v)}</text>`).join('')}</g>`;
+  const maPts = ma.map((v, i) => v == null ? null : `${X(i)},${Y(v)}`).filter(Boolean).join(' ');
+  if (maPts) g += `<polyline points="${maPts}" fill="none" stroke="#e7e6f2" stroke-opacity=".5" stroke-dasharray="4 4" stroke-width="1.5"/>`;
+  cs.forEach((c, i) => {
+    const upC = c.c >= c.o, col = upC ? '#8b8cff' : '#ff6b85', y1 = Y(Math.max(c.o, c.c)), y2 = Y(Math.min(c.o, c.c));
+    g += `<g><title>${Mes(c.m)} ${c.y}: abertura ${fmt(c.o)}, máximo ${fmt(c.h)}, mínimo ${fmt(c.l)}, fecho ${fmt(c.c)} (${c.n} recolhas)</title><line x1="${X(i)}" x2="${X(i)}" y1="${Y(c.h)}" y2="${Y(c.l)}" stroke="${col}" stroke-width="1.5"/>`;
+    g += `<rect x="${X(i) - bw/2}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="2" fill="${upC ? col : col}" fill-opacity="${upC ? .9 : .9}" ${upC ? '' : ''}/></g>`;
+    g += `<text x="${X(i)}" y="${H - 6}" font-size="11" fill="#9a98b3" text-anchor="middle">${Mes(c.m)}</text>`;
+  });
+  const L = cs[cs.length - 1];
+  g += `<rect x="${W - padR + 4}" y="${Y(L.c) - 12}" width="${padR - 6}" height="24" rx="12" fill="#8b8cff"/><text x="${W - padR + 4 + (padR - 6)/2}" y="${Y(L.c) + 4}" font-size="12" font-weight="700" fill="#0d0c17" text-anchor="middle">${fmt(L.c)}</text></svg>`;
+  el.innerHTML = g;
+}
+
+/* ------------------------------------------------------------- render */
+function renderSession() {
+  const L = DATES[DATES.length - 1];
+  $('#session').innerHTML = `<span class="dot"></span>Recolha de ${dd(L)} · ${DATES.length} recolhas`;
+  $('#tapeLbl').textContent = 'Recolha · ' + dd(L);
+  $('#yr').textContent = L.getFullYear();
+}
+function renderTape() {
+  const syms = ['IDF','CID','SUL','NOR','POE', ...ORDER.filter(k => SYMS[k].grp === 'Freguesias' && !isMicro(k)), 'RNT','YLD','OFR'].filter(k => SYMS[k]);
+  const item = k => { const L = lastPt(SYMS[k].s), p = prevChg(k), st = k === 'RNT' ? 'background:#2a1708;border-color:#4a2a10;color:#ffb36b' : k === 'YLD' ? 'background:#0d2a20;border-color:#1a4a38;color:#7fe0b8' : '';
+    return `<span class="tk" data-sym="${k}"><span class="flap" style="${st}">${k}</span><span>${valS(k, L.v)}</span><span class="${tcls(p)}">${arrow(p)}${chgS(k, p).replace(/^[+−]/, '')}</span></span>`; };
+  const html = syms.map(item).join('');
+  $('#tape').innerHTML = html + html; // duplicado para a animação contínua
+}
+function renderIx() {
+  const cards = [['IDF','Índice concelho'],['CID','Cidade'],['RNT','Renda mediana'],['YLD','Yield bruta · cidade'],['OFR','Oferta ativa'],['IAH','Anos de salário']];
+  $('#ixrow').innerHTML = cards.map(([k, lab]) => { const S = SYMS[k], L = lastPt(S.s), p = chg(k, 30);
+    const col = k === 'RNT' ? '#ffb36b' : k === 'YLD' ? '#7fe0b8' : '#fff';
+    return `<button class="card ix" data-sym="${k}"><span class="t"><span class="m" style="color:${col};font-weight:700">${k}</span><span class="mu">${lab}</span></span>
+      <span class="v"><span class="m">${valS(k, L.v)}</span><span class="m ${tcls(p)}" style="font-size:12px">${chgS(k, p)} 1M</span></span>${spark(S.s, k === 'OFR' || k === 'IAH' ? '#9a98b3' : S.color, 64, 22, 120)}</button>`; }).join('');
+}
+function wlRow(k) {
+  const S = SYMS[k], L = lastPt(S.s), p = chg(k, 30), micro = isMicro(k);
+  const sub = S.grp === 'Freguesias' ? `${esc(S.name)}${micro ? ' · ' + (L?.n ?? 0) + ' anún.' : ''}` : esc(S.sub);
+  const colB = k === 'RNT' ? 'style="color:#ffb36b"' : k === 'YLD' ? 'style="color:#7fe0b8"' : '';
+  return `<button class="row${k === sel ? ' sel' : ''}${micro ? ' micro' : ''}" data-sym="${k}"><span class="sym"><b ${colB}>${k}</b><span>${sub}</span></span>${spark(S.s, p != null && p < -0.05 ? '#ff6b85' : '#8b8cff', 58, 22, 120, micro).replace('<svg ', '<svg width="58" height="22" ')}<span class="m r wh">${L ? valS(k, L.v).replace(' €','') : '–'}</span><span class="bdg ${cls(p)}">${chgS(k, p)}</span></button>`;
+}
+let microOpen = false;
+function renderWL() {
+  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias' && lastPt(SYMS[k].s));
+  const blue = fr.filter(k => !isMicro(k)).sort((a, b) => lastPt(SYMS[b].s).n - lastPt(SYMS[a].s).n), micro = fr.filter(isMicro).sort((a, b) => SYMS[a].name.localeCompare(SYMS[b].name, 'pt'));
+  const f = favs.filter(k => SYMS[k]);
+  let h = `<div class="wl-h"><span style="font-weight:700;font-size:15px;color:#fff">Lista de observação</span><span class="mu m" style="font-size:10px">VAR 1M</span></div>`;
+  if (f.length) h += `<div class="grp"><span>☆ A seguir</span></div>` + f.map(wlRow).join('');
+  h += `<div class="grp"><span>Índices</span></div>` + ['IDF','CID'].map(wlRow).join('');
+  h += `<div class="grp"><span>Setores</span></div>` + ['SUL','NOR','POE'].filter(k => SYMS[k]).map(wlRow).join('');
+  h += `<div class="grp"><span>Freguesias · blue chips</span><span class="m" style="text-transform:none;letter-spacing:0">≥ 10 anún.</span></div>` + blue.map(wlRow).join('');
+  h += `<div class="grp"><span>Macro</span></div>` + ['RNT','YLD','OFR','IAH'].map(wlRow).join('');
+  if (micro.length) h += `<details id="microDet"${microOpen ? ' open' : ''}><summary class="grp" style="cursor:pointer;list-style:none"><span>Micro-caps · ${micro.length} ${microOpen ? '▾' : '▸'}</span><span style="color:var(--warn);text-transform:none;letter-spacing:.02em;font-weight:600">⚠ amostra &lt; 10</span></summary>${micro.map(wlRow).join('')}</details>`;
+  $('#wl').innerHTML = h;
+  const det = $('#microDet'); if (det) det.addEventListener('toggle', () => { microOpen = det.open; det.querySelector('summary span').textContent = `Micro-caps · ${micro.length} ${microOpen ? '▾' : '▸'}`; });
+}
+function inRange(s) {
+  const L = lastPt(s); if (!L || range === 'ALL') return s;
+  const days = { '1M': 31, '3M': 92, '6M': 183 }[range]; return s.filter(p => p.t >= L.t - days * DAY);
+}
+function stdev(a) { const m = a.reduce((x, y) => x + y, 0) / a.length; return Math.sqrt(a.reduce((x, y) => x + (y - m) ** 2, 0) / (a.length - 1 || 1)); }
+function returns(s) { const r = new Map(); let prev = null; for (const p of s) { if (p.v == null) continue; if (prev) r.set(p.t, p.v / prev.v - 1); prev = p; } return r; }
+function beta(a, b) {
+  const ra = returns(SYMS[a].s), rb = returns(SYMS[b].s), xs = [], ys = [];
+  for (const [t, v] of ra) if (rb.has(t)) { ys.push(v); xs.push(rb.get(t)); }
+  if (xs.length < 8) return null;
+  const mx = xs.reduce((s, v) => s + v, 0) / xs.length, my = ys.reduce((s, v) => s + v, 0) / ys.length;
+  let c = 0, vx = 0; xs.forEach((x, i) => { c += (x - mx) * (ys[i] - my); vx += (x - mx) ** 2; }); return vx ? c / vx : null;
+}
+function renderQuote() {
+  const S = SYMS[sel], s = S.s, L = lastPt(s); if (!L) return;
+  const vals = s.filter(p => p.v != null), prev = vals.length > 1 ? vals[vals.length - 2] : null;
+  const d = prev ? L.v - prev.v : 0, dp = prev ? (S.unit === '%' ? d : (L.v / prev.v - 1) * 100) : null;
+  const fav = favs.includes(sel), micro = isMicro(sel);
+  const cmpOpts = [['IDF', 'vs IDF']]; if (S.sector && S.sector !== sel && SYMS[S.sector]) cmpOpts.push([S.sector, 'vs ' + S.sector]); if (sel === 'IDF') cmpOpts[0] = ['CID', 'vs CID'];
+  if (!cmpOpts.some(o => o[0] === cmp) && cmp !== 'NONE') cmp = cmpOpts[0][0];
+  const unitTxt = S.unit === '€/m²' ? '€/m² mediano pedido' : S.unit === '€' ? '€ por mês' : S.unit === '%' ? 'renda anual ÷ preço, por m²' : S.unit;
+  $('#quote').innerHTML = `
+    <div class="q-head"><div style="display:flex;flex-direction:column;gap:6px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="q-sym" style="background:${S.color}">${sel}</span><h1 class="q-name">${esc(S.name)}</h1><span class="mu" style="font-size:12px">${esc(S.desc || S.sub)} · ${unitTxt}</span></div>
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span class="q-px">${valS(sel, L.v)}</span>
+        <span class="m ${tcls(dp)}" style="font-size:16px;font-weight:600">${arrow(dp)} ${S.unit === '%' ? chgS(sel, d) : (d >= 0 ? '+' : '−') + fmt(Math.abs(d), S.dec) + ' (' + pctS(dp, 2) + ')'}</span>
+        <span class="mu" style="font-size:12px">vs recolha de ${prev ? dd(prev.d) : '–'} · última ${dd(L.d)}</span></div>
+      ${micro ? `<span style="color:var(--warn);font-size:12px">⚠ Só ${L.n} anúncios: a cotação mexe muito com cada entrada ou saída.</span>` : ''}
     </div>
-	
-	<div id="radarModal" class="fixed inset-0 z-[2000] flex items-center justify-center hidden">
-    <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onclick="closeRadarModal()"></div>
-    
-    <div class="modal-content bg-white w-full max-w-md mx-6 p-8 rounded-3xl shadow-2xl relative z-10">
-        
-        <button onclick="closeRadarModal()" class="absolute top-6 right-6 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
-        <div class="flex items-center gap-3 mb-6">
-            <div class="w-10 h-10 bg-indigo-50 dark:bg-slate-800 text-indigo-600 dark:text-indigo-400 rounded-xl flex items-center justify-center">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h3 class="text-xl font-black text-slate-900 dark:text-white">Raio-X de Mercado</h3>
-        </div>
-        <div class="text-slate-600 dark:text-slate-400 text-sm font-medium space-y-4">
-            <p>O <strong>Raio-X de Mercado</strong> compara o desempenho da localização selecionada face à média do concelho do Fundão em 5 dimensões:</p>
-            <ul class="list-disc pl-5 space-y-2">
-                <li><strong class="text-slate-700 dark:text-slate-300">Preço:</strong> Custo relativo dos imóveis.</li>
-                <li><strong class="text-slate-700 dark:text-slate-300">Liquidez:</strong> Velocidade de escoamento no mercado.</li>
-                <li><strong class="text-slate-700 dark:text-slate-300">Stock:</strong> Volume de oferta disponível.</li>
-                <li><strong class="text-slate-700 dark:text-slate-300">Yield:</strong> Rentabilidade teórica face ao arrendamento.</li>
-                <li><strong class="text-slate-700 dark:text-slate-300">Qualidade:</strong> Peso de imóveis com alta eficiência energética.</li>
-            </ul>
-        </div>
-        <div class="mt-8 pt-6 border-t border-slate-100 dark:border-slate-800 text-center">
-            <button onclick="closeRadarModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2.5 px-6 rounded-xl text-sm transition-all shadow-lg shadow-indigo-200 dark:shadow-none">Entendido</button>
-        </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pill ol" id="favBtn">${fav ? '★ A seguir' : '☆ Seguir'}</button><button class="pill ol" id="shareBtn">↗ Partilhar</button></div></div>
+    <div class="q-ctl"><div class="seg" id="rangeSeg">${['1M','3M','6M','ALL'].map(r => `<button class="pill${range === r ? ' on' : ''}" data-r="${r}">${r === 'ALL' ? 'Tudo' : r}</button>`).join('')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="modeSeg"><button class="pill${mode === 'line' ? ' on' : ''}" data-m="line">Linha</button><button class="pill${mode === 'candle' ? ' on' : ''}" data-m="candle">Velas</button></div>
+      <div class="seg" id="cmpSeg">${cmpOpts.map(([k, t]) => `<button class="pill${cmp === k ? ' on' : ''}" data-c="${k}">${t}</button>`).join('')}<button class="pill${cmp === 'NONE' ? ' on' : ''}" data-c="NONE">Só ${sel}</button></div></div></div>
+    <div class="m" id="qlegend" style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;padding:0 18px 4px;min-height:16px"></div>
+    <div class="chart" id="qchart" style="padding:0 0 4px 12px"></div>`;
+  drawQuoteChart();
+  $('#favBtn').onclick = () => { favs = favs.includes(sel) ? favs.filter(k => k !== sel) : [...favs, sel]; store.set('dc_favs', favs); renderWL(); renderQuote(); };
+  $('#shareBtn').onclick = async () => { const url = location.origin + location.pathname + '?s=' + sel + '#mercado';
+    try { if (navigator.share) await navigator.share({ title: `${sel} · datacasa`, url }); else { await navigator.clipboard.writeText(url); $('#shareBtn').textContent = '✓ Link copiado'; } } catch {} };
+  $('#rangeSeg').onclick = e => { const r = e.target.dataset.r; if (r) { range = r; renderQuote(); } };
+  $('#modeSeg').onclick = e => { const m = e.target.dataset.m; if (m) { mode = m; renderQuote(); } };
+  $('#cmpSeg').onclick = e => { const c = e.target.dataset.c; if (c) { cmp = c; renderQuote(); } };
+}
+function drawQuoteChart() {
+  const S = SYMS[sel], el = $('#qchart'), s = inRange(S.s), yF = v => S.unit === '%' ? fmt(v, 1) + '%' : fmt(v, S.dec);
+  if (mode === 'candle') { $('#qlegend').innerHTML = '<span class="mu">Velas mensais: abertura na 1.ª recolha do mês, fecho na última. A tracejado, média de 3 meses.</span>'; candleChart(el, monthlyCandles(s), { h: 330, label: `${S.name}: velas mensais` }); return; }
+  const vals = s.filter(p => p.v != null); if (!vals.length) { el.innerHTML = '<div class="loading">Sem dados neste período.</div>'; return; }
+  const mx = vals.reduce((a, b) => b.v > a.v ? b : a), mn = vals.reduce((a, b) => b.v < a.v ? b : a), lastV = vals[vals.length - 1];
+  const marks = []; if (mx !== mn) { if (mx !== lastV) marks.push({ t: mx.t, v: mx.v, text: `Máx ${yF(mx.v)} · ${dd(mx.d)}` }); if (mn !== lastV) marks.push({ t: mn.t, v: mn.v, text: `Mín ${yF(mn.v)} · ${dd(mn.d)}`, below: true }); }
+  const series = [{ pts: s, color: S.color, area: true, w: 2.2 }]; let legend = '';
+  if (cmp !== 'NONE' && SYMS[cmp]) {
+    const c = inRange(SYMS[cmp].s), c0 = c.find(p => p.v != null), s0 = vals[0];
+    const k = s0 && c0 ? s0.v / c0.v : 1, lc = lastPt(c);
+    const perf = lc && c0 ? (lc.v / c0.v - 1) * 100 : null;
+    series.push({ pts: c.map(p => ({ ...p, v: p.v == null ? null : p.v * k })), color: '#e7e6f2', op: .55, dash: '4 4', w: 1.5 });
+    const sp = (lastV.v / vals[0].v - 1) * 100;
+    legend = `<span class="lg"><i style="background:${S.color}"></i>${sel} ${pctS(sp)}</span><span class="lg"><i style="height:0;border-top:2px dashed #e7e6f2;opacity:.6"></i>${cmp} rebaseado ${pctS(perf)}</span><span class="mu">no período</span>`;
+  }
+  $('#qlegend').innerHTML = legend;
+  lineChart(el, { id: 'q', h: 340, series, yFmt: yF, badge: true, label: `${S.name}: ${S.unit} por recolha`,
+    marks,
+    bars: S.grp === 'Macro' && sel !== 'RNT' ? null : s.map(p => ({ t: p.t, v: p.n })), barsLabel: sel === 'RNT' ? 'Anúncios de arrendamento' : 'Anúncios ativos (amostra)',
+    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>${valS(sel, p.v)}${p.n != null ? `<br><span style="color:#9a98b3">${p.n} anúncios</span>` : ''}${p.price ? `<br><span style="color:#9a98b3">mediana ${fmt(p.price)} €</span>` : ''}` });
+}
+function renderStats() {
+  const S = SYMS[sel], s = S.s.filter(p => p.v != null), L = s[s.length - 1]; if (!L) return;
+  const first = s[0], prev = s[s.length - 2], lo = Math.min(...s.map(p => p.v)), hi = Math.max(...s.map(p => p.v));
+  const r = [...returns(S.s).values()], vol = r.length > 3 ? stdev(r) * 100 : null;
+  const b = sel === 'IDF' || S.grp === 'Macro' ? null : beta(sel, 'IDF');
+  const pos = hi > lo ? (L.v - lo) / (hi - lo) * 100 : 50, minN = Math.min(...s.map(p => p.n ?? Infinity));
+  const liq = (L.n ?? 0) >= 50 ? '●●●' : (L.n ?? 0) >= 20 ? '●●○' : (L.n ?? 0) >= 10 ? '●○○' : '○○○';
+  const p1 = chg(sel, 30), p3 = chg(sel, 91), pA = chg(sel, 'ALL'), months = Math.max(1, Math.round((L.t - first.t) / (30.4 * DAY)));
+  let rows = `<div class="kv"><span>Abertura · ${dd(first.d)}</span><span>${valS(sel, first.v)}</span></div>
+    <div class="kv"><span>Fecho anterior</span><span>${prev ? valS(sel, prev.v) : '–'}</span></div>
+    <div class="kv"><span>Var. 1 mês</span><span class="${tcls(p1)}">${chgS(sel, p1)}</span></div>
+    <div class="kv"><span>Var. 3 meses</span><span class="${tcls(p3)}">${chgS(sel, p3)}</span></div>
+    <div class="kv"><span>Var. desde ${MES[first.d.getMonth()]}</span><span class="${tcls(pA)}">${chgS(sel, pA)}</span></div>
+    <div style="padding:10px 0 12px;border-top:1px solid var(--line2)"><div style="display:flex;justify-content:space-between;font-size:11px"><span class="mu" style="font-family:var(--sans)">Intervalo ${months} ${months === 1 ? 'mês' : 'meses'}</span></div>
+      <div class="rng"><i style="width:${pos}%"></i><b style="left:${pos}%"></b></div><div style="display:flex;justify-content:space-between;font-size:11px"><span>${valS(sel, lo)}</span><span>${valS(sel, hi)}</span></div></div>`;
+  if (vol != null) rows += `<div class="kv"><span>Volatilidade / recolha</span><span>${fmt(vol, 1)}%</span></div>`;
+  if (b != null) rows += `<div class="kv"><span>Beta vs IDF</span><span style="color:${Math.abs(b - 1) > .3 ? 'var(--warn)' : 'inherit'}">${fmt(b, 2)}</span></div>`;
+  if (S.grp !== 'Macro' || sel === 'RNT') {
+    rows += `<div class="kv"><span>Anúncios · mín. no período</span><span>${L.n ?? '–'} · ${isFinite(minN) ? minN : '–'}</span></div>`;
+    if (L.price) rows += `<div class="kv"><span>Mediana de pedido</span><span>${fmt(L.price)} €</span></div>`;
+    if (L.dom) rows += `<div class="kv"><span>Tempo à venda (saídas 60 d)</span><span>${fmt(L.dom)} dias</span></div>`;
+    rows += `<div class="kv"><span>Liquidez da amostra</span><span class="up">${liq}</span></div>`;
+  }
+  let note = '';
+  if (b != null && pA != null) note = b > 1.2 ? `<b class="wh">Perfil:</b> amplifica o concelho. Com beta ${fmt(b, 1)}, tende a mexer ${fmt(b, 1)}% por cada 1% do IDF.`
+    : b < 0.8 ? `<b class="wh">Perfil:</b> defensivo. Com beta ${fmt(b, 1)}, segue o concelho de longe e tem dinâmica própria.`
+    : `<b class="wh">Perfil:</b> acompanha o concelho de perto (beta ${fmt(b, 1)}).`;
+  if (sel === 'YLD') note = `<b class="wh">Leitura:</b> uma yield a cair quer dizer que os preços de venda sobem mais depressa do que as rendas.`;
+  if (sel === 'OFR') note = `<b class="wh">Leitura:</b> mais oferta com preços estáveis indica um mercado a arrefecer. Menos oferta com preços a subir indica pressão compradora.`;
+  $('#stats').innerHTML = `<span style="font-weight:700;font-size:15px;color:#fff;margin-bottom:6px">Estatísticas · ${sel}</span><div class="m">${rows}</div>${note ? `<div class="note">${note}</div>` : ''}`;
+}
+function renderPerf() {
+  const keys = ['CID','SUL','NOR','POE','IDF','RNT'].filter(k => SYMS[k]);
+  const colors = { CID: '#8b8cff', SUL: '#f5c26b', NOR: '#7fe0b8', POE: '#e39bff', IDF: '#e7e6f2', RNT: '#ffb36b' };
+  const t0 = DATES[0].getTime();
+  const series = keys.map(k => { const s = SYMS[k].s, b = s.find(p => p.v != null && p.t >= t0); const pts = s.map(p => ({ ...p, v: p.v == null || !b ? null : p.v / b.v * 100 }));
+    const L = lastPt(pts); return { pts, color: colors[k], w: k === 'CID' ? 2.4 : 1.8, dash: k === 'RNT' ? '5 4' : null, endLabel: L ? `${k} ${fmt(L.v, 1)}` : k }; });
+  const y0 = SYMS.YLD.s.find(p => p.v != null), y1 = lastPt(SYMS.YLD.s);
+  const r0 = series.find((_, i) => keys[i] === 'RNT'), i0 = series.find((_, i) => keys[i] === 'IDF');
+  const rl = lastPt(r0.pts)?.v, il = lastPt(i0.pts)?.v;
+  const txt = rl != null && il != null ? (il > rl ? `Desde ${dd(DATES[0])}, os preços pedidos (IDF ${fmt(il - 100, 1)} pontos) andaram mais do que as rendas (RNT ${fmt(rl - 100, 1)}). A yield bruta da cidade passou de ${fmt(y0.v, 1)}% para ${fmt(y1.v, 1)}%.`
+    : `Desde ${dd(DATES[0])}, as rendas (RNT ${fmt(rl - 100, 1)} pontos) subiram mais do que os preços pedidos (IDF ${fmt(il - 100, 1)}). A yield bruta da cidade passou de ${fmt(y0.v, 1)}% para ${fmt(y1.v, 1)}%.`) : '';
+  $('#perf').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:3px"><h2>Desempenho relativo</h2><span class="mu" style="font-size:12px">base 100 = ${ddmmyyyy(DATES[0])} · ${DATES.length} recolhas</span></div>
+    <div class="m" style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px">${keys.map(k => `<span class="lg" data-sym="${k}"><i style="background:${colors[k]}${k === 'RNT' ? ';height:0;border-top:2px dashed ' + colors[k] : ''}"></i>${k}</span>`).join('')}</div></div>
+    <div class="chart" id="perfChart"></div><p class="mu" style="margin:0;font-size:12px;line-height:1.5">${txt}</p>`;
+  lineChart($('#perfChart'), { id: 'p', h: 260, series, base: 100, yFmt: v => fmt(v, 0), padR: 84, axisLeft: true, label: 'Desempenho em base 100 dos índices e setores',
+    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>CID ${fmt(p.v, 1)}` });
+}
+let moveMode = 'all';
+function renderMoves() {
+  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias' && lastPt(SYMS[k].s) && (moveMode === 'all' || !isMicro(k)));
+  const ch = fr.map(k => ({ k, p: chg(k, 30) })).filter(x => x.p != null);
+  const ups = ch.filter(x => x.p > 0.05).sort((a, b) => b.p - a.p), dns = ch.filter(x => x.p < -0.05).sort((a, b) => a.p - b.p), flat = ch.length - ups.length - dns.length;
+  const row = x => `<div class="mv m" data-sym="${x.k}"><b>${x.k}</b><span style="font-family:var(--sans)">${esc(SYMS[x.k].name)}${isMicro(x.k) ? ` <span style="color:var(--warn);font-size:11px">⚠ ${lastPt(SYMS[x.k].s).n}</span>` : ''}</span><span class="bdg ${cls(x.p)}">${pctS(x.p)}</span></div>`;
+  const highs = fr.filter(k => { const s = SYMS[k].s.filter(p => p.v != null); return s.length > 10 && s[s.length-1].v >= Math.max(...s.map(p => p.v)); });
+  const lows = fr.filter(k => { const s = SYMS[k].s.filter(p => p.v != null); return s.length > 10 && s[s.length-1].v <= Math.min(...s.map(p => p.v)); });
+  const months = Math.round((DATES[DATES.length-1] - DATES[0]) / (30.4 * DAY));
+  $('#moves').innerHTML = `<div class="sec-h"><h2>Movimentos · 1 mês</h2><div class="seg" id="mvSeg"><button class="pill${moveMode === 'all' ? ' on' : ''}" data-v="all">Todas</button><button class="pill${moveMode === 'liq' ? ' on' : ''}" data-v="liq">Só líquidas</button></div></div>
+    <div><span class="lbl">Maiores subidas</span>${ups.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
+    <div><span class="lbl">Maiores descidas</span>${dns.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px dashed var(--line)">
+      <div style="display:flex;justify-content:space-between;font-size:12px"><span class="lbl">Amplitude · ${ch.length} freguesias</span><span class="m"><span class="up">${ups.length} ▲</span> · <span class="mu">${flat} ●</span> · <span class="dn">${dns.length} ▼</span></span></div>
+      <div class="brk" aria-hidden="true"><div style="flex:${ups.length || 0.0001};background:#8b8cff"></div><div style="flex:${flat || 0.0001};background:#4a4870"></div><div style="flex:${dns.length || 0.0001};background:#ff6b85"></div></div>
+      <div style="font-size:12px;line-height:1.6"><span class="mu">Máximos de ${months} meses:</span> <span class="m wh">${highs.join(' · ') || '–'}</span><br><span class="mu">Mínimos de ${months} meses:</span> <span class="m dn">${lows.join(' · ') || '–'}</span></div></div>`;
+  $('#mvSeg').onclick = e => { const v = e.target.dataset.v; if (v) { moveMode = v; renderMoves(); } };
+}
+function agentsData(locKey) {
+  const loc = D.locations[locKey]; const ag = loc.current.sales.distributions.agencies || {}, total = loc.current.sales.active_count || 1;
+  const nice = n => n.replace(/Sociedade De Mediacao Imobiliaria Lda/i, '').replace(/\bLda\b/i, '').replace(/Fundao/g, 'Fundão').replace(/Imobiliaria/g, 'Imobiliária').trim();
+  const list = Object.entries(ag).map(([n, c]) => ({ n: n === 'Particular' ? 'Particulares' : nice(n), c, p: c / total * 100, part: n === 'Particular' }));
+  return { list, total, top: list.reduce((s, x) => s + x.p, 0) };
+}
+function renderAgents() {
+  const { list, total, top } = agentsData('Global');
+  $('#agents').innerHTML = `<div class="sec-h"><h2>Quem tem a montra</h2><span class="mu" style="font-size:11px">quota da oferta de venda · ${total} anúncios</span></div>
+    <div class="agents m">${list.map(a => `<div class="agent"><b style="${a.part ? 'color:var(--warn)' : ''}" title="${esc(a.n)}">${esc(a.n)}</b><span class="m">${fmt(a.p, 1)}%</span><span class="mu" style="font-size:11px">${a.c} ${a.part ? '· venda direta' : 'anúncios'}</span></div>`).join('')}
+    <div class="agent" style="background:none;border:1px dashed var(--line3)"><b class="mu">Top 5</b><span class="m">${fmt(top, 1)}%</span><span class="mu" style="font-size:11px">concentração</span></div></div>`;
+}
+function select(k, scroll) {
+  if (!SYMS[k]) return; sel = k; if (isMicro(k)) microOpen = true; renderWL(); renderQuote(); renderStats();
+  const u = new URL(location); u.searchParams.set('s', k); u.searchParams.delete('loc'); history.replaceState(null, '', u);
+  if (scroll && window.innerWidth < 860) $('#quote').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ------------------------------------------------------------- setores */
+let candleKey = 'IDF', mapMode = 'm2', map, geoLayer, GEO;
+function renderCandles() {
+  const keys = ['IDF','CID','SUL','NOR','POE'].filter(k => SYMS[k]), S = SYMS[candleKey], cs = monthlyCandles(S.s);
+  const first = S.s.find(p => p.v != null), L = lastPt(S.s), d = L.v - first.v;
+  const best = cs.slice(1).reduce((a, c, i) => { const v = c.c - cs[i].c; return !a || v > a.v ? { v, c } : a; }, null);
+  $('#candles').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>${candleKey === 'IDF' ? 'Índice datacasa Fundão' : esc(S.name)}</h2>
+      <span class="mu" style="font-size:12px">${candleKey} · €/m² mediano pedido · velas mensais · <span class="${tcls(d)}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))} €/m² (${pctS((L.v / first.v - 1) * 100)}) desde ${MES[first.d.getMonth()]}</span></span></div>
+      <div class="seg" id="ckSeg">${keys.map(k => `<button class="pill${k === candleKey ? ' on' : ''}" data-k="${k}">${{ IDF: 'Concelho', CID: 'Cidade', SUL: 'Sul', NOR: 'Norte', POE: 'Poente' }[k]}</button>`).join('')}</div></div>
+    <div class="m mu" style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px"><span><span style="color:#e7e6f2">┅</span> média 3 meses</span><span><span class="up">▮</span> mês a subir</span><span><span class="dn">▮</span> mês a descer</span>${best && best.v > 0 ? `<span>${Mes(best.c.m)} · +${fmt(best.v)} €/m², maior subida mensal</span>` : ''}</div>
+    <div class="chart" id="ckChart"></div>
+    <div style="border-top:1px dashed var(--line);padding-top:8px"><span class="mu" style="font-size:11px">Oferta ativa (anúncios na amostra) · <span class="m wh">${L.n ?? '–'}</span></span><div class="chart" id="ofChart"></div></div>`;
+  candleChart($('#ckChart'), cs, { h: 300, label: `${S.name}: velas mensais do €/m² mediano` });
+  lineChart($('#ofChart'), { id: 'o', h: 120, series: [{ pts: S.s.map(p => ({ ...p, v: p.n })), color: '#9a98b3', w: 1.6 }], yFmt: v => fmt(v), padR: 64, label: 'Anúncios ativos por recolha',
+    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>${p.v} anúncios` });
+  $('#ckSeg').onclick = e => { const k = e.target.dataset.k; if (k) { candleKey = k; renderCandles(); renderFicha(); } };
+}
+function distBar(obj, order, colors) {
+  const tot = Object.values(obj).reduce((a, b) => a + b, 0) || 1, keys = order.filter(k => obj[k]);
+  return `<div class="bar">${keys.map((k, i) => `<div title="${k}: ${obj[k]}" style="flex:${obj[k]};background:${colors[i % colors.length]}"></div>`).join('')}</div>
+    <div class="m" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;margin-top:6px">${keys.map((k, i) => `<span><span style="color:${colors[i % colors.length]}">■</span> ${k} · ${fmt(obj[k] / tot * 100)}%</span>`).join('')}</div>`;
+}
+function renderFicha() {
+  const S = SYMS[candleKey], raw = candleKey === 'IDF' ? D.locations.Global : candleKey === 'CID' ? (D.sectors?.CID || D.locations.UF_FUNDAO) : D.sectors[candleKey];
+  const cur = raw.current.sales, rent = raw.current.rent, L = lastPt(S.s), p1 = chg(candleKey, 30), dist = cur.distributions || {};
+  const en = dist.energy || {}, ef = (en.E || 0) + (en.F || 0), et = Object.values(en).reduce((a, b) => a + b, 0);
+  const ty = dist.typology || {}, tp = dist.type || {}, tpt = Object.values(tp).reduce((a, b) => a + b, 0) || 1;
+  const topType = Object.entries(tp).sort((a, b) => b[1] - a[1])[0];
+  $('#ficha').innerHTML = `<div class="sec-h"><h2>Ficha · ${candleKey}</h2><span class="mu m" style="font-size:11px">recolha ${dd(L.d)}</span></div>
+    <div style="display:flex;align-items:baseline;gap:10px"><span class="m wh" style="font-size:30px;font-weight:700">${fmt(L.v)}</span><span class="mu">€/m²</span><span class="m ${tcls(p1)}">${pctS(p1)} 1M</span></div>
+    <div class="m">
+      <div class="kv"><span>Em montra</span><span>${cur.active_count} casas</span></div>
+      <div class="kv"><span>Mediana de pedido</span><span>${fmt(cur.median_price)} €</span></div>
+      <div class="kv"><span>Renda mediana</span><span>${rent.active_count ? fmt(rent.median_price) + ' € · n=' + rent.active_count : '–'}</span></div>
+      <div class="kv"><span>Anos de salário</span><span>${fmt(cur.affordability_index, 1)}</span></div>
+      <div class="kv"><span>Tempo à venda (saídas 60 d)</span><span>${fmt(cur.avg_days_on_market)} dias</span></div>
     </div>
-	</div>
-
-    <script>
-        let globalData, geoDataStore;
-        let energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart;
-        let map, geoJsonLayer, markersLayer, legendControl;
-
-        // Variáveis globais para os Artigos
-        let datacasaArticles = [];
-        let articleChartInstance = null;
-        
-        let currentMapMode = 'sale'; 
-        let currentSelectedLoc = 'Global';
-        
-        let currentTypoMode = 'type'; 
-
-        // --- DARK MODE LOGIC ---
-        if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-            document.documentElement.classList.add('dark');
-            updateChartTheme(true);
-        } else {
-            document.documentElement.classList.remove('dark');
-            updateChartTheme(false);
-        }
-
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const isDark = html.classList.toggle('dark');
-            
-            // Alternar ícones
-            document.getElementById('iconSun').classList.toggle('hidden', !isDark);
-            document.getElementById('iconMoon').classList.toggle('hidden', isDark);
-
-            // Guardar preferência
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-
-            // Atualizar gráficos
-            updateChartTheme(isDark);
-        }
-
-        function updateChartTheme(isDark) {
-            Chart.defaults.color = isDark ? '#94a3b8' : '#64748b'; 
-            Chart.defaults.borderColor = isDark ? '#334155' : '#e2e8f0'; 
-            Chart.defaults.scale.grid.color = isDark ? '#1e293b' : '#f1f5f9'; 
-
-            [energyChart, typologyChart, agencyChart, evolutionChart, modalChart, radarChart].forEach(chart => {
-                if (chart) {
-                    if(chart.options.scales.x) chart.options.scales.x.grid.color = isDark ? '#1e293b' : '#f1f5f9';
-                    if(chart.options.scales.y) chart.options.scales.y.grid.color = isDark ? '#1e293b' : '#f1f5f9';
-                    if(chart.options.scales.y1) chart.options.scales.y1.grid.color = isDark ? '#1e293b' : '#f1f5f9';
-                    
-                    // Radar Chart Specifics
-                    if (chart.config.type === 'radar') {
-                        chart.options.scales.r.angleLines.color = isDark ? '#334155' : '#e2e8f0';
-                        chart.options.scales.r.grid.color = isDark ? '#334155' : '#e2e8f0';
-                        chart.options.scales.r.pointLabels.color = isDark ? '#94a3b8' : '#64748b';
-                    }
-                    
-                    chart.update('none'); 
-                }
-            });
-        }
-        
-        window.toggleTypoMode = function(mode) {
-            currentTypoMode = mode;
-            const btnType = document.getElementById('btnType');
-            const btnTypo = document.getElementById('btnTypo');
-
-            if (mode === 'type') {
-                btnType.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md";
-                btnTypo.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500 dark:text-slate-400";
-            } else {
-                btnTypo.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all bg-indigo-600 text-white shadow-md";
-                btnType.className = "px-3 py-1 rounded-lg text-[10px] font-bold transition-all text-slate-500 dark:text-slate-400";
-            }
-            render(currentSelectedLoc);
-        }
-
-        function switchTab(tab) {
-            const dash = document.getElementById('content-dashboard');
-            const about = document.getElementById('content-about');
-            const btnDash = document.getElementById('tab-dash');
-            const btnAbout = document.getElementById('tab-about-btn');
-
-            if (tab === 'dashboard') {
-                dash.classList.remove('hidden');
-                about.classList.add('hidden');
-                btnDash.classList.add('active');
-                btnAbout.classList.remove('active');
-                if(map) map.invalidateSize();
-            } else {
-                dash.classList.add('hidden');
-                about.classList.remove('hidden');
-                btnDash.classList.remove('active');
-                btnAbout.classList.add('active');
-            }
-        }
-
-        /* Formatação com Espaço como separador de milhares */
-        const fmtInt = (v) => v.toLocaleString('pt-PT').replace(/\./g, ' ');
-        const fmtEuro = (v) => v.toLocaleString('pt-PT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).replace(/\./g, ' ');
-        
-        /* --- NOVOS FORMATADORES COM 1 CASA DECIMAL --- */
-        const fmtDec = (v) => v.toFixed(1).replace('.', ',').replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-        const fmtEuroDec = (v) => fmtDec(v) + " €";
-        
-        const normalizeStr = (str) => (!str) ? "" : str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
-
-        const metricDefinitions = {
-            "STOCK": "Número total de anúncios únicos ativos. Representa a oferta disponível no mercado excluindo outliers.",
-            "PRODUÇÃO": "Saldo entre novos anúncios e anúncios retirados. Indica se a oferta está a crescer ou a diminuir.",
-            "PMV": "Prazo Médio de Venda. Mediana dos dias no mercado dos imóveis removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
-            "PMA": "Prazo Médio de Arrendamento. Mediana dos dias no mercado dos arrendamentos removidos nos últimos 60 dias. Mede a velocidade real de absorção.",
-            "PREÇO MEDIANO": "Preço do anúncio do meio: metade dos imóveis à venda pede menos, metade pede mais. Ao contrário da média, não é puxado para cima por meia dúzia de imóveis muito caros. Exclui anúncios com dados inválidos.",
-            "RENDA MEDIANA": "Renda mensal do anúncio do meio: metade das casas para arrendar pede menos, metade pede mais. Exclui anúncios com dados inválidos.",
-            "MEDIANA €/M²": "Valor mediano do preço por metro quadrado dos anúncios ativos, para comparar imóveis de tamanhos diferentes.",
-            "IAH": "Índice de Acessibilidade Habitacional. Estima quantos anos de rendimentos são necessários para comprar um imóvel de preço mediano. O rendimento anual médio no concelho do Fundão ascendia a 15.722€ em 2023 segundo dados do INE.",
-            "ESFORÇO": "Taxa que estima a percentagem do rendimento médio familiar necessária para suportar a renda de um imóvel. O rendimento mensal médio no concelho do Fundão ascendia a 1.123€ em 2023 segundo dados do INE."
-        };
-
-        function openModal(title, dates, data, colorHex, config = {}) {
-            const modal = document.getElementById('infoModal');
-            const modalTitle = document.getElementById('modalTitle');
-            const modalDesc = document.getElementById('modalDesc');
-            const ytdEl = document.getElementById('modalYtd');
-            
-            modalTitle.innerText = title;
-            modalDesc.innerText = metricDefinitions[title] || "Informação detalhada sobre esta métrica de mercado.";
-            
-            // CORREÇÃO: Forçar o Índigo (Azul) para TODOS os gráficos quando não há variação
-            let chartColor = '#4f46e5'; 
-
-            // --- CÁLCULO YTD ---
-            ytdEl.classList.add('hidden');
-            if (config.isFlow) {
-                // Não calcula YTD para a Produção para evitar confusão
-            } else if (dates.length > 0 && data.length > 0) {
-                const lastDate = dates[dates.length - 1];
-                const currentYear = lastDate.split('-')[0];
-                const firstIndex = dates.findIndex(d => d.startsWith(currentYear));
-                
-                if (firstIndex !== -1 && firstIndex < data.length) {
-                    const startVal = data[firstIndex];
-                    const endVal = data[data.length - 1];
-                    
-                    if (startVal !== 0) {
-                        const diff = ((endVal - startVal) / Math.abs(startVal)) * 100;
-                        const isUp = diff > 0;
-                        const sign = isUp ? '+' : '';
-                        
-                        // Lógica invertida para o YTD do Modal
-                        const isGood = config.inverse ? !isUp : isUp;
-                        const isDark = document.documentElement.classList.contains('dark');
-                        
-                        if (Math.abs(diff) < 0.1) {
-                            ytdEl.innerText = "YTD: 0.0%";
-                            ytdEl.className = "text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400";
-                            chartColor = '#4f46e5'; // Mantém-se Índigo quando é 0%
-                        } else {
-                            ytdEl.innerText = `YTD: ${sign}${diff.toFixed(1)}%`;
-                            
-                            const badgeClasses = isGood 
-                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
-                                : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
-                            
-                            ytdEl.className = `text-[10px] font-black uppercase tracking-wide px-2 py-1 rounded-full ${badgeClasses}`;
-                            
-                            // Apenas muda para Verde ou Vermelho se houver variação
-                            chartColor = isGood ? (isDark ? '#34d399' : '#10b981') : (isDark ? '#fb7185' : '#ef4444');
-                        }
-                        ytdEl.classList.remove('hidden');
-                    }
-                }
-            }
-
-            modal.classList.remove('hidden');
-
-            const ctx = document.getElementById('modalChart');
-            if (modalChart) modalChart.destroy();
-            
-            modalChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [{
-                        label: title,
-                        data: data,
-                        borderColor: chartColor,
-                        backgroundColor: chartColor,
-                        borderWidth: 2,
-                        pointRadius: 0,
-                        pointHoverRadius: 4,
-                        tension: 0.3
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    layout: {
-                        padding: { top: 30, right: 20, left: 10, bottom: 0 }
-                    },
-                    plugins: { 
-                        legend: { display: false },
-                        tooltip: { intersect: false, mode: 'index' }
-                    },
-                    scales: {
-                        x: { 
-                            display: true,
-                            grid: { display: false, drawBorder: false },
-                            ticks: {
-                                maxRotation: 0,
-                                autoSkip: true,
-                                maxTicksLimit: 15,
-                                font: { size: 10, weight: '600' },
-                                color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#94a3b8',
-                                callback: function(value, index, values) {
-                                    const getMonth = (val) => {
-                                        const d = new Date(this.getLabelForValue(val));
-                                        return d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
-                                    };
-                                    const currMonth = getMonth(value);
-                                    if (index === 0) return currMonth;
-                                    const prevVal = values[index - 1].value;
-                                    const prevMonth = getMonth(prevVal);
-                                    return (currMonth !== prevMonth) ? currMonth : null;
-                                }
-                            }
-                        },
-                        y: { 
-                            grace: '10%', 
-                            ticks: { 
-                                font: { size: 10, weight: '600' },
-                                color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#94a3b8',
-                                maxTicksLimit: 5,
-                                callback: function(value) {
-                                    if (value >= 1000000) return (value/1000000).toFixed(1) + 'M';
-                                    if (value >= 1000) return (value/1000).toFixed(0) + 'k';
-                                    return parseFloat(value.toFixed(2));
-                                }
-                            },
-                            grid: { 
-                                color: document.documentElement.classList.contains('dark') ? '#1e293b' : '#f1f5f9',
-                                borderDash: [4, 4],
-                                drawBorder: false 
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function closeModal() {
-            document.getElementById('infoModal').classList.add('hidden');
-        }
-
-        function generateSparkline(data, colorClass) {
-            if (!data || data.length < 2) return '';
-            const max = Math.max(...data), min = Math.min(...data), range = max - min || 1;
-            const points = data.map((v, i) => {
-                const x = (i / (data.length - 1)) * 100;
-                const y = 45 - ((v - min) / range) * 40; 
-                return [x, y];
-            });
-            let d = `M ${points[0][0]} ${points[0][1]}`;
-            for (let i = 1; i < points.length; i++) {
-                const curr = points[i], prev = points[i-1];
-                const cp1x = prev[0] + (curr[0] - prev[0]) / 2, cp1y = prev[1];
-                const cp2x = prev[0] + (curr[0] - prev[0]) / 2, cp2y = curr[1];
-                d += ` C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${curr[0]} ${curr[1]}`;
-            }
-            let stroke = '#cbd5e1'; // Cinzento por defeito
-            if (colorClass.includes('emerald')) stroke = '#10b981';      // Verde (Sobe)
-            else if (colorClass.includes('rose')) stroke = '#ef4444';    // Vermelho (Desce)
-            else if (colorClass.includes('indigo')) stroke = '#4f46e5';  // Azul (Estável)
-            
-            return `<svg width="100%" height="100%" viewBox="0 0 100 50" preserveAspectRatio="none"><path d="${d}" fill="none" stroke="${stroke}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        }
-
-        function getVariation(current, history, dates, config = {}) {
-            if (!history || history.length < 2) return '';
-            const prev = history[history.length - 2];
-            
-            if (current === prev) return '';
-
-            let dateLabel = "ant.";
-            if (dates && dates.length >= 2) {
-                const prevDateStr = dates[dates.length - 2];
-                const d = new Date(prevDateStr);
-                dateLabel = d.toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit' });
-            }
-
-            let diff;
-            if (prev === 0) {
-                diff = current > 0 ? 100 : -100;
-            } else if (prev < 0) {
-                diff = ((current - prev) / Math.abs(prev)) * 100;
-            } else {
-                diff = ((current - prev) / prev) * 100;
-            }
-
-            const isUp = diff > 0;
-            
-            // LÓGICA SEMÂNTICA: Se for "inverse", Subir (isUp) é MAU (Falso)
-            const isGood = config.inverse ? !isUp : isUp;
-            
-            const color = isGood 
-            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400' 
-            : 'bg-rose-100 text-rose-700 dark:bg-rose-900/40 dark:text-rose-400';
-            
-            return `
-                <div class="flex items-center gap-1.5 mt-1.5" title="Variação face a ${dateLabel}">
-                    <span class="variation-badge ${color} !mt-0">${isUp ? '↑' : '↓'} ${Math.abs(diff).toFixed(1)}%</span>
-                    <span class="text-[9px] font-bold text-slate-300 dark:text-slate-600 uppercase tracking-wider">vs ${dateLabel}</span>
-                </div>
-            `;
-        }
-
-        async function init() {
-            
-            Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
-            // Cores iniciais (serão sobrescritas pelo updateChartTheme se necessário)
-            Chart.defaults.color = '#64748b';
-            Chart.defaults.font.weight = '400';
-            Chart.defaults.font.size = 10;
-            
-            try {
-				const timestamp = new Date().getTime();
-				const [dataResp, geoResp] = await Promise.all([
-					fetch('api/data/?t=' + timestamp), 
-					fetch('freguesias_fundao.geojson?t=' + timestamp)
-				]);
-                globalData = await dataResp.json();
-                geoDataStore = await geoResp.json(); 
-                
-                // Formatação data cabeçalho
-                const dObj = new Date(globalData.last_update);
-                const dateStr = dObj.toLocaleDateString('pt-PT').replace(/\//g, '-');
-                document.getElementById('lastUpdateHeader').innerText = `Dados atualizados a ${dateStr}`;
-                
-                document.getElementById('mapLoader').style.display = 'none';
-                
-                // --- PREENCHER DROPDOWN ---
-                const sel = document.getElementById('locationSelect');
-                const locKeys = Object.keys(globalData.locations).sort();
-                
-                // Remover Global e UF_FUNDAO da lista automática para os inserirmos manualmente no topo
-                const sortedLocs = locKeys.filter(k => k !== "Global" && k !== "UF_FUNDAO");
-                
-                // 1. Adicionar Global
-                if(locKeys.includes("Global")) {
-                    const opt = document.createElement('option'); 
-                    opt.value = "Global"; 
-                    opt.text = "Concelho (Global)";
-                    sel.appendChild(opt);
-                }
-
-                // 2. Adicionar UF Fundão (Se existir no JSON)
-                if(locKeys.includes("UF_FUNDAO")) {
-                    const opt = document.createElement('option'); 
-                    opt.value = "UF_FUNDAO"; 
-                    opt.text = "Freguesia (Fundão)"; // Nome bonito 
-                    sel.appendChild(opt);
-                }
-                
-                // 3. Adicionar restantes localidades
-                sortedLocs.forEach(l => {
-                    const opt = document.createElement('option'); opt.value = l; opt.text = l;
-                    sel.appendChild(opt);
-                });
-
-                // --- LÓGICA DE FAVORITO & URL PARAM ---
-                const urlParams = new URLSearchParams(window.location.search);
-                const locParam = urlParams.get('loc');
-                const savedFav = localStorage.getItem('datacasa_fav');
-
-                if (locParam && globalData.locations[locParam]) {
-                    sel.value = locParam;
-                    currentSelectedLoc = locParam;
-                } else if (savedFav && globalData.locations[savedFav]) {
-                    sel.value = savedFav;
-                    currentSelectedLoc = savedFav;
-                } else {
-                    sel.value = "Global";
-                    currentSelectedLoc = "Global";
-                }
-                updateFavIcon(); 
-                
-                // --- MAPA E EVENTOS ---
-                initMapBase();
-                
-                sel.addEventListener('change', (e) => {
-                    currentSelectedLoc = e.target.value;
-                    
-                    // Atualizar URL sem refresh
-                    const newUrl = new URL(window.location);
-                    newUrl.searchParams.set('loc', currentSelectedLoc);
-                    window.history.pushState({}, '', newUrl);
-
-                    updateFavIcon();
-                    render(currentSelectedLoc);
-                });
-                
-                render(currentSelectedLoc);
-                
-                // Garantir estado visual correto dos ícones e gráficos
-                const isDark = document.documentElement.classList.contains('dark');
-                document.getElementById('iconSun').classList.toggle('hidden', !isDark);
-                document.getElementById('iconMoon').classList.toggle('hidden', isDark);
-                updateChartTheme(isDark);
-                
-                // Carregar Artigos
-                await fetchArticles();
-
-            } catch (e) { 
-                console.error("Erro fatal:", e);
-                document.getElementById('mapLoader').innerText = "Erro ao carregar dados.";
-            }
-        }
-
-        function initMapBase() {
-            map = L.map('map', { scrollWheelZoom: false, minZoom: 10, maxZoom: 16 }).setView([40.1415, -7.5020], 11);
-            map.createPane('polygonsPane'); map.getPane('polygonsPane').style.zIndex = 400;
-            map.createPane('markersPane'); map.getPane('markersPane').style.zIndex = 600;
-            L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap' }).addTo(map);
-            markersLayer = L.layerGroup({pane: 'markersPane'}).addTo(map);
-            if (geoDataStore.features.length > 0) {
-                const tempLayer = L.geoJSON(geoDataStore);
-                const bounds = tempLayer.getBounds().pad(0.1);
-                map.fitBounds(bounds);
-                map.setMaxBounds(bounds.pad(0.2));
-            }
-        }
-
-        window.toggleMapMode = function(mode) {
-            currentMapMode = mode;
-            // Reset classes
-            ['btnSale', 'btnRent', 'btnYield'].forEach(id => {
-                document.getElementById(id).className = 'toggle-btn inactive';
-            });
-
-            // Ativar botão correto
-            if (mode === 'sale') document.getElementById('btnSale').className = 'toggle-btn active-sale';
-            else if (mode === 'rent') document.getElementById('btnRent').className = 'toggle-btn active-rent';
-            else document.getElementById('btnYield').className = 'toggle-btn bg-emerald-600 text-white'; // Estilo para Yield
-
-            updateMapVisualization();
-        }
-
-        function getColor(value) {
-            if (!value) return '#f1f5f9';
-            
-            if (currentMapMode === 'sale') {
-                return value > 250000 ? '#4338ca' : value > 180000 ? '#4f46e5' : value > 120000 ? '#6366f1' : value > 60000 ? '#818cf8' : '#c7d2fe';
-            } else if (currentMapMode === 'rent') {
-                return value > 800 ? '#c2410c' : value > 600 ? '#ea580c' : value > 400 ? '#f97316' : value > 200 ? '#fb923c' : '#fed7aa';
-            } else {
-                // Escala de Yield (Rentabilidade) - Cores Emerald (Verde)
-                return value > 8.0 ? '#064e3b' : value > 7.0 ? '#065f46' : value > 6.0 ? '#059669' : value > 5.0 ? '#34d399' : '#a7f3d0';
-            }
-        }
-
-        function updateMapVisualization() {
-            if (geoJsonLayer) map.removeLayer(geoJsonLayer);
-            if (legendControl) map.removeControl(legendControl);
-            markersLayer.clearLayers();
-            geoDataStore.features.forEach(feature => {
-                const raw = feature.properties.fre_name || feature.properties.fre_name_long || feature.properties.NAME_3 || "";
-                const clean = normalizeStr(raw);
-                const parts = clean
-                
-                .replace(/UNIAO D[E|AS] FREGUESIAS DE/g, "") // Remove "UNIAO DE" ou "UNIAO DAS"
-                .split(/,|\sE\s/)                            // Separa por vírgula (,) OU pela palavra " E "
-                .map(p => p.trim())
-                .filter(p => p.length);
-                let sum = 0, count = 0;
-                
-                parts.forEach(p => {
-                    const matchKey = Object.keys(globalData.locations).find(k => normalizeStr(k) === p);
-                    if (!matchKey) return;
-                    
-                    const locData = globalData.locations[matchKey].current;
-     
-                    if (currentMapMode === 'yield') {
-                        const pSale = locData.sales.median_price;
-                        const pRent = locData.rent.median_price;
-                        // Yield = (Renda * 12 / Venda) * 100
-                        if (pSale > 0 && pRent > 0) {
-                            // Ponderado pelo stock de vendas
-                            sum += (((pRent * 12) / pSale) * 100) * locData.sales.active_count; 
-                            count += locData.sales.active_count;
-                        }
-                    } else {
-                        const dataset = currentMapMode === 'sale' ? locData.sales : locData.rent;
-                        if (dataset.median_price && dataset.active_count) {
-                            sum += dataset.median_price * dataset.active_count;
-                            count += dataset.active_count;
-                        }
-                    }
-                });
-                feature.properties.current_mode_price = count ? sum / count : 0;
-                feature.properties.display_name = raw;
-            });
-            geoJsonLayer = L.geoJson(geoDataStore, {
-                style: (f) => ({ fillColor: getColor(f.properties.current_mode_price || 0), weight: 1, opacity: 1, color: 'white', fillOpacity: 0.8 }),
-                pane: 'polygonsPane',
-                onEachFeature: function(f, layer) {
-                    const name = f.properties.display_name || "Freguesia";
-                    let p;
-                    if (f.properties.current_mode_price > 0) {
-                        p = currentMapMode === 'yield' 
-                            ? f.properties.current_mode_price.toFixed(1) + '%' 
-                            : fmtEuro(f.properties.current_mode_price);
-                    } else {
-                        p = 'S/ Dados';
-                    }
-                    
-                    const colorClass = currentMapMode === 'yield' ? 'text-emerald-600' : (currentMapMode==='sale'?'text-indigo-600':'text-orange-600');
-                    
-                    layer.bindTooltip(`<div class="text-center"><div class="font-bold text-slate-800 text-xs mb-1">${name}</div><div class="${colorClass} font-black text-sm">${p}</div></div>`, { className: 'custom-tooltip', sticky: true });
-
-                    layer.on('click', function() {
-                        const raw = f.properties.fre_name || f.properties.fre_name_long || f.properties.NAME_3 || "";
-                        const clean = normalizeStr(raw);
-                        let matchKey = null;
-
-                        // Verifica fuzzy match padrão
-                        const locKeys = Object.keys(globalData.locations);
-                        matchKey = locKeys.find(k => {
-                            return normalizeStr(k).includes(clean) || clean.includes(normalizeStr(k));
-                        });
-
-                        // Exceção Específica: União de Freguesias do Fundão, Valverde...
-                        if (clean.includes("FUNDAO") && clean.includes("VALVERDE") && clean.includes("DONAS")) {
-                            matchKey = "UF_FUNDAO";
-                        }
-
-                        if (matchKey) {
-                            const sel = document.getElementById('locationSelect');
-                            sel.value = matchKey;
-                            currentSelectedLoc = matchKey;
-
-                            // Atualizar URL
-                            const newUrl = new URL(window.location);
-                            newUrl.searchParams.set('loc', currentSelectedLoc);
-                            window.history.pushState({}, '', newUrl);
-
-                            updateFavIcon();
-                            render(currentSelectedLoc);
-                        }
-                    });
-                }
-            }).addTo(map);
-            legendControl = L.control({position: 'bottomright'});
-            legendControl.onAdd = function () {
-                const div = L.DomUtil.create('div', 'info legend');
-                let grades, title;
-                
-                if (currentMapMode === 'yield') {
-                      grades = [5.0, 6.0, 7.0, 8.0];
-                      title = 'Yield Bruta (%)';
-                } else {
-                      grades = currentMapMode === 'sale' ? [0, 60000, 120000, 180000, 250000] : [0, 200, 400, 600, 800];
-                      title = `Preço Mediano (${currentMapMode==='sale'?'Venda':'Renda'})`;
-                }
-                
-                div.innerHTML = `<div class="font-bold mb-2 text-xs uppercase tracking-wide">${title}</div>`;
-                
-                for (let i = 0; i < grades.length; i++) {
-                    let label;
-                    if (currentMapMode === 'yield') {
-                         label = `> ${grades[i]}%`; 
-                    } else {
-                         label = fmtEuro(grades[i]) + (grades[i + 1] ? ' &ndash; ' + fmtEuro(grades[i + 1]) : '+');
-                    }
-                    div.innerHTML += '<div class="flex items-center gap-2 mb-1"><i style="background:' + getColor(grades[i] + (currentMapMode === 'yield' ? 0.1 : 1)) + '"></i> ' + label + '</div>';
-                }
-                return div;
-            };
-            legendControl.addTo(map);
-        }
-
-        function updateCard(id, val, hist, fullHist, dates, colorHex, fmt = fmtInt, config = {}) {
-            const el = document.getElementById(id), varEl = document.getElementById('var_' + id);
-            el.innerText = fmt(val);
-            let cls = 'text-slate-900 dark:text-white';
-            
-            if (hist.length >= 2) {
-                const prev = hist[hist.length-2];
-                
-                if (config.isFlow) {
-                    // Métricas de FLUXO (Produção): A cor depende do valor em si
-                    if (val > 0) cls = 'text-emerald-600'; 
-                    else if (val < 0) cls = 'text-rose-600';
-                    else cls = 'text-indigo-600 dark:text-indigo-400'; 
-                } else {
-                    // Métricas NORMAIS: A cor depende da variação (+ Lógica Invertida)
-                    if (val > prev) cls = config.inverse ? 'text-rose-600' : 'text-emerald-600'; 
-                    else if (val < prev) cls = config.inverse ? 'text-emerald-600' : 'text-rose-600';
-                    else cls = 'text-indigo-600 dark:text-indigo-400'; 
-                }
-            }
-            
-            el.className = `text-lg sm:text-2xl font-black tracking-tight ${cls}`;
-            
-            if (varEl) {
-                if (config.isFlow) {
-                    // Ocultar a percentagem absurda para a Produção
-                    varEl.innerHTML = '';
-                } else {
-                    varEl.innerHTML = getVariation(val, hist, dates, config);
-                }
-            }
-            
-            document.getElementById('spark_'+id).innerHTML = generateSparkline(hist, cls);
-
-            const card = document.getElementById(id).closest('.kpi-card');
-            const title = card.querySelector('p').innerText;
-            card.onclick = () => openModal(title, dates, fullHist, colorHex, config);
-        }
-
-        function render(loc) {
-            const d = globalData.locations[loc];
-            if (!d) return; 
-
-            // Últimos 3 meses, pelas datas reais de recolha (o n.º de recolhas por semana varia)
-            const lastDate = new Date(d.history[d.history.length - 1].date);
-            const cutoff = new Date(lastDate.getTime() - 90 * 86400000);
-            let h = d.history.filter(i => new Date(i.date) >= cutoff);
-            if (h.length < 2) h = d.history.slice(-2);
-            
-            // Dados Completos para o Modal
-            const fullH = d.history;
-            const fullDates = fullH.map(i => i.date);
-            const fullSales = fullH.map(i => i.sales);
-            const fullRent = fullH.map(i => i.rent);
-
-            const s = d.current.sales, r = d.current.rent;
-            
-            // Cores
-            const cSale = '#4f46e5'; // Indigo
-            const cRent = '#f97316'; // Laranja
-
-            // VENDAS
-            updateCard('sale_active', s.active_count, h.map(i=>i.sales.active_count), fullSales.map(i=>i.active_count), fullDates, cSale);
-            updateCard('sale_production', s.net_production, h.map(i=>i.sales.net_production), fullSales.map(i=>i.net_production), fullDates, cSale, v=>(v>0?'+':'')+fmtInt(v), { isFlow: true });
-            updateCard('sale_dom', Math.round(s.avg_days_on_market), h.map(i=>Math.round(i.sales.avg_days_on_market)), fullSales.map(i=>Math.round(i.avg_days_on_market)), fullDates, cSale, fmtInt, { inverse: true });
-            updateCard('sale_price', s.median_price, h.map(i=>i.sales.median_price), fullSales.map(i=>i.median_price), fullDates, cSale, fmtEuro);
-            updateCard('sale_price_m2', s.median_price_m2, h.map(i=>i.sales.median_price_m2), fullSales.map(i=>i.median_price_m2), fullDates, cSale, fmtEuro);
-            updateCard('sale_effort', s.affordability_index, h.map(i=>i.sales.affordability_index), fullSales.map(i=>i.affordability_index), fullDates, cSale, fmtDec);
-
-            // RENDAS
-            updateCard('rent_active', r.active_count, h.map(i=>i.rent.active_count), fullRent.map(i=>i.active_count), fullDates, cRent);
-            updateCard('rent_production', r.net_production, h.map(i=>i.rent.net_production), fullRent.map(i=>i.net_production), fullDates, cRent, v=>(v>0?'+':'')+fmtInt(v), { isFlow: true });
-            updateCard('rent_dom', Math.round(r.avg_days_on_market), h.map(i=>Math.round(i.rent.avg_days_on_market)), fullRent.map(i=>Math.round(i.avg_days_on_market)), fullDates, cRent, fmtInt, { inverse: true });
-            updateCard('rent_price', r.median_price, h.map(i=>i.rent.median_price), fullRent.map(i=>i.median_price), fullDates, cRent, fmtEuro);
-            updateCard('rent_price_m2', r.median_price_m2, h.map(i=>i.rent.median_price_m2), fullRent.map(i=>i.median_price_m2), fullDates, cRent, fmtEuroDec);
-            updateCard('rent_effort', r.affordability_index, h.map(i=>i.rent.affordability_index), fullRent.map(i=>i.affordability_index), fullDates, cRent, v=>fmtInt(v)+'%');
-            
-            updateCharts(d);
-            updateMapVisualization();
-        }
-
-        function updateCharts(d) {
-            const dates = d.history.map(h => h.date);
-            if (evolutionChart) evolutionChart.destroy();
-            evolutionChart = new Chart(document.getElementById('evolutionChart'), {
-                type: 'line',
-                data: {
-                    labels: dates,
-                    datasets: [
-                        { label: 'Venda (€/m²)', data: d.history.map(h=>h.sales.median_price_m2), borderColor: '#4f46e5', tension: 0.3, yAxisID: 'y' },
-                        { label: 'Renda (€/m²)', data: d.history.map(h=>h.rent.median_price_m2), borderColor: '#f97316', tension: 0.3, yAxisID: 'y1' }
-                    ]
-                },
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { position: 'top' } }, 
-                    scales: { 
-                        x: {
-                            grid: { display: false },
-                            ticks: {
-                                maxRotation: 0,
-                                autoSkip: false, // Forçamos o controlo manual via callback
-                                font: { size: 10, weight: '600' },
-                                callback: function(value, index) {
-                                    const dateStr = this.getLabelForValue(value);
-                                    const d = new Date(dateStr);
-                                    const month = d.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
-                                    
-                                    if (index === 0) return month;
-                                    
-                                    // Só mostra o label se o mês da data atual for diferente do mês da data anterior
-                                    const prevDateStr = this.getLabelForValue(index - 1);
-                                    const prevD = new Date(prevDateStr);
-                                    const prevMonth = prevD.toLocaleString('pt-PT', { month: 'short' }).replace('.', '');
-                                    
-                                    return month !== prevMonth ? month : null;
-                                }
-                            }
-                        },
-                        y: { 
-                            grace: '10%', // Adiciona margem no topo do gráfico
-                            ticks: { font: { size: 10 } } 
-                        },
-                        y1: { 
-                            position: 'right', 
-                            grace: '10%', // Adiciona margem no topo do gráfico
-                            grid: { display: false }, 
-                            ticks: { font: { size: 10 } }
-                        }   
-                    } 
-                }
-            });
-
-            /* Agregação de Distribuições (Venda + Arrendamento) */
-            const combineDist = (s, r) => {
-                let res = {};
-                const keys = new Set([...Object.keys(s || {}), ...Object.keys(r || {})]);
-                keys.forEach(k => res[k] = (s[k] || 0) + (r[k] || 0));
-                return res;
-            };
-
-            const dsS = d.current.sales.distributions;
-            const dsR = d.current.rent.distributions;
-            const combinedEnergy = combineDist(dsS.energy, dsR.energy);
-            const combinedTypology = combineDist(dsS.typology, dsR.typology);
-            const combinedAgencies = combineDist(dsS.agencies, dsR.agencies);
-
-            if(energyChart) energyChart.destroy();
-            energyChart = new Chart(document.getElementById('energyChart'), { 
-                type:'bar', 
-                data: { 
-                    labels: ['A+','B','C','D','E','F','G'], 
-                    datasets:[{ 
-                        data: ['A+','B','C','D','E','F','G'].map(k=>combinedEnergy[k]||0), 
-                        backgroundColor: [
-                            '#fff7ed', // A+ (Suave/Morto)
-                            '#ffedd5', // B
-                            '#fed7aa', // C
-                            '#fdba74', // D
-                            '#fb923c', // E
-                            '#f97316', // F
-                            '#ea580c'  // G (Vibrante/Vivo)
-                        ],
-                        borderRadius: 4
-                    }] 
-                }, 
-                options: { 
-                    maintainAspectRatio:false, 
-                    plugins:{legend:false},
-                    scales: { y: { beginAtZero: true }, x: { grid: { display: false } } }
-                } 
-            });
-            
-            if(typologyChart) typologyChart.destroy();
-
-            let labels, dataValues;
-            
-            // Lógica para alternar dados com base no switch (Padrão: Categoria/Type)
-            if (currentTypoMode === 'type') {
-                const combined = combineDist(dsS.type || {}, dsR.type || {}); 
-                labels = Object.keys(combined).sort((a,b) => combined[b] - combined[a]);
-                dataValues = labels.map(k => combined[k]);
-            } else {
-                const combined = combineDist(dsS.typology, dsR.typology);
-                labels = ['T0','T1','T2','T3','T4','T5+'];
-                dataValues = labels.map(k => combined[k] || 0);
-            }
-
-            typologyChart = new Chart(document.getElementById('typologyChart'), { 
-                type: 'bar', 
-                data: { 
-                    labels: labels, 
-                    datasets: [{ 
-                        data: dataValues, 
-                        backgroundColor: '#6366f1',
-                        borderRadius: 4
-                    }] 
-                }, 
-                options: { 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: false } 
-                } 
-            });
-            
-            if(agencyChart) agencyChart.destroy();
-            const ag = Object.entries(combinedAgencies)
-                .filter(i => !['Particular', 'Particulares'].includes(i[0]))
-                .sort((a,b) => b[1] - a[1])
-                .slice(0, 3);
-
-            agencyChart = new Chart(document.getElementById('agencyChart'), { 
-                type: 'bar', 
-                data: { 
-                    labels: ag.map(i => i[0]), 
-                    datasets: [{ 
-                        data: ag.map(i => i[1]), 
-                        backgroundColor: ['#312e81', '#4f46e5', '#818cf8'],
-                        borderRadius: 4, // Curvatura aplicada
-                        borderSkipped: false
-                    }] 
-                }, 
-                options: { 
-                    indexAxis: 'y', 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: false } }, 
-                    scales: { 
-                        x: { 
-                            display: false, // Remove eixo X para limpar o visual
-                            grid: { display: false } 
-                        },
-                        y: { 
-                            grid: { display: false },
-                            ticks: { 
-                                font: { weight: '600', size: 10 },
-                                callback: function(v) { 
-                                    let l = this.getLabelForValue(v); 
-                                    return l.length > 15 ? l.substring(0, 15) + '...' : l; 
-                                } 
-                            } 
-                        } 
-                    } 
-                } 
-            });
-
-            // --- RADAR CHART LOGIC ---
-            if (radarChart) radarChart.destroy();
-
-            // Cálculo simplificado de pontuação relativa (Base: Média Global = 50)
-            const globalStats = globalData.locations['Global'].current.sales;
-            const localStats = d.current.sales;
-            const localYield = (d.current.rent.median_price * 12 / d.current.sales.median_price) * 100 || 0;
-            const globalYield = (globalData.locations['Global'].current.rent.median_price * 12 / globalStats.median_price) * 100 || 0;
-
-            // Score Preço: Se for mais caro que a média, score > 50 (Premium)
-            const scorePrice = (localStats.median_price / globalStats.median_price) * 50;
-            // Score Liquidez: Se vender mais rápido (menor DOM), score > 50
-            const scoreSpeed = (globalStats.avg_days_on_market / (localStats.avg_days_on_market || 1)) * 50;
-            // Score Stock: Volume relativo
-            const scoreStock = Math.min((localStats.active_count / globalStats.active_count) * 200, 100); // 200 para escalar melhor freguesias pequenas
-            // Score Yield
-            const scoreYield = (localYield / globalYield) * 50;
-            // Qualidade (Fictício/Exemplo baseia-se em % de certificados A/B se houvesse, aqui hardcoded relativo ou aleatório para demonstração visual, usando Energy A+B como proxy)
-            // Vamos usar a % de eficiencia A e B do gráfico de energia
-            const localEnergyHigh = (combinedEnergy['A+'] || 0) + (combinedEnergy['B'] || 0);
-            const totalEnergy = Object.values(combinedEnergy).reduce((a,b)=>a+b,0);
-            const scoreQuality = totalEnergy ? (localEnergyHigh / totalEnergy) * 200 : 50; // Multiplicador para dar escala
-
-            radarChart = new Chart(document.getElementById('radarChart'), {
-                type: 'radar',
-                data: {
-                    labels: ['Preço', 'Liquidez', 'Stock', 'Yield', 'Qualidade'],
-                    datasets: [{
-                        label: 'Localização Atual',
-                        data: [scorePrice, scoreSpeed, scoreStock, scoreYield, scoreQuality],
-                        fill: true,
-                        backgroundColor: 'rgba(79, 70, 229, 0.2)', // Indigo
-                        borderColor: '#4f46e5',
-                        pointBackgroundColor: '#4f46e5',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: '#4f46e5'
-                    }, {
-                        label: 'Concelho (referência)',
-                        data: [50, 50, 50, 50, 50], // Base line
-                        fill: true,
-                        backgroundColor: 'rgba(148, 163, 184, 0.2)', // Slate
-                        borderColor: '#94a3b8',
-                        pointRadius: 0
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    elements: { line: { borderWidth: 3 } },
-                    scales: {
-                        r: {
-                            angleLines: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' },
-                            grid: { color: document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0' },
-                            pointLabels: {
-                                font: { size: 10, weight: '700' },
-                                color: document.documentElement.classList.contains('dark') ? '#94a3b8' : '#64748b'
-                            },
-                            suggestedMin: 0,
-                            suggestedMax: 100,
-                            ticks: { display: false } 
-                        }
-                    },
-                    plugins: { 
-                        legend: { position: 'top', labels: { font: { size: 10 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: function(context) {
-                                    let label = context.dataset.label || '';
-                                    if (context.datasetIndex === 0) { // Local
-                                         let val = context.raw;
-                                         let delta = ((val - 50) / 50) * 100;
-                                         let sign = delta > 0 ? '+' : '';
-                                         return label + ': ' + sign + delta.toFixed(1) + '% vs Concelho';
-                                    }
-                                    return label + ': referência';
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-        
-        // --- FUNÇÕES FAVORITOS ---
-        function toggleFavorite() {
-            const saved = localStorage.getItem('datacasa_fav');
-            // Se já for o favorito, removemos. Se não, definimos.
-            if (saved === currentSelectedLoc) {
-                localStorage.removeItem('datacasa_fav');
-            } else {
-                localStorage.setItem('datacasa_fav', currentSelectedLoc);
-                // Pequena animação de feedback
-                const btn = document.getElementById('btnFav');
-                btn.style.transform = "scale(1.1)";
-                setTimeout(() => btn.style.transform = "scale(1)", 200);
-            }
-            updateFavIcon();
-        }
-
-        function updateFavIcon() {
-            const saved = localStorage.getItem('datacasa_fav');
-            const icon = document.getElementById('iconFav');
-            const btn = document.getElementById('btnFav');
-            
-            if (saved === currentSelectedLoc) {
-                icon.classList.remove('text-slate-300');
-                icon.classList.add('text-yellow-400');
-            } else {
-                icon.classList.remove('text-yellow-400');
-                icon.classList.add('text-slate-300');
-            }
-        }
-
-        /* ==========================================================
-            GESTÃO DE ARTIGOS E ARQUIVO
-            ========================================================== */
-
-        // 1. Carregar o ficheiro JSON
-        async function fetchArticles() {
-            try {
-                // CORREÇÃO 1: Mantive apenas uma chamada fetch com o timestamp (cache buster)
-                const response = await fetch('articles.json?t=' + Date.now());
-                
-                // CORREÇÃO 2: Faltava converter a resposta para JSON e guardar na variável global
-                datacasaArticles = await response.json();
-
-                renderArticlesHome();
-
-                // VERIFICAR SE EXISTE UM ARTIGO NO URL AO CARREGAR
-                const urlParams = new URLSearchParams(window.location.search);
-                const artSlug = urlParams.get('art');
-                
-                if (artSlug) {
-                    const art = datacasaArticles.find(a => a.slug === artSlug);
-                    if (art) {
-                        // Pequeno delay para garantir que o DOM está pronto e a transição é suave
-                        setTimeout(() => openArticle(art.id), 100);
-                    }
-                }
-
-            } catch (e) {
-                console.error("Erro ao carregar articles.json:", e);
-                document.getElementById('articlesGrid').innerHTML = '<div class="text-rose-500 text-xs font-bold">Falha ao carregar análises.</div>';
-            }
-        }
-
-        // 2. Renderizar os 2 cards na página principal
-        function renderArticlesHome() {
-            const grid = document.getElementById('articlesGrid');
-            if (!datacasaArticles || datacasaArticles.length === 0) {
-                grid.innerHTML = '<div class="text-slate-400 text-xs">Sem artigos disponíveis.</div>';
-                return;
-            }
-
-            const art1 = datacasaArticles[0]; // O mais recente (Destaque)
-            const art2 = datacasaArticles[1]; // O anterior (Pequeno)
-
-            let html = `
-                <div onclick="openArticle(${art1.id})" class="md:col-span-2 group bg-white dark:bg-slate-900 border-2 border-indigo-500/20 dark:border-indigo-400/10 rounded-[2.5rem] p-8 hover:border-indigo-500/40 transition-all cursor-pointer relative overflow-hidden shadow-sm">
-                    <div class="relative z-10 flex flex-col h-full">
-                        <div class="flex items-center gap-3 mb-6">
-                            <span class="flex h-2 w-2 rounded-full bg-indigo-600 animate-pulse"></span>
-                            <span class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">${art1.category}</span>
-                        </div>
-                        <h3 class="text-2xl font-black text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 transition-colors leading-tight">${art1.title}</h3>
-                        <p class="text-slate-500 dark:text-slate-400 text-sm leading-relaxed mb-8 line-clamp-3 md:max-w-[90%]">${art1.excerpt}</p>
-                        <div class="mt-auto flex items-center justify-between border-t border-slate-100 dark:border-slate-800 pt-6">
-                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">${art1.date} • ${art1.readTime}</div>
-                            <span class="bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest group-hover:bg-indigo-700 transition-all">Ler Artigo</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            if (art2) {
-                html += `
-                <div onclick="openArticle(${art2.id})" class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-[2.5rem] p-8 hover:shadow-xl transition-all cursor-pointer flex flex-col">
-                    <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-6">${art2.date}</span>
-                    <h3 class="text-lg font-black text-slate-900 dark:text-white mb-4 group-hover:text-indigo-600 transition-colors leading-snug">${art2.title}</h3>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6 line-clamp-3">${art2.excerpt}</p>
-                    <div class="mt-auto pt-6 border-t border-slate-50 dark:border-slate-800/50 text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Ver →</div>
-                </div>
-                `;
-            }
-
-            grid.innerHTML = html;
-        }
-
-        // 3. Abrir o leitor de artigo
-        function openArticle(id) {
-            const art = datacasaArticles.find(a => a.id === id);
-            if (!art) return;
-
-            // 1. ATUALIZAR URL (DEEP LINKING)
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.set('art', art.slug); // Adiciona ?art=slug-do-artigo
-            window.history.pushState({}, '', newUrl);
-
-            document.getElementById('artTitle').innerText = art.title;
-            document.getElementById('artCategory').innerText = art.category;
-            document.getElementById('artMeta').innerText = `${art.date} • ${art.readTime} de leitura`;
-            
-            // 2. PROCESSAMENTO DE TEXTO (CORREÇÃO DE LISTAS E CABEÇALHOS)
-            let processedContent = art.content
-                // Headers ###
-                .replace(/###\s(.*?)(?:\n|$)/g, '<h3 class="text-xl font-black text-slate-800 dark:text-white mt-8 mb-3 tracking-tight">$1</h3>')
-                // Negrito **
-                .replace(/\*\*(.*?)\*\*/g, '<b class="text-indigo-900 dark:text-indigo-200">$1</b>')
-                // Listas (Deteta linhas começadas por "- " e converte em <li>)
-                .replace(/^\s*-\s+(.*)/gm, '<li>$1</li>')
-                // Envolve <li> consecutivos num <ul>
-                .replace(/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/g, '<ul>$1</ul>');
-
-            // Injeção do Gráfico (se necessário)
-            if (art.hasChart && !processedContent.includes('id="chartInArticle"')) {
-                processedContent += '<div class="h-64 my-8 w-full"><canvas id="chartInArticle"></canvas></div>';
-            }
-
-            document.getElementById('artContent').innerHTML = processedContent;
-
-            document.getElementById('articleReaderModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-
-            // Gerar gráfico
-            if (art.hasChart && art.chartConfig) {
-                setTimeout(() => {
-                    const canvas = document.getElementById('chartInArticle');
-                    if(canvas) {
-                        const ctx = canvas.getContext('2d');
-                        if (articleChartInstance) articleChartInstance.destroy();
-                        
-                        const finalConfig = {
-                            type: art.chartConfig.type,
-                            data: {
-                                labels: art.chartConfig.labels,
-                                datasets: art.chartConfig.datasets
-                            },
-                            options: art.chartConfig.options || {} 
-                        };
-
-                        const isDark = document.documentElement.classList.contains('dark');
-                        if(isDark) {
-                            finalConfig.options.scales = finalConfig.options.scales || {};
-                            if(!finalConfig.options.scales.x) finalConfig.options.scales.x = {};
-                            if(!finalConfig.options.scales.y) finalConfig.options.scales.y = {};
-                            finalConfig.options.scales.x.grid = { color: '#1e293b' };
-                            finalConfig.options.scales.y.grid = { color: '#1e293b' };
-                            Chart.defaults.color = '#94a3b8';
-                        }
-                        articleChartInstance = new Chart(ctx, finalConfig);
-                    }
-                }, 100);
-            }
-        }
-
-        function closeArticle() {
-            document.getElementById('articleReaderModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-
-            // REMOVER O PARÂMETRO 'art' DO URL AO FECHAR
-            const newUrl = new URL(window.location);
-            newUrl.searchParams.delete('art');
-            window.history.pushState({}, '', newUrl);
-        }
-
-        // 4. Abrir o Arquivo (Lista Completa)
-        function openArticleList() {
-            const container = document.getElementById('archiveContainer');
-            if (!datacasaArticles || datacasaArticles.length === 0) return;
-
-            container.innerHTML = datacasaArticles.map(art => `
-                <div onclick="openArticle(${art.id}); closeArticleList();" class="archive-item group">
-                    <div class="flex justify-between items-start mb-2">
-                        <span class="text-[9px] font-black text-indigo-600 uppercase tracking-widest">${art.category}</span>
-                        <span class="text-[10px] text-slate-400 font-bold">${art.date}</span>
-                    </div>
-                    <h4 class="font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 transition-colors">${art.title}</h4>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2">${art.excerpt}</p>
-                </div>
-            `).join('');
-
-            document.getElementById('articleListModal').classList.remove('hidden');
-            document.body.style.overflow = 'hidden';
-        }
-
-        function closeArticleList() {
-            document.getElementById('articleListModal').classList.add('hidden');
-            document.body.style.overflow = 'auto';
-        }
-        
-					function openRadarModal() {
-				document.getElementById('radarModal').classList.remove('hidden');
-			}
-
-			function closeRadarModal() {
-				document.getElementById('radarModal').classList.add('hidden');
-			}
-		
-        init();
-        
-        if ('serviceWorker' in navigator) {
-        // CÓDIGO DE LIMPEZA: Remove Service Workers antigos que estejam a bloquear atualizações
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-            for(let registration of registrations) {
-                console.log('Service Worker antigo encontrado. A remover...', registration);
-                registration.unregister();
-            }
-        });
-        
-        // Limpa a cache de ficheiros do browser
-        if(window.caches) {
-            caches.keys().then(function(names) {
-                for (let name of names) caches.delete(name);
-            });
-        }
+    ${et ? `<div><span class="lbl">Certificado energético · ${et} com classe</span><div style="margin-top:8px">${distBar(en, ['A+','A','B','B-','C','D','E','F'], ['#7fe0b8','#7fe0b8','#a5d6a7','#a5d6a7','#c7c8ff','#9a98b3','#ffb36b','#ff6b85'])}</div>
+      <p class="mu" style="margin:6px 0 0;font-size:12px">${fmt(ef / et * 100)}% do stock certificado está em E ou F.</p></div>` : ''}
+    ${Object.keys(ty).length ? `<div><span class="lbl">Tipologia</span><div style="margin-top:8px">${distBar(ty, ['T0','T1','T2','T3','T4','T5+'], ['#4a4870','#6b6aa8','#8b8cff','#a5a7ff','#c7c8ff','#e7e6f2'])}</div>
+      ${topType ? `<p class="mu" style="margin:6px 0 0;font-size:12px">${fmt(topType[1] / tpt * 100)}% ${topType[0] === 'Moradia' ? 'moradias' : topType[0].toLowerCase() + 's'}.</p>` : ''}</div>` : ''}`;
+}
+function locStat(key) {
+  const loc = D.locations[key]; if (!loc) return null; const c = loc.current.sales, code = key === 'UF_FUNDAO' ? 'CID' : CODES[key];
+  return { m2: c.median_price_m2 || null, n: c.sample_size ?? c.active_count, chg: code && SYMS[code] ? chg(code, 30) : null, code };
+}
+function geoStat(f) {
+  const raw = f.properties.fre_name || f.properties.fre_name_long || '', n = norm(raw);
+  if (n.includes('FUNDAO') && n.includes('VALVERDE')) return { name: 'Cidade (UF Fundão)', ...locStat('UF_FUNDAO') };
+  const parts = raw.split(/,| e /i).map(s => s.trim()).filter(Boolean);
+  const keys = parts.map(p => Object.keys(D.locations).find(k => norm(k) === norm(p))).filter(Boolean);
+  const st = keys.map(locStat).filter(s => s && s.n);
+  if (!st.length) return { name: raw, m2: null, n: 0, chg: null, code: keys[0] ? CODES[keys[0]] : null };
+  const n2 = st.reduce((a, s) => a + s.n, 0), m2 = st.reduce((a, s) => a + (s.m2 || 0) * s.n, 0) / n2;
+  return { name: raw, m2, n: n2, chg: st.length === 1 ? st[0].chg : null, code: st.sort((a, b) => b.n - a.n)[0].code };
+}
+const RAMP = ['#24224a','#33307a','#4b47ad','#6b6ade','#8b8cff','#b3b4ff','#dcdcff'];
+function mapColor(st) {
+  if (!st || !st.n) return '#1b1a2b';
+  if (mapMode === 'chg') { if (st.chg == null) return '#2c2a45'; const v = Math.max(-15, Math.min(15, st.chg)); return v > 0.05 ? `rgba(139,140,255,${0.25 + v / 15 * 0.75})` : v < -0.05 ? `rgba(255,107,133,${0.25 - v / 15 * 0.75})` : '#4a4870'; }
+  const v = mapMode === 'n' ? st.n : st.m2, br = mapMode === 'n' ? [3, 6, 10, 15, 25, 40] : [400, 550, 700, 850, 1000, 1300];
+  let i = 0; while (i < br.length && v > br[i]) i++; return RAMP[i];
+}
+function renderMap() {
+  if (!window.L || !GEO) return;
+  if (!map) {
+    map = L.map('map', { scrollWheelZoom: false, zoomControl: true, attributionControl: true, minZoom: 9, maxZoom: 15, zoomSnap: 0.25 });
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
+  }
+  if (geoLayer) map.removeLayer(geoLayer);
+  geoLayer = L.geoJSON(GEO, {
+    style: f => ({ fillColor: mapColor(geoStat(f)), fillOpacity: .88, color: '#0d0c17', weight: 1.2 }),
+    onEachFeature: (f, layer) => {
+      const st = geoStat(f);
+      layer.bindTooltip(`<b>${esc(st.name)}</b>${st.code ? ` <span style="color:#9a98b3">${st.code}</span>` : ''}<br>${st.n ? `${fmt(st.m2)} €/m² · ${st.n} anún.${st.chg != null ? `<br><span style="color:${st.chg > 0 ? '#a5a7ff' : st.chg < 0 ? '#ff6b85' : '#9a98b3'}">${pctS(st.chg)} 1M</span>` : ''}` : '<span style="color:#9a98b3">sem oferta</span>'}`, { className: 'dc-tip', sticky: true });
+      layer.on('mouseover', () => layer.setStyle({ weight: 2.5, color: '#e7e6f2' })); layer.on('mouseout', () => geoLayer.resetStyle(layer));
+      layer.on('click', () => { if (st.code && SYMS[st.code]) { location.hash = '#mercado'; select(st.code); } });
     }
-    </script>
-	
-	<script>
-		function ml_webform_success_37113851() {
-			var $ = ml_jQuery || jQuery;
-			$('.ml-subscribe-form-37113851 .row-success').removeClass('hidden').show();
-			$('.ml-subscribe-form-37113851 .row-form').hide();
-		}
-	</script>
-	<script src="https://groot.mailerlite.com/js/w/webforms.min.js?v95037e5bac78f29ed026832ca21a7c7b" type="text/javascript"></script>
+  }).addTo(map);
+  map.fitBounds(geoLayer.getBounds(), { padding: [10, 10] });
+  const lab = mapMode === 'n' ? ['≤3','6','10','15','25','40+'] : mapMode === 'm2' ? ['≤400','550','700','850','1 000','1 300+'] : null;
+  $('#legend').innerHTML = mapMode === 'chg' ? `<span class="mu">Var. 1M</span><span class="dn m">−15%</span><span class="sw" style="background:linear-gradient(90deg,#ff6b85,#4a4870,#8b8cff)"></span><span class="up m">+15%</span><span class="mu">· clique numa freguesia para ver a cotação</span>`
+    : `<span class="mu">${mapMode === 'n' ? 'Anúncios' : '€/m² mediano'}</span><span class="sw">${RAMP.slice(1).map(c => `<i style="flex:1;background:${c}"></i>`).join('')}</span><span class="m mu">${lab[0]} … ${lab[lab.length - 1]}</span><span class="mu">· clique numa freguesia para ver a cotação</span>`;
+}
+function renderHealth() {
+  const G = D.locations.Global.history, first = DATES[0], last = DATES[DATES.length - 1];
+  const ent = G.slice(1).reduce((a, h) => a + (h.sales.new_entries || 0), 0), net = G.slice(1).reduce((a, h) => a + (h.sales.net_production || 0), 0), ex = ent - net;
+  const byMonth = {}; DATES.forEach(d => { const k = Mes(d.getMonth()); byMonth[k] = (byMonth[k] || 0) + 1; });
+  const mx = Math.max(...Object.values(byMonth));
+  const { list, total } = agentsData('Global');
+  $('#health').innerHTML = `<div class="sec-h"><h2>Saúde dos dados</h2></div>
+    <span class="mu m" style="font-size:12px">${DATES.length} recolhas · ${dd(first)} – ${dd(last)}</span>
+    <div style="display:flex;align-items:flex-end;gap:4px;height:60px">${Object.entries(byMonth).map(([m, c]) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div title="${m}: ${c} recolhas" style="width:100%;height:${c / mx * 44}px;background:#4b47ad;border-radius:3px"></div><span class="mu" style="font-size:10px">${m}</span></div>`).join('')}</div>
+    <div class="m"><div class="kv"><span>Entradas registadas</span><span class="up">+${ent}</span></div><div class="kv"><span>Saídas registadas</span><span class="dn">−${ex}</span></div><div class="kv"><span>Variação do stock</span><span>${net >= 0 ? '+' : '−'}${Math.abs(net)}</span></div></div>
+    <div style="border-top:1px dashed var(--line);padding-top:10px"><span class="lbl">Quem tem a montra · ${total} anúncios</span>
+      <div class="m" style="margin-top:6px">${list.map(a => `<div class="kv"><span style="${a.part ? 'color:var(--warn)' : ''}">${esc(a.n)}</span><span>${a.c} · ${fmt(a.p, 1)}%</span></div>`).join('')}</div></div>`;
+}
+function renderSectorTable() {
+  const keys = ['IDF','CID','SUL','NOR','POE'].filter(k => SYMS[k]);
+  const nFreg = k => k === 'IDF' ? ORDER.filter(x => SYMS[x].grp === 'Freguesias').length : k === 'CID' ? 5 : (SYMS[k].parishes || []).length;
+  const conf = n => n >= 50 ? '●●●' : n >= 20 ? '●●○' : '●○○';
+  $('#sectorTable').innerHTML = `<div class="sec-h"><h2>Setores do índice</h2><span class="mu" style="font-size:12px">€/m² mediano · 1M = recolha mais próxima de há 30 dias · desde ${ddmmyyyy(DATES[0])}</span></div>
+    <div style="overflow-x:auto"><table class="tb m"><thead><tr><th>Setor</th><th class="r">€/m²</th><th class="r">1M</th><th class="r">Desde ${MES[DATES[0].getMonth()]}</th><th class="r">Anúncios</th><th class="r hide-sm">Freg.</th><th class="hide-sm">Conf.</th><th class="hide-sm">Evolução</th></tr></thead>
+    <tbody>${keys.map(k => { const S = SYMS[k], L = lastPt(S.s), p1 = chg(k, 30), pa = chg(k, 'ALL');
+      return `<tr data-sym="${k}"><td><b class="wh">${k}</b> <span class="mu" style="font-family:var(--sans)">${esc(S.name)}</span></td><td class="r wh">${fmt(L.v)}</td><td class="r ${tcls(p1)}">${pctS(p1)}</td><td class="r ${tcls(pa)}">${pctS(pa)}</td><td class="r">${L.n}</td><td class="r hide-sm">${nFreg(k)}</td><td class="hide-sm up">${conf(L.n)}</td><td class="hide-sm" style="width:120px">${spark(S.s, S.color, 110, 22, 400).replace('<svg ', '<svg width="110" height="22" ')}</td></tr>`; }).join('')}</tbody></table></div>
+    <span class="mu" style="font-size:11px">Medianas calculadas sobre todos os anúncios de cada setor. Confiança: ●●● ≥ 50 anúncios · ●●○ ≥ 20 · ●○○ menos de 20.</span>`;
+}
 
+/* -------------------------------------------------------------- artigos */
+let ARTS = [];
+async function loadArticles() {
+  try { const r = await fetch('articles.json?t=' + Date.now()); ARTS = await r.json(); } catch { ARTS = []; }
+  ARTS.sort((a, b) => (b.priority === 'high') - (a.priority === 'high') || Number(b.id) - Number(a.id));
+  $('#arts').innerHTML = ARTS.length ? ARTS.map(a => `<button class="card art" data-art="${esc(a.slug)}"><span class="lbl">${esc(a.category)} · <span class="m">${esc(a.date)}</span></span><h3>${esc(a.title)}</h3><p>${esc(a.excerpt)}</p><span class="mu m" style="font-size:11px">${esc(a.readTime)} de leitura →</span></button>`).join('')
+    : '<div class="loading">Sem artigos de momento.</div>';
+  const slug = new URL(location).searchParams.get('art'); if (slug) openArticle(slug);
+}
+let chartJs;
+function loadChartJs() { return chartJs || (chartJs = new Promise((ok, ko) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js'; s.onload = ok; s.onerror = ko; document.head.appendChild(s); })); }
+function openArticle(slug) {
+  const a = ARTS.find(x => x.slug === slug); if (!a) return;
+  const u = new URL(location); u.searchParams.set('art', a.slug); history.replaceState(null, '', u);
+  $('#artCat').textContent = a.category; $('#artTitle').textContent = a.title; $('#artMeta').textContent = `${a.date} · ${a.readTime} de leitura`;
+  let html = String(a.content).replace(/\sclass="[^"]*"/g, '')
+    .replace(/###\s(.*?)(?:\n|$)/g, '<h3>$1</h3>').replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+    .replace(/^\s*-\s+(.*)/gm, '<li>$1</li>').replace(/(<li>.*<\/li>(\s*<li>.*<\/li>)*)/g, '<ul>$1</ul>');
+  const hasChart = a.hasChart && a.hasChart !== 'False' && a.chartConfig;
+  if (hasChart) html = html.includes('id="chartInArticle"') ? html.replace(/<canvas[^>]*id="chartInArticle"[^>]*><\/canvas>/, '<div style="height:280px;margin:24px 0"><canvas id="artChart"></canvas></div>')
+    : html + '<div style="height:280px;margin:24px 0"><canvas id="artChart"></canvas></div>';
+  $('#artBody').innerHTML = html; $('#reader').classList.remove('hide'); document.body.style.overflow = 'hidden';
+  if (typeof gtag === 'function') gtag('event', 'page_view', { page_title: a.title, page_location: location.href });
+  if (hasChart) loadChartJs().then(() => {
+    let cfg; try { cfg = typeof a.chartConfig === 'string' ? JSON.parse(a.chartConfig.replace(/'/g, '"').replace(/\bTrue\b/g, 'true').replace(/\bFalse\b/g, 'false').replace(/\bNone\b/g, 'null')) : a.chartConfig; } catch { return; }
+    const pal = ['#8b8cff', '#ffb36b', '#7fe0b8', '#e39bff', '#f5c26b', '#ff6b85'];
+    Chart.defaults.color = '#9a98b3'; Chart.defaults.font.family = "'JetBrains Mono', monospace"; Chart.defaults.borderColor = '#26243d';
+    new Chart($('#artChart'), { type: cfg.type || 'bar', data: { labels: cfg.labels, datasets: (cfg.datasets || []).map((d, i) => ({ ...d,
+      backgroundColor: cfg.type === 'doughnut' || cfg.type === 'pie' ? pal : pal[i % pal.length], borderColor: cfg.type === 'doughnut' || cfg.type === 'pie' ? '#151424' : pal[i % pal.length] })) },
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } } });
+  }).catch(() => {});
+}
+function closeArticle() { $('#reader').classList.add('hide'); document.body.style.overflow = ''; const u = new URL(location); u.searchParams.delete('art'); history.replaceState(null, '', u); }
+
+/* ---------------------------------------------------------------- vistas */
+function show(view) {
+  view = ['mercado', 'setores', 'artigos', 'sobre'].includes(view) ? view : 'mercado';
+  document.querySelectorAll('main').forEach(m => { const on = m.id === 'view-' + view; m.classList.toggle('hide', !on); if (on) m.style.display = 'flex'; });
+  document.querySelectorAll('nav.tabs .pill').forEach(a => a.classList.toggle('on', a.dataset.view === view));
+  if (view === 'setores' && D) { renderCandles(); renderFicha(); renderHealth(); renderSectorTable(); loadMap(); }
+  if (view === 'mercado' && D) { drawQuoteChart(); renderPerfChartOnly(); }
+  window.scrollTo({ top: 0 });
+}
+function renderPerfChartOnly() { if ($('#perfChart')) renderPerf(); }
+async function loadMap() {
+  if (!GEO) { try { GEO = await (await fetch('freguesias_fundao.geojson')).json(); } catch { $('#map').innerHTML = '<div class="loading">Não foi possível carregar o mapa.</div>'; return; } }
+  const go = () => { renderMap(); setTimeout(() => map && map.invalidateSize(), 50); };
+  if (window.L) go(); else window.addEventListener('load', go, { once: true });
+}
+function renderAll() {
+  renderSession(); renderTape(); renderIx(); renderWL(); renderQuote(); renderStats(); renderPerf(); renderMoves(); renderAgents();
+  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias').length;
+  $('#mapTeaser').textContent = `${fr} freguesias com oferta, velas mensais por setor e saúde dos dados`;
+  const dl = $('#symlist'); dl.innerHTML = ORDER.map(k => `<option value="${k}">${esc(SYMS[k].name)}</option>`).join('') + ORDER.filter(k => SYMS[k].grp === 'Freguesias').map(k => `<option value="${esc(SYMS[k].name)}">${k}</option>`).join('');
+}
+
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-sym]'); if (t) { if (location.hash !== '#mercado' && location.hash !== '') location.hash = '#mercado'; select(t.dataset.sym, true); return; }
+  const a = e.target.closest('[data-art]'); if (a) { openArticle(a.dataset.art); return; }
+  if (e.target.id === 'reader' || e.target.id === 'artClose') closeArticle();
+  const mm = e.target.closest('#mapMode [data-mode]'); if (mm) { mapMode = mm.dataset.mode; document.querySelectorAll('#mapMode .pill').forEach(b => b.classList.toggle('on', b === mm)); renderMap(); }
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#reader').classList.contains('hide')) closeArticle(); });
+$('#q').addEventListener('change', e => {
+  const v = e.target.value.trim(), up = v.toUpperCase();
+  const k = SYMS[up] ? up : ORDER.find(x => norm(SYMS[x].name) === norm(v)) || ORDER.find(x => norm(SYMS[x].name).startsWith(norm(v)));
+  if (k) { location.hash = '#mercado'; select(k, true); e.target.value = ''; e.target.blur(); }
+});
+window.addEventListener('hashchange', () => show(location.hash.slice(1)));
+let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!D) return; const v = location.hash.slice(1) || 'mercado';
+  if (v === 'mercado') { drawQuoteChart(); renderPerf(); } if (v === 'setores') { renderCandles(); } }, 150); });
+
+async function init() {
+  try {
+    const r = await fetch('api/data/?t=' + Date.now()); if (!r.ok) throw new Error(r.status); D = await r.json();
+    buildSymbols();
+    const u = new URL(location), s = u.searchParams.get('s'), loc = u.searchParams.get('loc');
+    if (s && SYMS[s.toUpperCase()]) sel = s.toUpperCase();
+    else if (loc) sel = loc === 'Global' ? 'IDF' : loc === 'UF_FUNDAO' ? 'CID' : (CODES[loc] && SYMS[CODES[loc]] ? CODES[loc] : sel);
+    else if (favs[0] && SYMS[favs[0]]) sel = favs[0];
+    $('#loading').classList.add('hide'); $('#mercado').classList.remove('hide');
+    renderAll(); show(location.hash.slice(1) || 'mercado');
+  } catch (e) { console.error(e); $('#loading').textContent = 'Não foi possível carregar os dados. Tente novamente dentro de minutos.'; }
+  loadArticles();
+}
+init();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(rs => rs.forEach(r => r.unregister()));
+  if (window.caches) caches.keys().then(ns => ns.forEach(n => caches.delete(n)));
+}
+function ml_webform_success_37113851() {
+  document.querySelector('.ml-subscribe-form-37113851 .row-success').style.display = 'block';
+  document.querySelector('.ml-subscribe-form-37113851 .row-form').style.display = 'none';
+}
+</script>
+<script src="https://groot.mailerlite.com/js/w/webforms.min.js?v95037e5bac78f29ed026832ca21a7c7b" type="text/javascript"></script>
 </body>
 </html>
