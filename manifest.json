@@ -1,10 +1,10 @@
 {
-  "name": "datacasa | Fundão",
+  "name": "datacasa · Bolsa do Fundão",
   "short_name": "datacasa",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#f8fafc",
-  "theme_color": "#ffffff",
+  "background_color": "#0d0c17",
+  "theme_color": "#0d0c17",
   "orientation": "portrait-primary",
   "icons": [
     {
