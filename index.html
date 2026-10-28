@@ -17,18 +17,18 @@
 </script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>datacasa · Bolsa do Fundão | Mercado imobiliário em tempo real</title>
-<meta name="description" content="A bolsa do imobiliário do concelho do Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield, atualizados a cada recolha.">
+<title>datacasa · Bolsa do Fundão | Preços das casas no Fundão</title>
+<meta name="description" content="Quanto custam as casas no concelho do Fundão: preço por m² em cada freguesia e zona, casas à venda, rendas e evolução desde fevereiro, atualizado a cada recolha.">
 <meta name="author" content="datacasa">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://datacasa.pt/">
 <meta property="og:title" content="datacasa · Bolsa do Fundão">
-<meta property="og:description" content="Cotações do imobiliário no Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield.">
+<meta property="og:description" content="Preço por m² em cada freguesia do Fundão, casas à venda, rendas e evolução desde fevereiro.">
 <meta property="og:image" content="https://datacasa.pt/og-image.png">
 <meta property="twitter:card" content="summary_large_image">
 <meta property="twitter:url" content="https://datacasa.pt/">
 <meta property="twitter:title" content="datacasa · Bolsa do Fundão">
-<meta property="twitter:description" content="Cotações do imobiliário no Fundão: €/m² mediano por freguesia e setor, oferta, rendas e yield.">
+<meta property="twitter:description" content="Preço por m² em cada freguesia do Fundão, casas à venda, rendas e evolução desde fevereiro.">
 <meta property="twitter:image" content="https://datacasa.pt/og-image.png">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#0d0c17">
@@ -39,8 +39,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" defer></script>
 <style>
 :root{
   --bg:#0d0c17;--panel:#151424;--panel2:#1b1a30;--line:#26243d;--line2:#201f33;--line3:#2c2a45;
@@ -54,7 +52,8 @@ body{margin:0;background:var(--bg);color:var(--tx);font-family:var(--sans);-webk
 a{color:var(--up);text-decoration:none}a:hover{color:#c7c8ff}
 button{font:inherit;color:inherit}
 .m{font-family:var(--mono);font-variant-numeric:tabular-nums}
-.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu)}.wh{color:var(--wh)}
+.up{color:var(--up)}.dn{color:var(--dn)}.mu{color:var(--mu)}.wh{color:var(--wh)}.wa{color:var(--warn)}
+.u{font-size:.62em;font-weight:500;color:var(--mu);margin-left:.18em;letter-spacing:0}
 .wrap{max-width:1480px;margin:0 auto;padding:14px;display:flex;flex-direction:column;gap:12px}
 .card{background:var(--panel);border:1px solid var(--line);border-radius:16px;min-width:0}
 .pill{background:transparent;border:0;color:var(--mu2);font:600 12px var(--sans);padding:7px 12px;border-radius:999px;cursor:pointer;white-space:nowrap}
@@ -63,16 +62,16 @@ button{font:inherit;color:inherit}
 .pill.ol{border:1px solid var(--line3)}
 .seg{display:inline-flex;flex-wrap:wrap;background:var(--bg);border:1px solid var(--line);border-radius:999px;padding:3px}
 .lbl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.08em;font-weight:600}
+.help{margin:0;font-size:12.5px;line-height:1.5;color:var(--mu)}
 .flap{position:relative;display:inline-flex;align-items:center;background:var(--bg);border:1px solid var(--line3);border-radius:4px;padding:3px 6px;color:var(--wh);font-weight:700;overflow:hidden}
 .flap::after{content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#000}
 .chip{display:inline-flex;align-items:center;gap:6px;font-size:11px;padding:5px 10px;border-radius:999px;border:1px solid var(--line3);color:var(--tx2);white-space:nowrap}
 .dot{width:7px;height:7px;border-radius:50%;background:var(--yld);display:inline-block}
-.bdg{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;padding:4px 0;border-radius:6px;display:inline-block;min-width:58px}
+.bdg{font-family:var(--mono);font-size:11px;font-weight:700;text-align:center;padding:4px 0;border-radius:6px;display:inline-block;min-width:60px}
 .bdg.u{background:#26265a;color:#c7c8ff}.bdg.d{background:#4a1626;color:#ffb3c1}.bdg.z{background:var(--line);color:var(--mu2)}
 .r{text-align:right}
 .hide{display:none!important}
 h1,h2,h3{margin:0}
-/* header */
 header.top{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:2px 4px}
 .brand{display:flex;align-items:center;gap:10px;color:inherit}
 .logo{width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:21px}
@@ -83,77 +82,88 @@ nav.tabs{display:flex;gap:2px;flex-wrap:wrap}
 .search input{background:transparent;border:0;outline:0;color:var(--tx);font:13px var(--sans);width:100%}
 .search input::placeholder{color:var(--mu)}
 .spacer{flex:1}
-/* ticker */
-.tape{display:flex;align-items:center;gap:0;overflow:hidden;padding:0}
+.tape{display:flex;align-items:center;overflow:hidden;padding:0}
 .tape .lbl{padding:9px 14px;white-space:nowrap;border-right:1px solid var(--line);font-family:var(--sans)}
-.tape-in{display:flex;gap:22px;padding:9px 14px;white-space:nowrap;animation:tape 70s linear infinite;width:max-content}
+.tape-in{display:flex;gap:24px;padding:9px 14px;white-space:nowrap;animation:tape 80s linear infinite;width:max-content}
 .tape:hover .tape-in{animation-play-state:paused}
 @keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media (prefers-reduced-motion:reduce){.tape-in{animation:none}}
 .tk{display:inline-flex;align-items:center;gap:8px;font-size:12px;cursor:pointer}
-/* index cards */
 .ixrow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-.ix{padding:12px 14px;display:flex;flex-direction:column;gap:4px;cursor:pointer;text-align:left;border:1px solid var(--line)}
+.ix{padding:12px 14px;display:flex;flex-direction:column;gap:5px;cursor:pointer;text-align:left}
 .ix:hover{border-color:var(--line3);background:#181729}
-.ix .t{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;gap:6px}
-.ix .v{display:flex;align-items:baseline;justify-content:space-between;gap:6px}
-.ix .v .m:first-child{font-size:20px;font-weight:700;color:#fff}
-.ix svg{width:100%;height:26px;display:block}
-/* main grid */
-.grid3{display:grid;grid-template-columns:330px minmax(0,1fr) 320px;gap:12px;align-items:start}
-.wl{padding:8px 6px 10px;display:flex;flex-direction:column;max-height:760px;overflow:auto}
-.wl-h{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 4px}
-.grp{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:12px 12px 4px;display:flex;justify-content:space-between}
-.row{display:grid;grid-template-columns:minmax(0,1fr) 58px 64px 66px;gap:8px;align-items:center;padding:7px 12px;border-radius:10px;font-size:13px;color:inherit;cursor:pointer;background:none;border:0;text-align:left;width:100%}
+.ix .t{display:flex;justify-content:space-between;align-items:baseline;gap:6px;font-size:12px}
+.ix .t b{color:#fff;font-weight:700;font-size:13px}
+.ix .big{font-size:21px;font-weight:700;color:#fff}
+.ix svg{width:100%;height:24px;display:block}
+/* mercado: a lista à esquerda acompanha a altura da coluna da direita */
+.gmain{display:grid;grid-template-columns:340px minmax(0,1fr);gap:12px;align-items:stretch}
+.wl{position:relative;min-height:400px}
+.wl-in{position:absolute;inset:0;overflow:auto;padding:8px 6px 10px}
+.wl-h{display:flex;align-items:center;justify-content:space-between;padding:8px 12px 2px}
+.grp{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;font-weight:700;padding:14px 12px 4px;display:flex;justify-content:space-between;gap:8px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) 96px 64px;gap:8px;align-items:center;padding:7px 12px;border-radius:10px;font-size:13px;color:inherit;cursor:pointer;background:none;border:0;text-align:left;width:100%}
 .row:hover{background:var(--panel2)}
 .row.sel{background:#232149;box-shadow:inset 3px 0 0 var(--acc)}
-.row.micro{opacity:.72}
-.sym{display:flex;flex-direction:column;line-height:1.15;min-width:0}
-.sym b{font-family:var(--mono);font-size:12px;color:#fff}
+.row.micro{opacity:.75}
+.sym{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+.sym b{font-size:13px;color:#fff;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sym span{font-size:11px;color:var(--mu);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sym .cd{font-family:var(--mono);font-size:10px;color:var(--mu);font-weight:500;margin-left:4px}
+.right{display:flex;flex-direction:column;gap:12px;min-width:0}
 .quote{display:flex;flex-direction:column;overflow:hidden}
 .q-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:14px;padding:16px 18px 4px}
-.q-sym{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--bg);background:var(--acc);padding:3px 7px;border-radius:5px}
-.q-name{font-size:20px;font-weight:800;color:#fff;letter-spacing:-.02em}
+.q-sym{font-family:var(--mono);font-size:12px;font-weight:700;color:var(--bg);padding:3px 7px;border-radius:5px}
+.q-name{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.02em}
 .q-px{font-family:var(--mono);font-size:40px;font-weight:700;color:#fff;letter-spacing:-.03em;line-height:1.1}
 .q-ctl{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;padding:8px 18px}
 .chart{position:relative;width:100%}
 .chart svg{display:block;width:100%}
 .tip{position:absolute;pointer-events:none;background:#0b0a14ee;border:1px solid var(--line3);border-radius:8px;padding:6px 9px;font:11px/1.45 var(--mono);color:var(--tx);white-space:nowrap;z-index:5;transform:translate(-50%,-100%);display:none}
-.stats{padding:16px 18px;display:flex;flex-direction:column;gap:4px}
-.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line2);font-size:13px}
-.kv span:first-child{color:var(--mu);font-family:var(--sans);font-size:12px}
-.note{margin-top:10px;padding:12px;border-radius:12px;background:var(--panel2);font-size:12px;line-height:1.5;color:var(--tx2)}
-.rng{height:4px;background:var(--line3);border-radius:2px;margin:10px 0 6px;position:relative}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line2);border-top:1px solid var(--line2)}
+.tile{background:var(--panel);padding:12px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.tile .k{font-size:12px;color:var(--mu)}
+.tile .v{font-family:var(--mono);font-size:17px;font-weight:700;color:#fff}
+.tile .s{font-size:11.5px;color:var(--mu);line-height:1.4}
+.rng{height:4px;background:var(--line3);border-radius:2px;margin:8px 0 4px;position:relative}
 .rng i{position:absolute;left:0;top:0;height:4px;background:var(--acc);border-radius:2px}
 .rng b{position:absolute;top:-5px;width:2px;height:14px;background:#fff;border-radius:1px}
-.grid2{display:grid;grid-template-columns:minmax(0,1.8fr) minmax(0,1fr);gap:12px;align-items:start}
+.note{padding:12px 18px;font-size:13px;line-height:1.5;color:var(--tx2);background:var(--panel2);border-top:1px solid var(--line2)}
+/* linhas de cartões com a mesma altura */
+.g2{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(0,1fr);gap:12px;align-items:stretch}
+.g4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;align-items:stretch}
 .sec{padding:16px 18px;display:flex;flex-direction:column;gap:10px}
 .sec-h{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:10px}
-.sec-h h2{font-size:16px;font-weight:700;color:#fff}
-.lg{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.sec-h h2{font-size:17px;font-weight:700;color:#fff}
+.fill{flex:1;min-height:200px}
+.lg{display:inline-flex;align-items:center;gap:6px}
 .lg i{width:14px;height:3px;border-radius:2px;display:inline-block}
-.mv{display:grid;grid-template-columns:44px minmax(0,1fr) 70px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2);font-size:13px;cursor:pointer}
-.mv b{color:#fff;font-family:var(--mono)}
+.mv{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--line2);font-size:13.5px;cursor:pointer}
 .brk{display:flex;height:10px;border-radius:5px;overflow:hidden;gap:2px}
-.agents{display:grid;grid-template-columns:repeat(auto-fit,minmax(128px,1fr));gap:10px}
-.agent{padding:10px 12px;border-radius:12px;background:var(--panel2);display:flex;flex-direction:column;gap:2px}
-.agent b{font-weight:600;font-size:13px;color:#fff;font-family:var(--sans);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.agent .m{font-size:18px;color:#fff}
-/* setores */
-.sgrid{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:12px;align-items:start}
-#map{height:460px;border-radius:12px;background:#11101d}
-.leaflet-container{background:#11101d;font-family:var(--sans)}
-.leaflet-tooltip.dc-tip{background:#0b0a14;border:1px solid var(--line3);color:var(--tx);border-radius:8px;box-shadow:none;font:12px/1.4 var(--sans)}
-.leaflet-tooltip.dc-tip::before{display:none}
-.legend{display:flex;align-items:center;gap:8px;font-size:11px;flex-wrap:wrap}
-.legend .sw{display:flex;height:8px;width:160px;border-radius:4px;overflow:hidden}
-table.tb{width:100%;border-collapse:collapse;font-size:13px}
-table.tb th{font:600 10px var(--sans);color:var(--mu);text-transform:uppercase;letter-spacing:.08em;text-align:left;padding:8px 6px;border-bottom:1px solid var(--line)}
-table.tb td{padding:9px 6px;border-bottom:1px solid var(--line2);white-space:nowrap}
-table.tb tr{cursor:pointer}table.tb tbody tr:hover{background:var(--panel2)}
+.zone{padding:16px 18px;display:flex;flex-direction:column;gap:8px;cursor:pointer;text-align:left}
+.zone:hover{border-color:var(--line3);background:#181729}
+.zone h3{font-size:16px;color:#fff;display:flex;align-items:center;gap:8px}
+.zone .sw{width:10px;height:10px;border-radius:3px;display:inline-block}
+.pars{display:flex;flex-wrap:wrap;gap:5px}
+.par{font-size:11.5px;padding:3px 8px;border-radius:999px;background:var(--panel2);color:var(--tx2);border:1px solid var(--line);cursor:pointer;white-space:nowrap}
+.par:hover{border-color:var(--acc);color:#fff}
+.par.none{opacity:.5;cursor:default}
+.agents{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
+.agent{padding:12px 14px;border-radius:12px;background:var(--panel2);display:flex;flex-direction:column;gap:3px;min-width:0}
+.agent b{font-weight:600;font-size:13px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent .m{font-size:19px;color:#fff}
+.hexwrap{position:relative;display:flex;align-items:center;justify-content:center;flex:1}
+.hexwrap svg{width:100%;height:auto;display:block;max-height:520px}
+.hex{cursor:pointer}
+.hex:hover polygon{stroke:#fff;stroke-width:2.5}
+.legend{display:flex;align-items:center;gap:8px;font-size:11.5px;flex-wrap:wrap}
+.legend .sw{display:flex;height:9px;width:150px;border-radius:4px;overflow:hidden}
+.zl{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line2)}
+.zl-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.hstrip{display:grid;grid-template-columns:minmax(0,1.4fr) repeat(3,minmax(0,1fr));gap:12px;align-items:stretch}
 .bar{display:flex;height:12px;border-radius:4px;overflow:hidden;gap:2px}
-/* artigos e sobre */
+.kv{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:8px 0;border-top:1px solid var(--line2);font-size:13px}
+.kv span:first-child{color:var(--mu);font-family:var(--sans);font-size:12.5px}
 .arts{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
 .art{padding:18px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left}
 .art:hover{border-color:var(--line3);background:#181729}
@@ -172,29 +182,35 @@ table.tb tr{cursor:pointer}table.tb tbody tr:hover{background:var(--panel2)}
 .nl input[type=email]{flex:1 1 220px;background:var(--bg);border:1px solid var(--line3);border-radius:999px;padding:11px 16px;color:var(--tx);font:14px var(--sans);outline:0}
 .nl input[type=email]:focus{border-color:var(--acc)}
 .btn{background:var(--brand);color:#fff;border:0;border-radius:999px;padding:11px 18px;font:700 13px var(--sans);cursor:pointer}
-.btn:hover{background:#6158f0}
+.btn:hover{background:#6158f0;color:#fff}
 footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;padding:4px 6px 18px;font-size:11px;line-height:1.5}
 .loading{padding:60px;text-align:center;color:var(--mu)}
+@media (min-width:561px){.hide-lg{display:none!important}}
+.hextip{position:absolute;pointer-events:none;background:#0b0a14f0;border:1px solid var(--line3);border-radius:10px;padding:8px 11px;font:12px/1.45 var(--sans);color:var(--tx);z-index:5;display:none;max-width:240px}
 @media (max-width:1180px){
-  .grid3{grid-template-columns:300px minmax(0,1fr)}
-  .stats{grid-column:1 / -1}
   .ixrow{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .g4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .agents{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .hstrip{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
-@media (max-width:860px){
-  .grid3,.grid2,.sgrid{grid-template-columns:minmax(0,1fr)}
-  .quote{order:1}.stats{order:2}.wl{order:3;max-height:none}
+@media (max-width:900px){
+  .gmain,.g2{grid-template-columns:minmax(0,1fr)}
+  .wl{order:2;min-height:0}.wl-in{position:static;max-height:560px}
   .about{grid-template-columns:minmax(0,1fr)}
   .search{flex:1 1 100%;order:5}
   .q-px{font-size:32px}
-  #map{height:380px}
+  .tiles{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media (max-width:560px){
   .wrap{padding:10px}
-  .ixrow{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .ixrow,.agents,.hstrip{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .g4{grid-template-columns:minmax(0,1fr)}
   .hide-sm{display:none!important}
-  .row{grid-template-columns:minmax(0,1fr) 64px 62px}
-  .row svg{display:none}
+  .row{grid-template-columns:minmax(0,1fr) 92px 62px}
   .modal .card{padding:20px 16px}
+  .hexwrap{overflow-x:auto;justify-content:flex-start;-webkit-overflow-scrolling:touch}
+  .hexwrap svg{min-width:600px}
 }
 </style>
 </head>
@@ -208,13 +224,13 @@ footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;pad
   </a>
   <nav class="tabs" aria-label="Secções">
     <a class="pill on" href="#mercado" data-view="mercado">Mercado</a>
-    <a class="pill" href="#setores" data-view="setores">Setores e mapa</a>
+    <a class="pill" href="#setores" data-view="setores">Zonas e mapa</a>
     <a class="pill" href="#artigos" data-view="artigos">Artigos</a>
-    <a class="pill" href="#sobre" data-view="sobre">Sobre</a>
+    <a class="pill" href="#sobre" data-view="sobre">Como ler</a>
   </nav>
   <label class="search">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9a98b3" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-    <input id="q" list="symlist" placeholder="Símbolo ou freguesia…" autocomplete="off" aria-label="Procurar símbolo ou freguesia">
+    <input id="q" list="symlist" placeholder="Procurar freguesia…" autocomplete="off" aria-label="Procurar freguesia ou zona">
     <datalist id="symlist"></datalist>
   </label>
   <span class="spacer"></span>
@@ -222,49 +238,45 @@ footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;pad
   <a class="btn hide-sm" href="#sobre" data-view="sobre" style="padding:8px 14px">Newsletter</a>
 </header>
 
-<div class="card tape m" aria-label="Cotações da última recolha">
+<div class="card tape m" aria-label="Preços na última recolha">
   <span class="lbl" id="tapeLbl">Recolha</span>
   <div style="overflow:hidden;flex:1"><div class="tape-in" id="tape"></div></div>
 </div>
 
 <main id="view-mercado">
-  <div class="loading" id="loading">A carregar cotações…</div>
+  <div class="loading" id="loading">A carregar preços…</div>
   <div id="mercado" class="hide" style="display:flex;flex-direction:column;gap:12px">
     <div class="ixrow" id="ixrow"></div>
-    <div class="grid3">
-      <aside class="card wl" id="wl" aria-label="Lista de observação"></aside>
-      <section class="card quote" id="quote"></section>
-      <aside class="card stats" id="stats"></aside>
+    <div class="gmain">
+      <aside class="card wl" aria-label="Freguesias e zonas"><div class="wl-in" id="wl"></div></aside>
+      <div class="right"><section class="card quote" id="quote"></section></div>
     </div>
-    <div class="grid2">
+    <section class="sec-h" style="padding:6px 4px 0"><h2 style="font-size:18px;color:#fff">As quatro zonas do concelho</h2><span class="mu" style="font-size:12.5px">Toque numa zona ou numa freguesia para ver a evolução</span></section>
+    <div class="g4" id="zones"></div>
+    <div class="g2">
       <section class="card sec" id="perf"></section>
       <section class="card sec" id="moves"></section>
     </div>
-    <div class="grid2">
-      <section class="card sec" id="agents"></section>
-      <a class="card sec" href="#setores" data-view="setores" style="flex-direction:row;align-items:center;justify-content:space-between;color:inherit">
-        <span style="display:flex;flex-direction:column;gap:4px"><span style="font-weight:700;font-size:16px;color:#fff">Setores e mapa</span><span class="mu" style="font-size:12px;line-height:1.4" id="mapTeaser">Mapa das freguesias, velas mensais por setor e saúde dos dados</span></span>
-        <span style="font-size:22px;color:var(--up)" aria-hidden="true">→</span>
-      </a>
-    </div>
+    <section class="card sec" id="agents"></section>
   </div>
 </main>
 
 <main id="view-setores" class="hide" style="flex-direction:column;gap:12px">
-  <div class="sgrid">
+  <div class="g2">
+    <section class="card sec" id="hexcard">
+      <div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>Mapa das freguesias</h2><p class="help">Cada hexágono é uma freguesia, colocada na sua posição aproximada no concelho. Toque num hexágono para ver os detalhes.</p></div>
+        <div class="seg" id="mapMode"><button class="pill on" data-mode="m2">Preço €/m²</button><button class="pill" data-mode="chg">Último mês</button><button class="pill" data-mode="n">Casas à venda</button><button class="pill" data-mode="zone">Zonas</button></div></div>
+      <div class="hexwrap" id="hexmap"></div>
+      <span class="help hide-lg" id="hexSwipe" style="font-size:11.5px">Deslize para o lado para ver o mapa todo.</span>
+      <div class="legend" id="legend"></div>
+    </section>
+    <aside class="card sec" id="zonelist"></aside>
+  </div>
+  <div class="g2">
     <section class="card sec" id="candles"></section>
     <aside class="card sec" id="ficha"></aside>
   </div>
-  <div class="sgrid">
-    <section class="card sec">
-      <div class="sec-h"><h2>Mapa das freguesias</h2>
-        <div class="seg" id="mapMode"><button class="pill on" data-mode="m2">€/m² venda</button><button class="pill" data-mode="n">Anúncios</button><button class="pill" data-mode="chg">Var. 1M</button></div></div>
-      <div id="map" role="img" aria-label="Mapa das freguesias do concelho do Fundão"></div>
-      <div class="legend" id="legend"></div>
-    </section>
-    <aside class="card sec" id="health"></aside>
-  </div>
-  <section class="card sec" id="sectorTable"></section>
+  <section class="hstrip" id="health"></section>
 </main>
 
 <main id="view-artigos" class="hide" style="flex-direction:column;gap:12px">
@@ -275,27 +287,29 @@ footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;pad
 <main id="view-sobre" class="hide" style="flex-direction:column;gap:12px">
   <section class="card sec" style="gap:14px">
     <h2 style="font-size:22px;color:#fff">Como ler a Bolsa do Fundão</h2>
-    <div class="prose" style="font-size:14px">
-      <p>Cada <b>cotação</b> é o preço por metro quadrado <b>mediano</b> pedido nos anúncios públicos de venda ativos nessa freguesia ou setor, no dia da recolha. Mediano quer dizer o anúncio do meio: metade pede menos, metade pede mais. Ao contrário da média, não é puxado para cima por meia dúzia de imóveis muito caros.</p>
-      <p><b>IDF</b> é o índice do concelho inteiro. <b>CID</b> é a cidade (UF Fundão, Valverde, Donas, Aldeia de Joanes e Aldeia Nova do Cabo). <b>SUL</b>, <b>NOR</b> e <b>POE</b> agrupam as restantes freguesias por geografia. <b>RNT</b> é a renda mensal mediana, <b>YLD</b> a yield bruta da cidade (renda anual por m² a dividir pelo preço por m²), <b>OFR</b> o número de casas à venda e <b>IAH</b> os anos de rendimento médio necessários para comprar uma casa de preço mediano.</p>
-      <p>As variações comparam com a recolha mais próxima de há 1 ou 3 meses. Freguesias com menos de 10 anúncios aparecem como <span style="color:var(--warn)">⚠ micro-caps</span>: com amostras pequenas, um único anúncio novo pode mexer muito a mediana.</p>
+    <div class="prose" style="font-size:14.5px;max-width:900px">
+      <p>O número principal de cada freguesia ou zona é o <b>preço por metro quadrado (€/m²)</b> pedido nas casas à venda nesse dia. Usamos a <b>mediana</b>: ordenamos os anúncios do mais barato ao mais caro e escolhemos o do meio. Assim, meia dúzia de casas muito caras não distorce o valor.</p>
+      <p>Para estimar o preço de uma casa, multiplique a área pelo €/m². Uma casa de 120 m² numa freguesia a 800 €/m² pede, tipicamente, cerca de 96 000 €.</p>
+      <p>Organizamos o concelho em <b>quatro zonas</b>: a <b>Cidade</b> (Fundão e freguesias à volta), o <b>Sul</b> (encosta sul da Gardunha e campina), o <b>Norte e Nascente</b> (Cova da Beira) e o <b>Poente</b> (aldeias de xisto). Na página “Zonas e mapa” vê que freguesias entram em cada uma.</p>
+      <p>As setas e percentagens comparam com a recolha mais próxima de há um mês, três meses ou desde fevereiro. Freguesias com menos de 10 casas à venda têm o aviso <span class="wa">⚠ poucos anúncios</span>: aí, uma única casa nova pode mexer muito o preço.</p>
+      <p>As siglas de três letras (como <span class="m">FUN</span> para Fundão ou <span class="m">IDF</span> para o índice do concelho) são só atalhos, como nas cotações da bolsa. Pode procurar qualquer freguesia pelo nome.</p>
     </div>
   </section>
   <div class="about">
     <div class="card"><h3>100% independente</h3><p>Iniciativa sem afiliações a agências de mediação, instituições de crédito ou fundos. O datacasa é um projeto pessoal e particular.</p></div>
-    <div class="card"><h3>Metodologia</h3><p>Recolha periódica de anúncios públicos. Excluímos duplicados, áreas fora de 20 a 1 000 m², preços por m² implausíveis e o mercado não residencial. Todas as métricas usam as datas reais de cada recolha.</p></div>
-    <div class="card"><h3>Foco exclusivo</h3><p>Construído de raiz para as freguesias do Fundão, para captar nuances que os portais nacionais não mostram.</p></div>
+    <div class="card"><h3>Metodologia</h3><p>Recolha regular de anúncios públicos. Excluímos duplicados, áreas fora de 20 a 1 000 m², preços por m² implausíveis e o mercado não residencial. Todas as contas usam as datas reais de cada recolha.</p></div>
+    <div class="card"><h3>Foco exclusivo</h3><p>Construído de raiz para as freguesias do Fundão, para mostrar o que os portais nacionais não mostram.</p></div>
   </div>
   <section class="card sec">
     <span class="lbl">Avisos importantes</span>
-    <div class="about" style="grid-template-columns:repeat(2,minmax(0,1fr))" id="disc">
-      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Valores de transação:</b> os preços baseiam-se nos preços pedidos em anúncios públicos e não refletem o valor final acordado em escritura.</p>
-      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Decisões financeiras:</b> os dados são estatísticos e informativos. Não constituem avaliação oficial nem aconselhamento financeiro.</p>
-      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Latência:</b> pode existir um intervalo entre a alteração de um anúncio na fonte e a sua atualização aqui.</p>
-      <p class="mu" style="font-size:12px;line-height:1.6;margin:0"><b class="wh">Responsabilidade:</b> o datacasa não se responsabiliza por conclusões, estudos ou investimentos feitos com base nestas métricas.</p>
+    <div class="about" style="grid-template-columns:repeat(2,minmax(0,1fr))">
+      <p class="mu" style="font-size:12.5px;line-height:1.6;margin:0"><b class="wh">Valores de transação:</b> os preços são os pedidos em anúncios públicos e não o valor final acordado em escritura.</p>
+      <p class="mu" style="font-size:12.5px;line-height:1.6;margin:0"><b class="wh">Decisões financeiras:</b> os dados são estatísticos e informativos. Não constituem avaliação oficial nem aconselhamento financeiro.</p>
+      <p class="mu" style="font-size:12.5px;line-height:1.6;margin:0"><b class="wh">Atualização:</b> pode existir um intervalo entre a alteração de um anúncio na fonte e a sua atualização aqui.</p>
+      <p class="mu" style="font-size:12.5px;line-height:1.6;margin:0"><b class="wh">Responsabilidade:</b> o datacasa não se responsabiliza por conclusões, estudos ou investimentos feitos com base nestes dados.</p>
     </div>
   </section>
-  <div class="grid2">
+  <div class="g2">
     <section class="card sec" style="background:linear-gradient(135deg,#1f1c4a,#151424)">
       <h2 style="font-size:20px;color:#fff">Não perca atualizações</h2>
       <p class="mu" style="margin:0;font-size:13px">Subscreva a newsletter para receber análises e relatórios do mercado imobiliário do Fundão.</p>
@@ -322,7 +336,7 @@ footer.ft{display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;pad
 </main>
 
 <footer class="ft m mu">
-  <span>Cotações = €/m² mediano pedido em anúncios públicos, não valores de escritura. Não é aconselhamento financeiro.</span>
+  <span>Preços = €/m² mediano pedido em anúncios públicos, não valores de escritura. Não é aconselhamento financeiro.</span>
   <span>datacasa · Fundão · <span id="yr">2026</span></span>
 </footer>
 </div>
@@ -354,6 +368,7 @@ const cls = p => p == null || Math.abs(p) < 0.05 ? 'z' : p > 0 ? 'u' : 'd';
 const tcls = p => p == null || Math.abs(p) < 0.05 ? 'mu' : p > 0 ? 'up' : 'dn';
 const arrow = p => p == null || Math.abs(p) < 0.05 ? '●' : p > 0 ? '▲' : '▼';
 const MES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESL = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const Mes = m => MES[m][0].toUpperCase() + MES[m].slice(1);
 const dd = d => String(d.getDate()).padStart(2,'0') + '/' + String(d.getMonth()+1).padStart(2,'0');
 const ddmmyyyy = d => dd(d) + '/' + d.getFullYear();
@@ -369,45 +384,51 @@ const CODES = {'Fundão':'FUN','Valverde':'VLV','Donas':'DON','Aldeia de Joanes'
   'Castelejo':'CSJ','Castelo Novo':'CNV','Enxames':'ENX','Fatela':'FAT','Janeiro de Cima':'JDC','Lavacolhos':'LAV','Mata da Rainha':'MDR',
   'Orca':'ORC','Pêro Viseu':'PVS','Póvoa de Atalaia':'PDA','Atalaia do Campo':'ADC','Silvares':'SIL','Soalheira':'SOA',
   'Souto da Casa':'SDC','Telhado':'TEL','Três Povos':'TPV','Vale de Prazeres':'VPZ'};
-const SEC_COLORS = {CID:'#8b8cff', SUL:'#f5c26b', NOR:'#7fe0b8', POE:'#e39bff'};
+/* colmeia: [coluna, linha], linhas ímpares desviadas meia célula. Posição aproximada de cada freguesia no concelho. */
+const HEX = {'Alcaria':[4,1],'Donas':[5,1],'Pêro Viseu':[6,1],'Capinha':[7,1],'Três Povos':[8,1],
+  'Telhado':[4,2],'Fundão':[5,2],'Fatela':[6,2],'Enxames':[7,2],'Vale de Prazeres':[8,2],
+  'Barroca':[1,3],'Silvares':[2,3],'Lavacolhos':[3,3],'Aldeia de Joanes':[4,3],'Valverde':[5,3],'Aldeia Nova do Cabo':[6,3],'Alcaide':[7,3],'Mata da Rainha':[8,3],
+  'Bogas de Cima':[2,4],'Castelejo':[3,4],'Souto da Casa':[4,4],'Alcongosta':[5,4],'Alpedrinha':[6,4],'Póvoa de Atalaia':[7,4],
+  'Janeiro de Cima':[0,5],'Bogas de Baixo':[1,5],'Castelo Novo':[5,5],'Atalaia do Campo':[6,5],'Orca':[7,5],'Soalheira':[5,6]};
+const ZCOL = {CID:'#8b8cff', SUL:'#f5c26b', NOR:'#7fe0b8', POE:'#e39bff'};
+const ZNAME = {CID:'Cidade', SUL:'Sul', NOR:'Norte e Nascente', POE:'Poente'};
+const ZDESC = {CID:'Fundão e freguesias à volta', SUL:'Encosta sul da Gardunha e campina', NOR:'Cova da Beira, a norte e a nascente', POE:'Aldeias de xisto, a poente'};
 const norm = s => (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().trim();
 let D, SYMS = {}, ORDER = [], DATES = [], sel = 'CID', range = 'ALL', mode = 'line', cmp = 'IDF', favs = store.get('dc_favs', []);
+let ZONES = {};
 
 function seriesFrom(hist, pick) {
   return hist.map(h => { const d = parseD(h.date); const o = pick(h); return { d, t: d.getTime(), ...o, v: o.v > 0 ? o.v : null }; });
 }
 const salesPick = h => ({ v: h.sales.median_price_m2, n: h.sales.sample_size ?? h.sales.active_count, act: h.sales.active_count,
-  price: h.sales.median_price, dom: h.sales.avg_days_on_market, neu: h.sales.new_entries, net: h.sales.net_production });
+  price: h.sales.median_price, dom: h.sales.avg_days_on_market });
 
 function buildSymbols() {
   const L = D.locations, S = D.sectors || {};
   const add = (code, o) => { SYMS[code] = { code, unit: '€/m²', dec: 0, color: '#8b8cff', ...o }; ORDER.push(code); };
-  add('IDF', { name: 'Índice do concelho', sub: 'Concelho do Fundão', grp: 'Índices', loc: 'Global', s: seriesFrom(L.Global.history, salesPick), raw: L.Global });
-  const cid = S.CID || null;
-  add('CID', { name: 'Cidade do Fundão', sub: 'Cidade · UF Fundão', grp: 'Índices', loc: 'UF_FUNDAO', s: seriesFrom((cid || L.UF_FUNDAO).history, salesPick), raw: L.UF_FUNDAO, color: SEC_COLORS.CID,
-        desc: 'UF Fundão, Valverde, Donas, A. de Joanes e A. Nova do Cabo' });
-  for (const k of ['SUL','NOR','POE']) if (S[k]) add(k, { name: S[k].name, sub: S[k].desc, grp: 'Setores', sector: k, s: seriesFrom(S[k].history, salesPick), raw: S[k], color: SEC_COLORS[k], parishes: S[k].parishes });
-  const fregs = Object.keys(L).filter(k => k !== 'Global' && k !== 'UF_FUNDAO');
-  for (const f of fregs) {
+  for (const k of Object.keys(ZNAME)) ZONES[k] = (S[k] && S[k].parishes) || [];
+  add('IDF', { name: 'Concelho do Fundão', short: 'Concelho', grp: 'idx', s: seriesFrom(L.Global.history, salesPick), raw: L.Global, color: '#c7c8ff' });
+  add('CID', { name: 'Cidade', short: 'Cidade', grp: 'zone', zone: 'CID', s: seriesFrom((S.CID || L.UF_FUNDAO).history, salesPick), raw: S.CID || L.UF_FUNDAO, color: ZCOL.CID });
+  for (const k of ['SUL','NOR','POE']) if (S[k]) add(k, { name: ZNAME[k], short: ZNAME[k], grp: 'zone', zone: k, s: seriesFrom(S[k].history, salesPick), raw: S[k], color: ZCOL[k] });
+  for (const f of Object.keys(L).filter(k => k !== 'Global' && k !== 'UF_FUNDAO')) {
     const code = CODES[f] || norm(f).replace(/[^A-Z]/g,'').slice(0,3);
-    const last = L[f].current.sales;
-    if (!last.active_count && !L[f].history.some(h => h.sales.active_count)) continue;
-    const sector = Object.keys(S).find(k => (S[k].parishes||[]).includes(f)) || null;
+    const zone = Object.keys(ZONES).find(k => ZONES[k].includes(f)) || null;
     const ser = seriesFrom(L[f].history, salesPick);
-    if (!ser.length || ser[ser.length - 1].v == null) continue; // sem oferta válida na última recolha
-    add(code, { name: f, sub: f, grp: 'Freguesias', loc: f, sector, s: ser, raw: L[f] });
+    if (!ser.length || ser[ser.length - 1].v == null) continue;
+    add(code, { name: f, short: f, grp: 'freg', zone, s: ser, raw: L[f], color: zone ? ZCOL[zone] : '#8b8cff' });
   }
-  const G = L.Global.history, C = (cid || L.UF_FUNDAO).history;
-  add('RNT', { name: 'Renda mediana', sub: 'Renda mensal mediana · €', grp: 'Macro', unit: '€', color: '#ffb36b',
-    s: seriesFrom(G, h => ({ v: h.rent.median_price, n: h.rent.sample_size ?? h.rent.active_count, act: h.rent.active_count, dom: h.rent.avg_days_on_market })) });
-  add('YLD', { name: 'Yield bruta da cidade', sub: 'Yield bruta · cidade', grp: 'Macro', unit: '%', dec: 2, color: '#7fe0b8',
+  const G = L.Global.history, C = (S.CID || L.UF_FUNDAO).history;
+  add('RNT', { name: 'Renda mediana', short: 'Renda', grp: 'macro', unit: '€/mês', color: '#ffb36b',
+    s: seriesFrom(G, h => ({ v: h.rent.median_price, n: h.rent.sample_size ?? h.rent.active_count })) });
+  add('YLD', { name: 'Rentabilidade de arrendar', short: 'Rentabilidade', grp: 'macro', unit: '%', dec: 1, color: '#7fe0b8',
     s: seriesFrom(C, h => ({ v: h.rent.median_price_m2 > 0 && h.sales.median_price_m2 > 0 ? h.rent.median_price_m2 * 12 / h.sales.median_price_m2 * 100 : null, n: Math.min(h.rent.sample_size ?? 0, h.sales.sample_size ?? 0) })) });
-  add('OFR', { name: 'Oferta ativa', sub: 'Casas à venda no concelho', grp: 'Macro', unit: '', color: '#9a98b3',
+  add('OFR', { name: 'Casas à venda', short: 'Casas à venda', grp: 'macro', unit: 'casas', color: '#9a98b3',
     s: seriesFrom(G, h => ({ v: h.sales.active_count, n: h.sales.active_count })) });
-  add('IAH', { name: 'Anos de salário', sub: 'Índice de acessibilidade', grp: 'Macro', unit: 'anos', dec: 1, color: '#9a98b3',
+  add('IAH', { name: 'Anos de salário para comprar', short: 'Anos de salário', grp: 'macro', unit: 'anos', dec: 1, color: '#9a98b3',
     s: seriesFrom(G, h => ({ v: h.sales.affordability_index, n: h.sales.sample_size })) });
   DATES = (D.scrape_dates || G.map(h => h.date)).map(parseD);
 }
+const codeOf = name => Object.keys(SYMS).find(k => SYMS[k].grp === 'freg' && SYMS[k].name === name);
 const lastPt = s => { for (let i = s.length - 1; i >= 0; i--) if (s[i].v != null) return s[i]; return null; };
 function ptAtOrBefore(s, t) { let best = null; for (const p of s) { if (p.t <= t && p.v != null) best = p; if (p.t > t) break; } return best; }
 function chg(sym, days) {
@@ -420,12 +441,17 @@ function prevChg(sym) {
   const s = SYMS[sym].s.filter(p => p.v != null); if (s.length < 2) return null;
   const a = s[s.length-2].v, b = s[s.length-1].v; return SYMS[sym].unit === '%' ? b - a : (b / a - 1) * 100;
 }
-const isMicro = sym => SYMS[sym].grp === 'Freguesias' && (lastPt(SYMS[sym].s)?.n ?? 0) < 10;
-const valS = (sym, v) => { const S = SYMS[sym]; return S.unit === '%' ? fmt(v, S.dec) + '%' : S.unit === '€' ? fmt(v, 0) + ' €' : fmt(v, S.dec); };
-const chgS = (sym, p) => SYMS[sym].unit === '%' ? (p == null ? '–' : (p > 0 ? '+' : p < 0 ? '−' : '') + fmt(Math.abs(p), 2) + 'pp') : pctS(p);
+const isMicro = sym => SYMS[sym].grp === 'freg' && (lastPt(SYMS[sym].s)?.n ?? 0) < 10;
+/* valor sempre com a unidade (€/m², €/mês…); html = unidade em letra mais pequena */
+function valS(sym, v, html = true) {
+  const S = SYMS[sym], num = fmt(v, S.dec);
+  if (S.unit === '%') return num + '%';
+  return html ? `${num}<span class="u">${S.unit}</span>` : `${num} ${S.unit}`;
+}
+const chgS = (sym, p) => SYMS[sym].unit === '%' ? (p == null ? '–' : (p > 0 ? '+' : p < 0 ? '−' : '') + fmt(Math.abs(p), 1) + ' p.p.') : pctS(p);
 
 /* --------------------------------------------------------- mini gráficos */
-function spark(s, color, w = 64, h = 22, days = 90, dash = false) {
+function spark(s, color, w = 64, h = 22, days = 120, dash = false) {
   const L = lastPt(s); if (!L) return '';
   const pts = s.filter(p => p.v != null && p.t >= L.t - days * DAY);
   if (pts.length < 2) return '';
@@ -434,7 +460,7 @@ function spark(s, color, w = 64, h = 22, days = 90, dash = false) {
   return `<svg viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><polyline vector-effect="non-scaling-stroke" points="${xy}" fill="none" stroke="${color}" stroke-width="1.5"${dash ? ' stroke-dasharray="2 2"' : ''}/></svg>`;
 }
 
-/* ---------------------------------------------------- gráfico principal */
+/* ---------------------------------------------------- gráficos de linha */
 function niceTicks(lo, hi, n = 5) {
   const span = hi - lo || Math.abs(hi) || 1, raw = span / n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
   const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(s => s >= raw) || 10 * mag;
@@ -445,7 +471,6 @@ function monthTicks(t0, t1) {
   while (d.getTime() <= t1) { out.push(new Date(d)); d.setMonth(d.getMonth() + 1); }
   return out;
 }
-/* lineChart: séries com pontos {t,v}; opts.bars = pontos {t,v} para volume */
 function lineChart(el, opt) {
   const W = Math.max(280, el.clientWidth || 600), H = opt.h || 300, padR = opt.padR ?? 76, padL = opt.padL ?? 4, top = 18, bot = 22;
   const volH = opt.bars ? 54 : 0, ph = H - top - bot - volH - (volH ? 8 : 0);
@@ -461,7 +486,7 @@ function lineChart(el, opt) {
   g += opt.axisLeft ? `<g font-size="10" fill="#9a98b3">${ticks.map(v => `<text x="${padL + 2}" y="${Y(v) - 4}">${opt.yFmt(v)}</text>`).join('')}</g>`
     : `<g font-size="11" fill="#9a98b3">${ticks.map(v => `<text x="${W - padR + 10}" y="${Y(v) + 4}">${opt.yFmt(v)}</text>`).join('')}</g>`;
   if (opt.base != null) g += `<line x1="${padL}" x2="${W - padR}" y1="${Y(opt.base)}" y2="${Y(opt.base)}" stroke="#4a4870"/>`;
-  opt.series.forEach((s, i) => {
+  opt.series.forEach(s => {
     const segs = []; let cur = [];
     s.pts.forEach(p => { if (p.v == null) { if (cur.length) segs.push(cur); cur = []; } else cur.push(p); }); if (cur.length) segs.push(cur);
     segs.forEach(seg => {
@@ -471,7 +496,6 @@ function lineChart(el, opt) {
     });
     if (s.endLabel) { const L = [...s.pts].reverse().find(p => p.v != null); if (L) s._end = { y: Y(L.v), text: s.endLabel, color: s.color }; }
   });
-  // etiquetas no fim das linhas, afastadas para não se sobreporem
   const ends = opt.series.filter(s => s._end).map(s => s._end).sort((a, b) => a.y - b.y);
   for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i-1].y < 13) ends[i].y = ends[i-1].y + 13;
   g += `<g font-size="11" font-weight="700">${ends.map(e => `<text x="${W - padR + 8}" y="${e.y + 4}" fill="${e.color}">${esc(e.text)}</text>`).join('')}</g>`;
@@ -505,19 +529,23 @@ function lineChart(el, opt) {
   svg.addEventListener('mousemove', move); svg.addEventListener('touchmove', move, { passive: true });
   svg.addEventListener('mouseleave', out); svg.addEventListener('touchend', out);
 }
-/* velas mensais: abertura = 1.ª recolha do mês, fecho = última */
+/* gráfico que ocupa o espaço livre do cartão, para não haver buracos quando o cartão vizinho é mais alto */
+function drawFit(el, minH, draw) {
+  draw(minH);
+  const h = el.clientHeight;
+  if (h > minH + 12) draw(Math.min(h, 640));
+}
 function monthlyCandles(s) {
   const by = new Map();
   s.filter(p => p.v != null).forEach(p => { const k = p.d.getFullYear() * 12 + p.d.getMonth(); if (!by.has(k)) by.set(k, []); by.get(k).push(p); });
-  return [...by.entries()].map(([k, ps]) => ({ k, y: Math.floor(k / 12), m: k % 12, o: ps[0].v, c: ps[ps.length-1].v, h: Math.max(...ps.map(p => p.v)), l: Math.min(...ps.map(p => p.v)), n: ps.length, last: ps[ps.length-1] }));
+  return [...by.entries()].map(([k, ps]) => ({ k, y: Math.floor(k / 12), m: k % 12, o: ps[0].v, c: ps[ps.length-1].v, h: Math.max(...ps.map(p => p.v)), l: Math.min(...ps.map(p => p.v)), n: ps.length }));
 }
 function candleChart(el, cs, opt) {
-  const W = Math.max(280, el.clientWidth || 600), H = opt.h || 300, padR = 64, top = 16, bot = 24, ph = H - top - bot;
+  const W = Math.max(280, el.clientWidth || 600), H = opt.h || 300, padR = 72, top = 16, bot = 24, ph = H - top - bot;
   if (!cs.length) { el.innerHTML = '<div class="loading">Sem dados.</div>'; return; }
   let lo = Math.min(...cs.map(c => c.l)), hi = Math.max(...cs.map(c => c.h)); const pad = (hi - lo) * .08 || 1; lo -= pad; hi += pad;
   const n = cs.length, bw = Math.min(46, (W - padR) / n * 0.55), X = i => (i + 0.5) * (W - padR) / n, Y = v => top + (hi - v) / (hi - lo) * ph;
-  const ticks = niceTicks(lo, hi, 5);
-  // média móvel de 3 meses sobre os fechos
+  const ticks = niceTicks(lo, hi, 5), u = opt.unit || '';
   const ma = cs.map((c, i) => i < 2 ? null : (cs[i].c + cs[i-1].c + cs[i-2].c) / 3);
   let g = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(opt.label)}" font-family="JetBrains Mono, monospace">`;
   g += `<g stroke="#201f33" stroke-dasharray="2 5">${ticks.map(v => `<line x1="0" x2="${W - padR}" y1="${Y(v)}" y2="${Y(v)}"/>`).join('')}</g>`;
@@ -526,8 +554,8 @@ function candleChart(el, cs, opt) {
   if (maPts) g += `<polyline points="${maPts}" fill="none" stroke="#e7e6f2" stroke-opacity=".5" stroke-dasharray="4 4" stroke-width="1.5"/>`;
   cs.forEach((c, i) => {
     const upC = c.c >= c.o, col = upC ? '#8b8cff' : '#ff6b85', y1 = Y(Math.max(c.o, c.c)), y2 = Y(Math.min(c.o, c.c));
-    g += `<g><title>${Mes(c.m)} ${c.y}: abertura ${fmt(c.o)}, máximo ${fmt(c.h)}, mínimo ${fmt(c.l)}, fecho ${fmt(c.c)} (${c.n} recolhas)</title><line x1="${X(i)}" x2="${X(i)}" y1="${Y(c.h)}" y2="${Y(c.l)}" stroke="${col}" stroke-width="1.5"/>`;
-    g += `<rect x="${X(i) - bw/2}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="2" fill="${upC ? col : col}" fill-opacity="${upC ? .9 : .9}" ${upC ? '' : ''}/></g>`;
+    g += `<g><title>${MESL[c.m]} ${c.y}: começou em ${fmt(c.o)} ${u}, acabou em ${fmt(c.c)} ${u} (mín. ${fmt(c.l)}, máx. ${fmt(c.h)}; ${c.n} recolhas)</title><line x1="${X(i)}" x2="${X(i)}" y1="${Y(c.h)}" y2="${Y(c.l)}" stroke="${col}" stroke-width="1.5"/>`;
+    g += `<rect x="${X(i) - bw/2}" y="${y1}" width="${bw}" height="${Math.max(2, y2 - y1)}" rx="2" fill="${col}" fill-opacity=".9"/></g>`;
     g += `<text x="${X(i)}" y="${H - 6}" font-size="11" fill="#9a98b3" text-anchor="middle">${Mes(c.m)}</text>`;
   });
   const L = cs[cs.length - 1];
@@ -535,47 +563,49 @@ function candleChart(el, cs, opt) {
   el.innerHTML = g;
 }
 
-/* ------------------------------------------------------------- render */
+/* ------------------------------------------------------------- mercado */
 function renderSession() {
   const L = DATES[DATES.length - 1];
-  $('#session').innerHTML = `<span class="dot"></span>Recolha de ${dd(L)} · ${DATES.length} recolhas`;
-  $('#tapeLbl').textContent = 'Recolha · ' + dd(L);
+  $('#session').innerHTML = `<span class="dot"></span>Atualizado a ${dd(L)} · ${DATES.length} recolhas desde ${MESL[DATES[0].getMonth()]}`;
+  $('#tapeLbl').textContent = 'Preços a ' + dd(L);
   $('#yr').textContent = L.getFullYear();
 }
 function renderTape() {
-  const syms = ['IDF','CID','SUL','NOR','POE', ...ORDER.filter(k => SYMS[k].grp === 'Freguesias' && !isMicro(k)), 'RNT','YLD','OFR'].filter(k => SYMS[k]);
+  const syms = ['IDF','CID','SUL','NOR','POE', ...ORDER.filter(k => SYMS[k].grp === 'freg' && !isMicro(k)), 'RNT','YLD','OFR'].filter(k => SYMS[k]);
   const item = k => { const L = lastPt(SYMS[k].s), p = prevChg(k), st = k === 'RNT' ? 'background:#2a1708;border-color:#4a2a10;color:#ffb36b' : k === 'YLD' ? 'background:#0d2a20;border-color:#1a4a38;color:#7fe0b8' : '';
-    return `<span class="tk" data-sym="${k}"><span class="flap" style="${st}">${k}</span><span>${valS(k, L.v)}</span><span class="${tcls(p)}">${arrow(p)}${chgS(k, p).replace(/^[+−]/, '')}</span></span>`; };
+    return `<span class="tk" data-sym="${k}" title="${esc(SYMS[k].name)}"><span class="flap" style="${st}">${k}</span><span>${valS(k, L.v)}</span><span class="${tcls(p)}">${arrow(p)}${chgS(k, p).replace(/^[+−]/, '')}</span></span>`; };
   const html = syms.map(item).join('');
-  $('#tape').innerHTML = html + html; // duplicado para a animação contínua
+  $('#tape').innerHTML = html + html;
 }
 function renderIx() {
-  const cards = [['IDF','Índice concelho'],['CID','Cidade'],['RNT','Renda mediana'],['YLD','Yield bruta · cidade'],['OFR','Oferta ativa'],['IAH','Anos de salário']];
+  const cards = [['IDF','Preço no concelho'],['CID','Preço na cidade'],['RNT','Renda mediana'],['YLD','Rentabilidade de arrendar'],['OFR','Casas à venda'],['IAH','Anos de salário']];
   $('#ixrow').innerHTML = cards.map(([k, lab]) => { const S = SYMS[k], L = lastPt(S.s), p = chg(k, 30);
-    const col = k === 'RNT' ? '#ffb36b' : k === 'YLD' ? '#7fe0b8' : '#fff';
-    return `<button class="card ix" data-sym="${k}"><span class="t"><span class="m" style="color:${col};font-weight:700">${k}</span><span class="mu">${lab}</span></span>
-      <span class="v"><span class="m">${valS(k, L.v)}</span><span class="m ${tcls(p)}" style="font-size:12px">${chgS(k, p)} 1M</span></span>${spark(S.s, k === 'OFR' || k === 'IAH' ? '#9a98b3' : S.color, 64, 22, 120)}</button>`; }).join('');
+    return `<button class="card ix" data-sym="${k}"><span class="t"><b>${lab}</b><span class="m mu" style="font-size:10px">${k}</span></span>
+      <span class="m big">${valS(k, L.v)}</span><span class="m ${tcls(p)}" style="font-size:12px">${chgS(k, p)} <span class="mu" style="font-family:var(--sans)">num mês</span></span>${spark(S.s, S.color, 64, 22, 120)}</button>`; }).join('');
 }
 function wlRow(k) {
   const S = SYMS[k], L = lastPt(S.s), p = chg(k, 30), micro = isMicro(k);
-  const sub = S.grp === 'Freguesias' ? `${esc(S.name)}${micro ? ' · ' + (L?.n ?? 0) + ' anún.' : ''}` : esc(S.sub);
-  const colB = k === 'RNT' ? 'style="color:#ffb36b"' : k === 'YLD' ? 'style="color:#7fe0b8"' : '';
-  return `<button class="row${k === sel ? ' sel' : ''}${micro ? ' micro' : ''}" data-sym="${k}"><span class="sym"><b ${colB}>${k}</b><span>${sub}</span></span>${spark(S.s, p != null && p < -0.05 ? '#ff6b85' : '#8b8cff', 58, 22, 120, micro).replace('<svg ', '<svg width="58" height="22" ')}<span class="m r wh">${L ? valS(k, L.v).replace(' €','') : '–'}</span><span class="bdg ${cls(p)}">${chgS(k, p)}</span></button>`;
+  let sub = '';
+  if (S.grp === 'zone') sub = `${ZONES[k].length} freguesias · ${L.n} casas`;
+  else if (S.grp === 'freg') sub = `${S.zone ? ZNAME[S.zone] + ' · ' : ''}${L.n} casas${micro ? ' · ⚠ poucos anúncios' : ''}`;
+  else if (k === 'IDF') sub = `todas as freguesias · ${L.n} casas`;
+  else sub = { RNT: 'renda mensal típica', YLD: 'renda anual ÷ preço, na cidade', OFR: 'anúncios de venda ativos', IAH: 'com o rendimento médio local' }[k] || '';
+  return `<button class="row${k === sel ? ' sel' : ''}${micro ? ' micro' : ''}" data-sym="${k}"><span class="sym"><b>${esc(S.short)}<span class="cd">${k}</span></b><span>${esc(sub)}</span></span><span class="m r wh">${L ? valS(k, L.v) : '–'}</span><span class="bdg ${cls(p)}" title="Variação num mês">${chgS(k, p)}</span></button>`;
 }
 let microOpen = false;
 function renderWL() {
-  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias' && lastPt(SYMS[k].s));
-  const blue = fr.filter(k => !isMicro(k)).sort((a, b) => lastPt(SYMS[b].s).n - lastPt(SYMS[a].s).n), micro = fr.filter(isMicro).sort((a, b) => SYMS[a].name.localeCompare(SYMS[b].name, 'pt'));
+  const fr = ORDER.filter(k => SYMS[k].grp === 'freg');
+  const main = fr.filter(k => !isMicro(k)).sort((a, b) => lastPt(SYMS[b].s).n - lastPt(SYMS[a].s).n);
+  const micro = fr.filter(isMicro).sort((a, b) => SYMS[a].name.localeCompare(SYMS[b].name, 'pt'));
   const f = favs.filter(k => SYMS[k]);
-  let h = `<div class="wl-h"><span style="font-weight:700;font-size:15px;color:#fff">Lista de observação</span><span class="mu m" style="font-size:10px">VAR 1M</span></div>`;
+  let h = `<div class="wl-h"><span style="font-weight:700;font-size:15px;color:#fff">Freguesias e zonas</span><span class="mu" style="font-size:10.5px">variação num mês</span></div>`;
   if (f.length) h += `<div class="grp"><span>☆ A seguir</span></div>` + f.map(wlRow).join('');
-  h += `<div class="grp"><span>Índices</span></div>` + ['IDF','CID'].map(wlRow).join('');
-  h += `<div class="grp"><span>Setores</span></div>` + ['SUL','NOR','POE'].filter(k => SYMS[k]).map(wlRow).join('');
-  h += `<div class="grp"><span>Freguesias · blue chips</span><span class="m" style="text-transform:none;letter-spacing:0">≥ 10 anún.</span></div>` + blue.map(wlRow).join('');
-  h += `<div class="grp"><span>Macro</span></div>` + ['RNT','YLD','OFR','IAH'].map(wlRow).join('');
-  if (micro.length) h += `<details id="microDet"${microOpen ? ' open' : ''}><summary class="grp" style="cursor:pointer;list-style:none"><span>Micro-caps · ${micro.length} ${microOpen ? '▾' : '▸'}</span><span style="color:var(--warn);text-transform:none;letter-spacing:.02em;font-weight:600">⚠ amostra &lt; 10</span></summary>${micro.map(wlRow).join('')}</details>`;
+  h += `<div class="grp"><span>Concelho e zonas</span></div>` + ['IDF','CID','SUL','NOR','POE'].filter(k => SYMS[k]).map(wlRow).join('');
+  h += `<div class="grp"><span>Freguesias</span><span style="text-transform:none;letter-spacing:0;font-weight:500">10 ou mais casas</span></div>` + main.map(wlRow).join('');
+  if (micro.length) h += `<details id="microDet"${microOpen ? ' open' : ''}><summary class="grp" style="cursor:pointer;list-style:none"><span>Com poucos anúncios · ${micro.length} ${microOpen ? '▾' : '▸'}</span><span class="wa" style="text-transform:none;letter-spacing:0;font-weight:600">⚠ menos de 10</span></summary>${micro.map(wlRow).join('')}</details>`;
+  h += `<div class="grp"><span>Outros indicadores</span></div>` + ['RNT','YLD','OFR','IAH'].map(wlRow).join('');
   $('#wl').innerHTML = h;
-  const det = $('#microDet'); if (det) det.addEventListener('toggle', () => { microOpen = det.open; det.querySelector('summary span').textContent = `Micro-caps · ${micro.length} ${microOpen ? '▾' : '▸'}`; });
+  const det = $('#microDet'); if (det) det.addEventListener('toggle', () => { microOpen = det.open; det.querySelector('summary span').textContent = `Com poucos anúncios · ${micro.length} ${microOpen ? '▾' : '▸'}`; });
 }
 function inRange(s) {
   const L = lastPt(s); if (!L || range === 'ALL') return s;
@@ -590,122 +620,140 @@ function beta(a, b) {
   const mx = xs.reduce((s, v) => s + v, 0) / xs.length, my = ys.reduce((s, v) => s + v, 0) / ys.length;
   let c = 0, vx = 0; xs.forEach((x, i) => { c += (x - mx) * (ys[i] - my); vx += (x - mx) ** 2; }); return vx ? c / vx : null;
 }
+function describe(k) {
+  const S = SYMS[k];
+  if (S.grp === 'zone') return `${ZDESC[k]}. Inclui ${ZONES[k].join(', ')}.`;
+  if (k === 'IDF') return 'Todas as freguesias do concelho juntas. Preço mediano pedido por m² nas casas à venda.';
+  if (S.grp === 'freg') return `Freguesia da zona ${S.zone ? ZNAME[S.zone] : 'do concelho'}. Preço mediano pedido por m² nas casas à venda.`;
+  return { RNT: 'Renda mensal da casa do meio, entre as casas para arrendar em todo o concelho.',
+    YLD: 'Quanto rende por ano uma casa arrendada, em % do preço de compra, na cidade. Calculado com a renda e o preço por m².',
+    OFR: 'Número de casas à venda no concelho em cada recolha.',
+    IAH: 'Quantos anos de rendimento médio de um morador do concelho seriam precisos para comprar uma casa de preço mediano.' }[k];
+}
 function renderQuote() {
   const S = SYMS[sel], s = S.s, L = lastPt(s); if (!L) return;
   const vals = s.filter(p => p.v != null), prev = vals.length > 1 ? vals[vals.length - 2] : null;
   const d = prev ? L.v - prev.v : 0, dp = prev ? (S.unit === '%' ? d : (L.v / prev.v - 1) * 100) : null;
   const fav = favs.includes(sel), micro = isMicro(sel);
-  const cmpOpts = [['IDF', 'vs IDF']]; if (S.sector && S.sector !== sel && SYMS[S.sector]) cmpOpts.push([S.sector, 'vs ' + S.sector]); if (sel === 'IDF') cmpOpts[0] = ['CID', 'vs CID'];
-  if (!cmpOpts.some(o => o[0] === cmp) && cmp !== 'NONE') cmp = cmpOpts[0][0];
-  const unitTxt = S.unit === '€/m²' ? '€/m² mediano pedido' : S.unit === '€' ? '€ por mês' : S.unit === '%' ? 'renda anual ÷ preço, por m²' : S.unit;
+  const cmpOpts = []; if (sel !== 'IDF' && S.grp !== 'macro') cmpOpts.push(['IDF', 'Comparar com o concelho']); if (S.grp === 'freg' && S.zone && SYMS[S.zone]) cmpOpts.push([S.zone, 'Comparar com a zona']); if (sel === 'IDF') cmpOpts.push(['CID', 'Comparar com a cidade']);
+  if (!cmpOpts.some(o => o[0] === cmp)) cmp = cmpOpts.length ? cmpOpts[0][0] : 'NONE';
+  const dTxt = S.unit === '%' ? chgS(sel, d) : (d >= 0 ? '+' : '−') + fmt(Math.abs(d), S.dec) + ' (' + pctS(dp, 1) + ')';
   $('#quote').innerHTML = `
-    <div class="q-head"><div style="display:flex;flex-direction:column;gap:6px">
-      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span class="q-sym" style="background:${S.color}">${sel}</span><h1 class="q-name">${esc(S.name)}</h1><span class="mu" style="font-size:12px">${esc(S.desc || S.sub)} · ${unitTxt}</span></div>
-      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap"><span class="q-px">${valS(sel, L.v)}</span>
-        <span class="m ${tcls(dp)}" style="font-size:16px;font-weight:600">${arrow(dp)} ${S.unit === '%' ? chgS(sel, d) : (d >= 0 ? '+' : '−') + fmt(Math.abs(d), S.dec) + ' (' + pctS(dp, 2) + ')'}</span>
-        <span class="mu" style="font-size:12px">vs recolha de ${prev ? dd(prev.d) : '–'} · última ${dd(L.d)}</span></div>
-      ${micro ? `<span style="color:var(--warn);font-size:12px">⚠ Só ${L.n} anúncios: a cotação mexe muito com cada entrada ou saída.</span>` : ''}
+    <div class="q-head"><div style="display:flex;flex-direction:column;gap:6px;max-width:780px">
+      <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap"><h1 class="q-name">${esc(S.name)}</h1><span class="q-sym" style="background:${S.color}">${sel}</span></div>
+      <p class="help" style="font-size:13px">${esc(describe(sel))}</p>
+      <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;margin-top:4px"><span class="q-px">${valS(sel, L.v)}</span>
+        <span class="m ${tcls(dp)}" style="font-size:15px;font-weight:600">${arrow(dp)} ${dTxt}</span>
+        <span class="mu" style="font-size:12px">face à recolha de ${prev ? dd(prev.d) : '–'}</span></div>
+      ${micro ? `<span class="wa" style="font-size:12.5px">⚠ Só ${L.n} casas à venda: cada casa que entra ou sai mexe muito neste valor.</span>` : ''}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="pill ol" id="favBtn">${fav ? '★ A seguir' : '☆ Seguir'}</button><button class="pill ol" id="shareBtn">↗ Partilhar</button></div></div>
-    <div class="q-ctl"><div class="seg" id="rangeSeg">${['1M','3M','6M','ALL'].map(r => `<button class="pill${range === r ? ' on' : ''}" data-r="${r}">${r === 'ALL' ? 'Tudo' : r}</button>`).join('')}</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="modeSeg"><button class="pill${mode === 'line' ? ' on' : ''}" data-m="line">Linha</button><button class="pill${mode === 'candle' ? ' on' : ''}" data-m="candle">Velas</button></div>
-      <div class="seg" id="cmpSeg">${cmpOpts.map(([k, t]) => `<button class="pill${cmp === k ? ' on' : ''}" data-c="${k}">${t}</button>`).join('')}<button class="pill${cmp === 'NONE' ? ' on' : ''}" data-c="NONE">Só ${sel}</button></div></div></div>
-    <div class="m" id="qlegend" style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px;padding:0 18px 4px;min-height:16px"></div>
-    <div class="chart" id="qchart" style="padding:0 0 4px 12px"></div>`;
-  drawQuoteChart();
+    <div class="q-ctl"><div class="seg" id="rangeSeg">${[['1M','1 mês'],['3M','3 meses'],['6M','6 meses'],['ALL','Tudo']].map(([r, t]) => `<button class="pill${range === r ? ' on' : ''}" data-r="${r}">${t}</button>`).join('')}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><div class="seg" id="modeSeg"><button class="pill${mode === 'line' ? ' on' : ''}" data-m="line">Linha</button><button class="pill${mode === 'candle' ? ' on' : ''}" data-m="candle">Mês a mês</button></div>
+      ${cmpOpts.length ? `<div class="seg" id="cmpSeg">${cmpOpts.map(([k, t]) => `<button class="pill${cmp === k ? ' on' : ''}" data-c="${k}">${t}</button>`).join('')}<button class="pill${cmp === 'NONE' ? ' on' : ''}" data-c="NONE">Sem comparação</button></div>` : ''}</div></div>
+    <div class="m" id="qlegend" style="display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;padding:0 18px 4px;min-height:16px"></div>
+    <div class="chart" id="qchart" style="padding:0 0 4px 12px"></div>
+    <div class="tiles" id="tiles"></div><div class="note hide" id="qnote"></div>`;
+  drawQuoteChart(); renderTiles();
   $('#favBtn').onclick = () => { favs = favs.includes(sel) ? favs.filter(k => k !== sel) : [...favs, sel]; store.set('dc_favs', favs); renderWL(); renderQuote(); };
   $('#shareBtn').onclick = async () => { const url = location.origin + location.pathname + '?s=' + sel + '#mercado';
-    try { if (navigator.share) await navigator.share({ title: `${sel} · datacasa`, url }); else { await navigator.clipboard.writeText(url); $('#shareBtn').textContent = '✓ Link copiado'; } } catch {} };
+    try { if (navigator.share) await navigator.share({ title: `${S.name} · datacasa`, url }); else { await navigator.clipboard.writeText(url); $('#shareBtn').textContent = '✓ Link copiado'; } } catch {} };
   $('#rangeSeg').onclick = e => { const r = e.target.dataset.r; if (r) { range = r; renderQuote(); } };
   $('#modeSeg').onclick = e => { const m = e.target.dataset.m; if (m) { mode = m; renderQuote(); } };
-  $('#cmpSeg').onclick = e => { const c = e.target.dataset.c; if (c) { cmp = c; renderQuote(); } };
+  if ($('#cmpSeg')) $('#cmpSeg').onclick = e => { const c = e.target.dataset.c; if (c) { cmp = c; renderQuote(); } };
 }
+const yFmtFor = S => v => S.unit === '%' ? fmt(v, 1) + '%' : fmt(v, S.dec);
 function drawQuoteChart() {
-  const S = SYMS[sel], el = $('#qchart'), s = inRange(S.s), yF = v => S.unit === '%' ? fmt(v, 1) + '%' : fmt(v, S.dec);
-  if (mode === 'candle') { $('#qlegend').innerHTML = '<span class="mu">Velas mensais: abertura na 1.ª recolha do mês, fecho na última. A tracejado, média de 3 meses.</span>'; candleChart(el, monthlyCandles(s), { h: 330, label: `${S.name}: velas mensais` }); return; }
+  const S = SYMS[sel], el = $('#qchart'); if (!el) return; const s = inRange(S.s), yF = yFmtFor(S);
+  if (mode === 'candle') { $('#qlegend').innerHTML = '<span class="mu" style="font-family:var(--sans);font-size:12px">Cada barra é um mês: começa no valor da primeira recolha do mês e acaba no da última. Azul = o mês acabou a subir, vermelho = acabou a descer. A tracejado, a média dos últimos 3 meses.</span>';
+    candleChart(el, monthlyCandles(s), { h: 330, unit: S.unit, label: `${S.name}: evolução mês a mês` }); return; }
   const vals = s.filter(p => p.v != null); if (!vals.length) { el.innerHTML = '<div class="loading">Sem dados neste período.</div>'; return; }
   const mx = vals.reduce((a, b) => b.v > a.v ? b : a), mn = vals.reduce((a, b) => b.v < a.v ? b : a), lastV = vals[vals.length - 1];
-  const marks = []; if (mx !== mn) { if (mx !== lastV) marks.push({ t: mx.t, v: mx.v, text: `Máx ${yF(mx.v)} · ${dd(mx.d)}` }); if (mn !== lastV) marks.push({ t: mn.t, v: mn.v, text: `Mín ${yF(mn.v)} · ${dd(mn.d)}`, below: true }); }
+  const marks = []; if (mx !== mn) { if (mx !== lastV) marks.push({ t: mx.t, v: mx.v, text: `Mais alto: ${yF(mx.v)} · ${dd(mx.d)}` }); if (mn !== lastV) marks.push({ t: mn.t, v: mn.v, text: `Mais baixo: ${yF(mn.v)} · ${dd(mn.d)}`, below: true }); }
   const series = [{ pts: s, color: S.color, area: true, w: 2.2 }]; let legend = '';
   if (cmp !== 'NONE' && SYMS[cmp]) {
     const c = inRange(SYMS[cmp].s), c0 = c.find(p => p.v != null), s0 = vals[0];
     const k = s0 && c0 ? s0.v / c0.v : 1, lc = lastPt(c);
-    const perf = lc && c0 ? (lc.v / c0.v - 1) * 100 : null;
+    const perf = lc && c0 ? (lc.v / c0.v - 1) * 100 : null, sp = (lastV.v / vals[0].v - 1) * 100;
     series.push({ pts: c.map(p => ({ ...p, v: p.v == null ? null : p.v * k })), color: '#e7e6f2', op: .55, dash: '4 4', w: 1.5 });
-    const sp = (lastV.v / vals[0].v - 1) * 100;
-    legend = `<span class="lg"><i style="background:${S.color}"></i>${sel} ${pctS(sp)}</span><span class="lg"><i style="height:0;border-top:2px dashed #e7e6f2;opacity:.6"></i>${cmp} rebaseado ${pctS(perf)}</span><span class="mu">no período</span>`;
+    legend = `<span class="lg"><i style="background:${S.color}"></i>${esc(S.short)} ${pctS(sp)}</span><span class="lg"><i style="height:0;border-top:2px dashed #e7e6f2;opacity:.6"></i>${esc(SYMS[cmp].short)} ${pctS(perf)}</span><span class="mu" style="font-family:var(--sans)">no período. A linha tracejada parte do mesmo ponto para comparar a evolução.</span>`;
   }
   $('#qlegend').innerHTML = legend;
-  lineChart(el, { id: 'q', h: 340, series, yFmt: yF, badge: true, label: `${S.name}: ${S.unit} por recolha`,
-    marks,
-    bars: S.grp === 'Macro' && sel !== 'RNT' ? null : s.map(p => ({ t: p.t, v: p.n })), barsLabel: sel === 'RNT' ? 'Anúncios de arrendamento' : 'Anúncios ativos (amostra)',
-    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>${valS(sel, p.v)}${p.n != null ? `<br><span style="color:#9a98b3">${p.n} anúncios</span>` : ''}${p.price ? `<br><span style="color:#9a98b3">mediana ${fmt(p.price)} €</span>` : ''}` });
+  lineChart(el, { id: 'q', h: 330, series, yFmt: yF, badge: true, label: `${S.name}: ${S.unit} por recolha`, marks,
+    bars: S.grp === 'macro' && sel !== 'RNT' ? null : s.map(p => ({ t: p.t, v: p.n })), barsLabel: sel === 'RNT' ? 'Casas para arrendar' : 'Casas à venda usadas no cálculo',
+    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>${valS(sel, p.v, false)}${p.n != null && S.grp !== 'macro' ? `<br><span style="color:#9a98b3">${p.n} casas</span>` : ''}${p.price ? `<br><span style="color:#9a98b3">casa típica: ${fmt(p.price)} €</span>` : ''}` });
 }
-function renderStats() {
+function renderTiles() {
   const S = SYMS[sel], s = S.s.filter(p => p.v != null), L = s[s.length - 1]; if (!L) return;
-  const first = s[0], prev = s[s.length - 2], lo = Math.min(...s.map(p => p.v)), hi = Math.max(...s.map(p => p.v));
+  const first = s[0], lo = Math.min(...s.map(p => p.v)), hi = Math.max(...s.map(p => p.v));
   const r = [...returns(S.s).values()], vol = r.length > 3 ? stdev(r) * 100 : null;
-  const b = sel === 'IDF' || S.grp === 'Macro' ? null : beta(sel, 'IDF');
-  const pos = hi > lo ? (L.v - lo) / (hi - lo) * 100 : 50, minN = Math.min(...s.map(p => p.n ?? Infinity));
-  const liq = (L.n ?? 0) >= 50 ? '●●●' : (L.n ?? 0) >= 20 ? '●●○' : (L.n ?? 0) >= 10 ? '●○○' : '○○○';
-  const p1 = chg(sel, 30), p3 = chg(sel, 91), pA = chg(sel, 'ALL'), months = Math.max(1, Math.round((L.t - first.t) / (30.4 * DAY)));
-  let rows = `<div class="kv"><span>Abertura · ${dd(first.d)}</span><span>${valS(sel, first.v)}</span></div>
-    <div class="kv"><span>Fecho anterior</span><span>${prev ? valS(sel, prev.v) : '–'}</span></div>
-    <div class="kv"><span>Var. 1 mês</span><span class="${tcls(p1)}">${chgS(sel, p1)}</span></div>
-    <div class="kv"><span>Var. 3 meses</span><span class="${tcls(p3)}">${chgS(sel, p3)}</span></div>
-    <div class="kv"><span>Var. desde ${MES[first.d.getMonth()]}</span><span class="${tcls(pA)}">${chgS(sel, pA)}</span></div>
-    <div style="padding:10px 0 12px;border-top:1px solid var(--line2)"><div style="display:flex;justify-content:space-between;font-size:11px"><span class="mu" style="font-family:var(--sans)">Intervalo ${months} ${months === 1 ? 'mês' : 'meses'}</span></div>
-      <div class="rng"><i style="width:${pos}%"></i><b style="left:${pos}%"></b></div><div style="display:flex;justify-content:space-between;font-size:11px"><span>${valS(sel, lo)}</span><span>${valS(sel, hi)}</span></div></div>`;
-  if (vol != null) rows += `<div class="kv"><span>Volatilidade / recolha</span><span>${fmt(vol, 1)}%</span></div>`;
-  if (b != null) rows += `<div class="kv"><span>Beta vs IDF</span><span style="color:${Math.abs(b - 1) > .3 ? 'var(--warn)' : 'inherit'}">${fmt(b, 2)}</span></div>`;
-  if (S.grp !== 'Macro' || sel === 'RNT') {
-    rows += `<div class="kv"><span>Anúncios · mín. no período</span><span>${L.n ?? '–'} · ${isFinite(minN) ? minN : '–'}</span></div>`;
-    if (L.price) rows += `<div class="kv"><span>Mediana de pedido</span><span>${fmt(L.price)} €</span></div>`;
-    if (L.dom) rows += `<div class="kv"><span>Tempo à venda (saídas 60 d)</span><span>${fmt(L.dom)} dias</span></div>`;
-    rows += `<div class="kv"><span>Liquidez da amostra</span><span class="up">${liq}</span></div>`;
+  const b = sel === 'IDF' || S.grp === 'macro' ? null : beta(sel, 'IDF');
+  const pos = hi > lo ? (L.v - lo) / (hi - lo) * 100 : 50;
+  const p1 = chg(sel, 30), p3 = chg(sel, 91), pA = chg(sel, 'ALL');
+  const tile = (k, v, sub = '') => `<div class="tile"><span class="k">${k}</span><span class="v">${v}</span>${sub ? `<span class="s">${sub}</span>` : ''}</div>`;
+  const vv = v => valS(sel, v);
+  let t = tile('Num mês', `<span class="${tcls(p1)}">${chgS(sel, p1)}</span>`, 'face à recolha de há cerca de 30 dias')
+    + tile('Em 3 meses', `<span class="${tcls(p3)}">${chgS(sel, p3)}</span>`, 'face à recolha de há cerca de 90 dias')
+    + tile(`Desde ${MESL[first.d.getMonth()]}`, `<span class="${tcls(pA)}">${chgS(sel, pA)}</span>`, `começou em ${vv(first.v)} a ${dd(first.d)}`)
+    + `<div class="tile"><span class="k">Mais baixo e mais alto</span><div class="rng"><i style="width:${pos}%"></i><b style="left:${pos}%"></b></div><span class="s m" style="display:flex;justify-content:space-between;gap:6px"><span>${vv(lo)}</span><span>${vv(hi)}</span></span></div>`;
+  if (S.grp !== 'macro') {
+    const n = L.n ?? 0, conf = n >= 50 ? 'alta' : n >= 20 ? 'boa' : n >= 10 ? 'razoável' : 'baixa';
+    t += tile('Preço de uma casa típica', L.price ? `${fmt(L.price)} €` : '–', 'a casa do meio, ordenadas por preço')
+      + tile('Casas usadas no cálculo', `${n}`, `fiabilidade ${conf}`)
+      + tile('Tempo até sair do mercado', L.dom ? `${fmt(L.dom)} dias` : '–', 'mediana das casas retiradas nos últimos 60 dias')
+      + tile('Oscilação entre recolhas', vol != null ? `±${fmt(vol, 1)}%` : '–', vol > 4 ? 'mexe bastante: olhe para a tendência' : 'valor estável de recolha para recolha');
   }
+  $('#tiles').innerHTML = t;
   let note = '';
-  if (b != null && pA != null) note = b > 1.2 ? `<b class="wh">Perfil:</b> amplifica o concelho. Com beta ${fmt(b, 1)}, tende a mexer ${fmt(b, 1)}% por cada 1% do IDF.`
-    : b < 0.8 ? `<b class="wh">Perfil:</b> defensivo. Com beta ${fmt(b, 1)}, segue o concelho de longe e tem dinâmica própria.`
-    : `<b class="wh">Perfil:</b> acompanha o concelho de perto (beta ${fmt(b, 1)}).`;
-  if (sel === 'YLD') note = `<b class="wh">Leitura:</b> uma yield a cair quer dizer que os preços de venda sobem mais depressa do que as rendas.`;
-  if (sel === 'OFR') note = `<b class="wh">Leitura:</b> mais oferta com preços estáveis indica um mercado a arrefecer. Menos oferta com preços a subir indica pressão compradora.`;
-  $('#stats').innerHTML = `<span style="font-weight:700;font-size:15px;color:#fff;margin-bottom:6px">Estatísticas · ${sel}</span><div class="m">${rows}</div>${note ? `<div class="note">${note}</div>` : ''}`;
+  if (b != null) note = b > 1.2 ? `<b class="wh">Como se move:</b> costuma exagerar os movimentos do concelho. Quando o concelho sobe 1%, aqui tende a subir mais.`
+    : b < 0.8 ? `<b class="wh">Como se move:</b> tem ritmo próprio e não segue de perto o resto do concelho.`
+    : `<b class="wh">Como se move:</b> acompanha de perto a evolução do concelho.`;
+  if (sel === 'YLD') note = `<b class="wh">Como ler:</b> se a rentabilidade cai, os preços de venda estão a subir mais depressa do que as rendas.`;
+  if (sel === 'OFR') note = `<b class="wh">Como ler:</b> mais casas à venda com preços parados indica um mercado a arrefecer. Menos casas com preços a subir indica muita procura.`;
+  if (sel === 'IAH') note = `<b class="wh">Como ler:</b> quanto mais alto, mais difícil é comprar casa com um rendimento médio do concelho.`;
+  if (sel === 'RNT') note = `<b class="wh">Como ler:</b> há poucas casas para arrendar no concelho, quase todas na cidade. Com tão poucos anúncios, a renda típica pode saltar de uma recolha para a outra.`;
+  const nEl = $('#qnote'); nEl.innerHTML = note; nEl.classList.toggle('hide', !note);
+}
+function renderZones() {
+  $('#zones').innerHTML = ['CID','SUL','NOR','POE'].filter(k => SYMS[k]).map(k => {
+    const S = SYMS[k], L = lastPt(S.s), p1 = chg(k, 30), pa = chg(k, 'ALL');
+    return `<div class="card zone" data-sym="${k}"><h3><span class="sw" style="background:${ZCOL[k]}"></span>${ZNAME[k]}</h3><span class="mu" style="font-size:12px">${ZDESC[k]}</span>
+      <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="m wh" style="font-size:22px;font-weight:700">${valS(k, L.v)}</span><span class="m ${tcls(p1)}" style="font-size:12px">${pctS(p1)} num mês</span></div>
+      <span class="mu" style="font-size:12px">${L.n} casas à venda · <span class="${tcls(pa)}">${pctS(pa)}</span> desde ${MESL[DATES[0].getMonth()]}</span>
+      <div class="pars" style="margin-top:auto">${ZONES[k].map(f => { const c = codeOf(f); return `<span class="par${c ? '' : ' none'}" ${c ? `data-sym="${c}"` : ''} title="${c ? 'Ver ' + esc(f) : 'Sem casas à venda'}">${esc(f)}</span>`; }).join('')}</div></div>`; }).join('');
 }
 function renderPerf() {
   const keys = ['CID','SUL','NOR','POE','IDF','RNT'].filter(k => SYMS[k]);
-  const colors = { CID: '#8b8cff', SUL: '#f5c26b', NOR: '#7fe0b8', POE: '#e39bff', IDF: '#e7e6f2', RNT: '#ffb36b' };
+  const colors = { CID: ZCOL.CID, SUL: ZCOL.SUL, NOR: ZCOL.NOR, POE: ZCOL.POE, IDF: '#e7e6f2', RNT: '#ffb36b' };
+  const names = { CID: 'Cidade', SUL: 'Sul', NOR: 'Norte', POE: 'Poente', IDF: 'Concelho', RNT: 'Rendas' };
   const t0 = DATES[0].getTime();
   const series = keys.map(k => { const s = SYMS[k].s, b = s.find(p => p.v != null && p.t >= t0); const pts = s.map(p => ({ ...p, v: p.v == null || !b ? null : p.v / b.v * 100 }));
-    const L = lastPt(pts); return { pts, color: colors[k], w: k === 'CID' ? 2.4 : 1.8, dash: k === 'RNT' ? '5 4' : null, endLabel: L ? `${k} ${fmt(L.v, 1)}` : k }; });
+    const L = lastPt(pts); return { pts, color: colors[k], w: k === 'IDF' ? 2.4 : 1.8, dash: k === 'RNT' ? '5 4' : null, endLabel: L ? `${names[k]} ${pctS(L.v - 100, 0)}` : names[k] }; });
   const y0 = SYMS.YLD.s.find(p => p.v != null), y1 = lastPt(SYMS.YLD.s);
-  const r0 = series.find((_, i) => keys[i] === 'RNT'), i0 = series.find((_, i) => keys[i] === 'IDF');
-  const rl = lastPt(r0.pts)?.v, il = lastPt(i0.pts)?.v;
-  const txt = rl != null && il != null ? (il > rl ? `Desde ${dd(DATES[0])}, os preços pedidos (IDF ${fmt(il - 100, 1)} pontos) andaram mais do que as rendas (RNT ${fmt(rl - 100, 1)}). A yield bruta da cidade passou de ${fmt(y0.v, 1)}% para ${fmt(y1.v, 1)}%.`
-    : `Desde ${dd(DATES[0])}, as rendas (RNT ${fmt(rl - 100, 1)} pontos) subiram mais do que os preços pedidos (IDF ${fmt(il - 100, 1)}). A yield bruta da cidade passou de ${fmt(y0.v, 1)}% para ${fmt(y1.v, 1)}%.`) : '';
-  $('#perf').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:3px"><h2>Desempenho relativo</h2><span class="mu" style="font-size:12px">base 100 = ${ddmmyyyy(DATES[0])} · ${DATES.length} recolhas</span></div>
-    <div class="m" style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px">${keys.map(k => `<span class="lg" data-sym="${k}"><i style="background:${colors[k]}${k === 'RNT' ? ';height:0;border-top:2px dashed ' + colors[k] : ''}"></i>${k}</span>`).join('')}</div></div>
-    <div class="chart" id="perfChart"></div><p class="mu" style="margin:0;font-size:12px;line-height:1.5">${txt}</p>`;
-  lineChart($('#perfChart'), { id: 'p', h: 260, series, base: 100, yFmt: v => fmt(v, 0), padR: 84, axisLeft: true, label: 'Desempenho em base 100 dos índices e setores',
-    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>CID ${fmt(p.v, 1)}` });
+  const rl = lastPt(series[keys.indexOf('RNT')].pts)?.v, il = lastPt(series[keys.indexOf('IDF')].pts)?.v;
+  const txt = rl != null && il != null ? `Desde ${MESL[DATES[0].getMonth()]}, os preços pedidos no concelho mudaram ${pctS(il - 100)} e as rendas ${pctS(rl - 100)}. ${il > rl ? 'Comprar ficou relativamente mais caro do que arrendar' : 'Arrendar ficou relativamente mais caro do que comprar'}: a rentabilidade de arrendar na cidade passou de ${fmt(y0.v, 1)}% para ${fmt(y1.v, 1)}%.` : '';
+  $('#perf').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>Quanto mudou cada zona</h2><p class="help">Todas as linhas partem de 100 em ${dd(DATES[0])}. Acima de 100 o preço subiu, abaixo desceu.</p></div>
+    <div class="m" style="display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px">${keys.map(k => `<span class="lg" data-sym="${k}" style="cursor:pointer"><i style="background:${colors[k]}${k === 'RNT' ? ';height:0;border-top:2px dashed ' + colors[k] : ''}"></i>${names[k]}</span>`).join('')}</div></div>
+    <div class="chart fill" id="perfChart"></div><p class="help" style="color:var(--tx2)">${txt}</p>`;
+  const el = $('#perfChart');
+  drawFit(el, 240, h => lineChart(el, { id: 'p', h, series, base: 100, yFmt: v => fmt(v, 0), padR: 112, axisLeft: true, label: 'Evolução das zonas com base 100',
+    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>Cidade: ${pctS(p.v - 100)}` }));
 }
 let moveMode = 'all';
 function renderMoves() {
-  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias' && lastPt(SYMS[k].s) && (moveMode === 'all' || !isMicro(k)));
+  const fr = ORDER.filter(k => SYMS[k].grp === 'freg' && (moveMode === 'all' || !isMicro(k)));
   const ch = fr.map(k => ({ k, p: chg(k, 30) })).filter(x => x.p != null);
   const ups = ch.filter(x => x.p > 0.05).sort((a, b) => b.p - a.p), dns = ch.filter(x => x.p < -0.05).sort((a, b) => a.p - b.p), flat = ch.length - ups.length - dns.length;
-  const row = x => `<div class="mv m" data-sym="${x.k}"><b>${x.k}</b><span style="font-family:var(--sans)">${esc(SYMS[x.k].name)}${isMicro(x.k) ? ` <span style="color:var(--warn);font-size:11px">⚠ ${lastPt(SYMS[x.k].s).n}</span>` : ''}</span><span class="bdg ${cls(x.p)}">${pctS(x.p)}</span></div>`;
-  const highs = fr.filter(k => { const s = SYMS[k].s.filter(p => p.v != null); return s.length > 10 && s[s.length-1].v >= Math.max(...s.map(p => p.v)); });
-  const lows = fr.filter(k => { const s = SYMS[k].s.filter(p => p.v != null); return s.length > 10 && s[s.length-1].v <= Math.min(...s.map(p => p.v)); });
-  const months = Math.round((DATES[DATES.length-1] - DATES[0]) / (30.4 * DAY));
-  $('#moves').innerHTML = `<div class="sec-h"><h2>Movimentos · 1 mês</h2><div class="seg" id="mvSeg"><button class="pill${moveMode === 'all' ? ' on' : ''}" data-v="all">Todas</button><button class="pill${moveMode === 'liq' ? ' on' : ''}" data-v="liq">Só líquidas</button></div></div>
-    <div><span class="lbl">Maiores subidas</span>${ups.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
-    <div><span class="lbl">Maiores descidas</span>${dns.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
-    <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px dashed var(--line)">
-      <div style="display:flex;justify-content:space-between;font-size:12px"><span class="lbl">Amplitude · ${ch.length} freguesias</span><span class="m"><span class="up">${ups.length} ▲</span> · <span class="mu">${flat} ●</span> · <span class="dn">${dns.length} ▼</span></span></div>
+  const row = x => `<div class="mv" data-sym="${x.k}"><span>${esc(SYMS[x.k].name)}${isMicro(x.k) ? ` <span class="wa" style="font-size:11px" title="Poucos anúncios: variação pouco fiável">⚠</span>` : ''} <span class="mu m" style="font-size:10px">${x.k}</span></span><span class="bdg ${cls(x.p)}">${pctS(x.p)}</span></div>`;
+  $('#moves').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>O último mês</h2><p class="help">Freguesias cujo preço por m² mais mudou em cerca de 30 dias.</p></div>
+      <div class="seg" id="mvSeg"><button class="pill${moveMode === 'all' ? ' on' : ''}" data-v="all">Todas</button><button class="pill${moveMode === 'liq' ? ' on' : ''}" data-v="liq">Só 10+ casas</button></div></div>
+    <div><span class="lbl">Subiram mais</span>${ups.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
+    <div><span class="lbl">Desceram mais</span>${dns.slice(0, 4).map(row).join('') || '<div class="mv mu">Nenhuma</div>'}</div>
+    <div style="display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px dashed var(--line);margin-top:auto">
       <div class="brk" aria-hidden="true"><div style="flex:${ups.length || 0.0001};background:#8b8cff"></div><div style="flex:${flat || 0.0001};background:#4a4870"></div><div style="flex:${dns.length || 0.0001};background:#ff6b85"></div></div>
-      <div style="font-size:12px;line-height:1.6"><span class="mu">Máximos de ${months} meses:</span> <span class="m wh">${highs.join(' · ') || '–'}</span><br><span class="mu">Mínimos de ${months} meses:</span> <span class="m dn">${lows.join(' · ') || '–'}</span></div></div>`;
-  $('#mvSeg').onclick = e => { const v = e.target.dataset.v; if (v) { moveMode = v; renderMoves(); } };
+      <span style="font-size:12.5px"><span class="up">${ups.length} subiram</span> · <span class="mu">${flat} ficaram iguais</span> · <span class="dn">${dns.length} desceram</span></span>
+      ${moveMode === 'all' ? '<span class="help" style="font-size:11.5px"><span class="wa">⚠</span> poucos anúncios: a variação pode ser só uma casa que entrou ou saiu.</span>' : ''}</div>`;
+  $('#mvSeg').onclick = e => { const v = e.target.dataset.v; if (v) { moveMode = v; renderMoves(); renderPerf(); } };
 }
 function agentsData(locKey) {
   const loc = D.locations[locKey]; const ag = loc.current.sales.distributions.agencies || {}, total = loc.current.sales.active_count || 1;
@@ -715,32 +763,83 @@ function agentsData(locKey) {
 }
 function renderAgents() {
   const { list, total, top } = agentsData('Global');
-  $('#agents').innerHTML = `<div class="sec-h"><h2>Quem tem a montra</h2><span class="mu" style="font-size:11px">quota da oferta de venda · ${total} anúncios</span></div>
-    <div class="agents m">${list.map(a => `<div class="agent"><b style="${a.part ? 'color:var(--warn)' : ''}" title="${esc(a.n)}">${esc(a.n)}</b><span class="m">${fmt(a.p, 1)}%</span><span class="mu" style="font-size:11px">${a.c} ${a.part ? '· venda direta' : 'anúncios'}</span></div>`).join('')}
-    <div class="agent" style="background:none;border:1px dashed var(--line3)"><b class="mu">Top 5</b><span class="m">${fmt(top, 1)}%</span><span class="mu" style="font-size:11px">concentração</span></div></div>`;
+  $('#agents').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>Quem anuncia as casas à venda</h2><p class="help">Parte das ${total} casas à venda no concelho anunciada por cada imobiliária ou diretamente pelo dono.</p></div></div>
+    <div class="agents m">${list.map(a => `<div class="agent"><b style="${a.part ? 'color:var(--warn)' : ''}" title="${esc(a.n)}">${esc(a.n)}</b><span class="m">${fmt(a.p, 1)}%</span><span class="mu" style="font-size:11px;font-family:var(--sans)">${a.c} casas${a.part ? ', sem imobiliária' : ''}</span></div>`).join('')}
+    <div class="agent" style="background:none;border:1px dashed var(--line3)"><b class="mu">Estas 5 juntas</b><span class="m">${fmt(top, 1)}%</span><span class="mu" style="font-size:11px;font-family:var(--sans)">do total de anúncios</span></div></div>`;
 }
 function select(k, scroll) {
-  if (!SYMS[k]) return; sel = k; if (isMicro(k)) microOpen = true; renderWL(); renderQuote(); renderStats();
+  if (!SYMS[k]) return; sel = k; if (isMicro(k)) microOpen = true; renderWL(); renderQuote();
   const u = new URL(location); u.searchParams.set('s', k); u.searchParams.delete('loc'); history.replaceState(null, '', u);
-  if (scroll && window.innerWidth < 860) $('#quote').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const row = document.querySelector(`#wl .row[data-sym="${k}"]`); if (row) row.scrollIntoView({ block: 'nearest' });
+  if (scroll) $('#quote').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-/* ------------------------------------------------------------- setores */
-let candleKey = 'IDF', mapMode = 'm2', map, geoLayer, GEO;
+/* -------------------------------------------------------- zonas e mapa */
+let candleKey = 'IDF', mapMode = 'm2';
+function hexStat(name) {
+  const loc = D.locations[name], code = codeOf(name), zone = Object.keys(ZONES).find(k => ZONES[k].includes(name)) || null;
+  if (!loc || !code) return { name, code: CODES[name], zone, n: 0, m2: null, chg: null, none: true };
+  const L = lastPt(SYMS[code].s);
+  return { name, code, zone, n: L.n, m2: L.v, chg: chg(code, 30), micro: isMicro(code) };
+}
+const RAMP = ['#2a2856','#3a3790','#5552c4','#7473ee','#9a9bff','#c2c3ff'];
+function hexColor(st) {
+  if (mapMode === 'zone') return st.zone ? ZCOL[st.zone] : '#2c2a45';
+  if (st.none) return '#1d1c2e';
+  if (mapMode === 'chg') { if (st.chg == null) return '#2c2a45'; const v = Math.max(-20, Math.min(20, st.chg)); return v > 0.5 ? `rgba(139,140,255,${0.3 + v / 20 * 0.7})` : v < -0.5 ? `rgba(255,107,133,${0.3 - v / 20 * 0.7})` : '#4a4870'; }
+  const v = mapMode === 'n' ? st.n : st.m2, br = mapMode === 'n' ? [4, 8, 12, 20, 35] : [450, 600, 750, 950, 1200];
+  let i = 0; while (i < br.length && v > br[i]) i++; return RAMP[i];
+}
+function renderHex() {
+  const R = 38, w = Math.sqrt(3) * R, pad = 6;
+  const pos = Object.fromEntries(Object.entries(HEX).map(([n, [c, r]]) => [n, [pad + w / 2 + (c + (r % 2) / 2) * w, pad + R + (r - 1) * 1.5 * R]]));
+  const xs = Object.values(pos).map(p => p[0]), ys = Object.values(pos).map(p => p[1]);
+  const W = Math.max(...xs) + w / 2 + pad, H = Math.max(...ys) + R + pad;
+  const poly = (x, y, r) => [...Array(6)].map((_, i) => { const a = Math.PI / 180 * (60 * i - 90); return `${(x + r * Math.cos(a)).toFixed(1)},${(y + r * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  let g = `<svg viewBox="0 0 ${W.toFixed(0)} ${H.toFixed(0)}" role="img" aria-label="Mapa em colmeia das freguesias do concelho do Fundão">`;
+  for (const name of Object.keys(HEX)) {
+    const st = hexStat(name), [x, y] = pos[name], fill = hexColor(st);
+    const light = mapMode === 'zone' || ['#9a9bff', '#c2c3ff', '#7473ee'].includes(fill) || (mapMode === 'chg' && st.chg != null && Math.abs(st.chg) > 10);
+    const tc = light ? '#0d0c17' : '#fff', tc2 = light ? '#0d0c17' : '#d6d5e6';
+    const val = st.none ? 'sem casas' : mapMode === 'n' ? `${st.n} casas` : mapMode === 'chg' ? (st.chg == null ? '–' : pctS(st.chg, 0)) : mapMode === 'zone' ? '' : `${fmt(st.m2)} €/m²`;
+    const isSel = st.code && st.code === sel;
+    g += `<g class="hex" data-hex="${esc(name)}" ${!st.none ? `data-sym="${st.code}"` : ''}><polygon points="${poly(x, y, R - 1.5)}" fill="${fill}" stroke="${isSel ? '#fff' : '#0d0c17'}" stroke-width="${isSel ? 3 : 2}"/>
+      <text x="${x}" y="${y - 3}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11.5" font-weight="700" fill="${tc}">${st.code || ''}${st.micro && mapMode !== 'zone' ? '*' : ''}</text>
+      <text x="${x}" y="${y + 12}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="9.5" fill="${tc2}" fill-opacity=".85">${val}</text></g>`;
+  }
+  g += `</svg><div class="hextip" id="hextip"></div>`;
+  const wrap = $('#hexmap'); wrap.innerHTML = g;
+  const tip = $('#hextip');
+  wrap.querySelectorAll('.hex').forEach(h => {
+    h.addEventListener('mousemove', ev => { const st = hexStat(h.dataset.hex), r = wrap.getBoundingClientRect();
+      tip.innerHTML = `<b class="wh">${esc(st.name)}</b> <span class="m mu">${st.code || ''}</span><br>${st.zone ? `<span style="color:${ZCOL[st.zone]}">● ${ZNAME[st.zone]}</span><br>` : ''}${st.none ? '<span class="mu">Sem casas à venda com dados válidos</span>' : `${valS(st.code, st.m2)} · ${st.n} casas${st.chg != null ? `<br><span class="${tcls(st.chg)}">${pctS(st.chg)} num mês</span>` : ''}${st.micro ? '<br><span class="wa">⚠ poucos anúncios</span>' : ''}<br><span class="mu">Toque para ver a evolução</span>`}`;
+      tip.style.display = 'block'; tip.style.left = Math.max(0, Math.min(ev.clientX - r.left + 14, r.width - 230)) + 'px'; tip.style.top = (ev.clientY - r.top + 14) + 'px'; });
+    h.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+  });
+  const L = $('#legend');
+  if (mapMode === 'zone') L.innerHTML = Object.keys(ZNAME).map(k => `<span class="lg"><i style="background:${ZCOL[k]};height:9px;width:9px;border-radius:2px"></i>${ZNAME[k]}</span>`).join('');
+  else if (mapMode === 'chg') L.innerHTML = `<span class="mu">Variação num mês</span><span class="dn m">−20%</span><span class="sw" style="background:linear-gradient(90deg,#ff6b85,#4a4870,#8b8cff)"></span><span class="up m">+20%</span><span class="mu">· * poucos anúncios</span>`;
+  else L.innerHTML = `<span class="mu">${mapMode === 'n' ? 'Casas à venda' : 'Preço por m²'}</span><span class="sw">${RAMP.map(c => `<i style="flex:1;background:${c}"></i>`).join('')}</span><span class="m mu">${mapMode === 'n' ? 'até 4 … mais de 35' : 'até 450 €/m² … mais de 1 200 €/m²'}</span><span class="mu">· * poucos anúncios</span>`;
+}
+function renderZoneList() {
+  $('#zonelist').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>As quatro zonas</h2><p class="help">Que freguesias entram em cada zona, com o preço por m² atual de cada uma.</p></div></div>` +
+    ['CID','SUL','NOR','POE'].filter(k => SYMS[k]).map(k => { const S = SYMS[k], L = lastPt(S.s), p1 = chg(k, 30);
+      return `<div class="zl"><div class="zl-h"><span style="display:flex;align-items:center;gap:8px;cursor:pointer" data-sym="${k}"><span style="width:10px;height:10px;border-radius:3px;background:${ZCOL[k]};display:inline-block"></span><b class="wh">${ZNAME[k]}</b></span>
+        <span class="m"><span class="wh">${valS(k, L.v)}</span> <span class="${tcls(p1)}" style="font-size:11.5px">${pctS(p1)}</span></span></div>
+        <span class="mu" style="font-size:12px">${ZDESC[k]} · ${L.n} casas à venda</span>
+        <div class="pars">${ZONES[k].map(f => { const c = codeOf(f), st = c ? lastPt(SYMS[c].s) : null; return `<span class="par${c ? '' : ' none'}" ${c ? `data-sym="${c}"` : ''}>${esc(f)}${st ? ` <span class="m mu">${fmt(st.v)}</span>` : ''}</span>`; }).join('')}</div></div>`; }).join('');
+}
 function renderCandles() {
   const keys = ['IDF','CID','SUL','NOR','POE'].filter(k => SYMS[k]), S = SYMS[candleKey], cs = monthlyCandles(S.s);
   const first = S.s.find(p => p.v != null), L = lastPt(S.s), d = L.v - first.v;
   const best = cs.slice(1).reduce((a, c, i) => { const v = c.c - cs[i].c; return !a || v > a.v ? { v, c } : a; }, null);
-  $('#candles').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>${candleKey === 'IDF' ? 'Índice datacasa Fundão' : esc(S.name)}</h2>
-      <span class="mu" style="font-size:12px">${candleKey} · €/m² mediano pedido · velas mensais · <span class="${tcls(d)}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))} €/m² (${pctS((L.v / first.v - 1) * 100)}) desde ${MES[first.d.getMonth()]}</span></span></div>
+  $('#candles').innerHTML = `<div class="sec-h"><div style="display:flex;flex-direction:column;gap:4px"><h2>Mês a mês · ${esc(S.short)}</h2>
+      <p class="help">Cada barra é um mês: começa no preço da primeira recolha e acaba no da última. <span class="up">Azul</span> = o mês acabou a subir, <span class="dn">vermelho</span> = a descer. Desde ${MESL[first.d.getMonth()]}: <span class="${tcls(d)}">${d >= 0 ? '+' : '−'}${fmt(Math.abs(d))} €/m² (${pctS((L.v / first.v - 1) * 100)})</span>${best && best.v > 0 ? `. Maior subida: ${MESL[best.c.m]} (+${fmt(best.v)} €/m²)` : ''}.</p></div>
       <div class="seg" id="ckSeg">${keys.map(k => `<button class="pill${k === candleKey ? ' on' : ''}" data-k="${k}">${{ IDF: 'Concelho', CID: 'Cidade', SUL: 'Sul', NOR: 'Norte', POE: 'Poente' }[k]}</button>`).join('')}</div></div>
-    <div class="m mu" style="display:flex;gap:14px;flex-wrap:wrap;font-size:11px"><span><span style="color:#e7e6f2">┅</span> média 3 meses</span><span><span class="up">▮</span> mês a subir</span><span><span class="dn">▮</span> mês a descer</span>${best && best.v > 0 ? `<span>${Mes(best.c.m)} · +${fmt(best.v)} €/m², maior subida mensal</span>` : ''}</div>
-    <div class="chart" id="ckChart"></div>
-    <div style="border-top:1px dashed var(--line);padding-top:8px"><span class="mu" style="font-size:11px">Oferta ativa (anúncios na amostra) · <span class="m wh">${L.n ?? '–'}</span></span><div class="chart" id="ofChart"></div></div>`;
-  candleChart($('#ckChart'), cs, { h: 300, label: `${S.name}: velas mensais do €/m² mediano` });
-  lineChart($('#ofChart'), { id: 'o', h: 120, series: [{ pts: S.s.map(p => ({ ...p, v: p.n })), color: '#9a98b3', w: 1.6 }], yFmt: v => fmt(v), padR: 64, label: 'Anúncios ativos por recolha',
-    tip: p => `<b>${ddmmyyyy(p.d)}</b><br>${p.v} anúncios` });
-  $('#ckSeg').onclick = e => { const k = e.target.dataset.k; if (k) { candleKey = k; renderCandles(); renderFicha(); } };
+    <div class="chart fill" id="ckChart"></div>`;
+  const el = $('#ckChart');
+  drawFit(el, 280, h => candleChart(el, cs, { h, unit: '€/m²', label: `${S.name}: evolução mês a mês do preço por m²` }));
+  $('#ckSeg').onclick = e => { const k = e.target.dataset.k; if (k) { candleKey = k; renderFicha(); renderCandles(); } };
 }
 function distBar(obj, order, colors) {
   const tot = Object.values(obj).reduce((a, b) => a + b, 0) || 1, keys = order.filter(k => obj[k]);
@@ -748,89 +847,37 @@ function distBar(obj, order, colors) {
     <div class="m" style="display:flex;flex-wrap:wrap;gap:4px 12px;font-size:11px;margin-top:6px">${keys.map((k, i) => `<span><span style="color:${colors[i % colors.length]}">■</span> ${k} · ${fmt(obj[k] / tot * 100)}%</span>`).join('')}</div>`;
 }
 function renderFicha() {
-  const S = SYMS[candleKey], raw = candleKey === 'IDF' ? D.locations.Global : candleKey === 'CID' ? (D.sectors?.CID || D.locations.UF_FUNDAO) : D.sectors[candleKey];
-  const cur = raw.current.sales, rent = raw.current.rent, L = lastPt(S.s), p1 = chg(candleKey, 30), dist = cur.distributions || {};
+  const S = SYMS[candleKey], raw = candleKey === 'IDF' ? D.locations.Global : (D.sectors?.[candleKey] || D.locations.UF_FUNDAO);
+  const cur = raw.current.sales, rent = raw.current.rent, L = lastPt(S.s), dist = cur.distributions || {};
   const en = dist.energy || {}, ef = (en.E || 0) + (en.F || 0), et = Object.values(en).reduce((a, b) => a + b, 0);
   const ty = dist.typology || {}, tp = dist.type || {}, tpt = Object.values(tp).reduce((a, b) => a + b, 0) || 1;
   const topType = Object.entries(tp).sort((a, b) => b[1] - a[1])[0];
-  $('#ficha').innerHTML = `<div class="sec-h"><h2>Ficha · ${candleKey}</h2><span class="mu m" style="font-size:11px">recolha ${dd(L.d)}</span></div>
-    <div style="display:flex;align-items:baseline;gap:10px"><span class="m wh" style="font-size:30px;font-weight:700">${fmt(L.v)}</span><span class="mu">€/m²</span><span class="m ${tcls(p1)}">${pctS(p1)} 1M</span></div>
+  $('#ficha').innerHTML = `<div class="sec-h"><h2>Retrato · ${esc(S.short)}</h2><span class="mu m" style="font-size:11px">a ${dd(L.d)}</span></div>
     <div class="m">
-      <div class="kv"><span>Em montra</span><span>${cur.active_count} casas</span></div>
-      <div class="kv"><span>Mediana de pedido</span><span>${fmt(cur.median_price)} €</span></div>
-      <div class="kv"><span>Renda mediana</span><span>${rent.active_count ? fmt(rent.median_price) + ' € · n=' + rent.active_count : '–'}</span></div>
-      <div class="kv"><span>Anos de salário</span><span>${fmt(cur.affordability_index, 1)}</span></div>
-      <div class="kv"><span>Tempo à venda (saídas 60 d)</span><span>${fmt(cur.avg_days_on_market)} dias</span></div>
+      <div class="kv"><span>Preço por m²</span><span class="wh">${valS(candleKey, L.v)}</span></div>
+      <div class="kv"><span>Casas à venda</span><span>${cur.active_count}</span></div>
+      <div class="kv"><span>Preço de uma casa típica</span><span>${fmt(cur.median_price)} €</span></div>
+      <div class="kv"><span>Renda típica</span><span>${rent.active_count ? fmt(rent.median_price) + ' €/mês' : 'sem dados'}</span></div>
+      <div class="kv"><span>Anos de salário para comprar</span><span>${fmt(cur.affordability_index, 1)}</span></div>
+      <div class="kv"><span>Tempo até sair do mercado</span><span>${fmt(cur.avg_days_on_market)} dias</span></div>
     </div>
-    ${et ? `<div><span class="lbl">Certificado energético · ${et} com classe</span><div style="margin-top:8px">${distBar(en, ['A+','A','B','B-','C','D','E','F'], ['#7fe0b8','#7fe0b8','#a5d6a7','#a5d6a7','#c7c8ff','#9a98b3','#ffb36b','#ff6b85'])}</div>
-      <p class="mu" style="margin:6px 0 0;font-size:12px">${fmt(ef / et * 100)}% do stock certificado está em E ou F.</p></div>` : ''}
+    ${et ? `<div><span class="lbl">Eficiência energética · ${et} casas com certificado</span><div style="margin-top:8px">${distBar(en, ['A+','A','B','B-','C','D','E','F'], ['#7fe0b8','#7fe0b8','#a5d6a7','#a5d6a7','#c7c8ff','#9a98b3','#ffb36b','#ff6b85'])}</div>
+      <p class="help" style="margin-top:6px">${fmt(ef / et * 100)}% das casas com certificado estão nas classes mais baixas (E ou F).</p></div>` : ''}
     ${Object.keys(ty).length ? `<div><span class="lbl">Tipologia</span><div style="margin-top:8px">${distBar(ty, ['T0','T1','T2','T3','T4','T5+'], ['#4a4870','#6b6aa8','#8b8cff','#a5a7ff','#c7c8ff','#e7e6f2'])}</div>
-      ${topType ? `<p class="mu" style="margin:6px 0 0;font-size:12px">${fmt(topType[1] / tpt * 100)}% ${topType[0] === 'Moradia' ? 'moradias' : topType[0].toLowerCase() + 's'}.</p>` : ''}</div>` : ''}`;
-}
-function locStat(key) {
-  const loc = D.locations[key]; if (!loc) return null; const c = loc.current.sales, code = key === 'UF_FUNDAO' ? 'CID' : CODES[key];
-  return { m2: c.median_price_m2 || null, n: c.sample_size ?? c.active_count, chg: code && SYMS[code] ? chg(code, 30) : null, code };
-}
-function geoStat(f) {
-  const raw = f.properties.fre_name || f.properties.fre_name_long || '', n = norm(raw);
-  if (n.includes('FUNDAO') && n.includes('VALVERDE')) return { name: 'Cidade (UF Fundão)', ...locStat('UF_FUNDAO') };
-  const parts = raw.split(/,| e /i).map(s => s.trim()).filter(Boolean);
-  const keys = parts.map(p => Object.keys(D.locations).find(k => norm(k) === norm(p))).filter(Boolean);
-  const st = keys.map(locStat).filter(s => s && s.n);
-  if (!st.length) return { name: raw, m2: null, n: 0, chg: null, code: keys[0] ? CODES[keys[0]] : null };
-  const n2 = st.reduce((a, s) => a + s.n, 0), m2 = st.reduce((a, s) => a + (s.m2 || 0) * s.n, 0) / n2;
-  return { name: raw, m2, n: n2, chg: st.length === 1 ? st[0].chg : null, code: st.sort((a, b) => b.n - a.n)[0].code };
-}
-const RAMP = ['#24224a','#33307a','#4b47ad','#6b6ade','#8b8cff','#b3b4ff','#dcdcff'];
-function mapColor(st) {
-  if (!st || !st.n) return '#1b1a2b';
-  if (mapMode === 'chg') { if (st.chg == null) return '#2c2a45'; const v = Math.max(-15, Math.min(15, st.chg)); return v > 0.05 ? `rgba(139,140,255,${0.25 + v / 15 * 0.75})` : v < -0.05 ? `rgba(255,107,133,${0.25 - v / 15 * 0.75})` : '#4a4870'; }
-  const v = mapMode === 'n' ? st.n : st.m2, br = mapMode === 'n' ? [3, 6, 10, 15, 25, 40] : [400, 550, 700, 850, 1000, 1300];
-  let i = 0; while (i < br.length && v > br[i]) i++; return RAMP[i];
-}
-function renderMap() {
-  if (!window.L || !GEO) return;
-  if (!map) {
-    map = L.map('map', { scrollWheelZoom: false, zoomControl: true, attributionControl: true, minZoom: 9, maxZoom: 15, zoomSnap: 0.25 });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', { attribution: '&copy; OpenStreetMap &copy; CARTO' }).addTo(map);
-  }
-  if (geoLayer) map.removeLayer(geoLayer);
-  geoLayer = L.geoJSON(GEO, {
-    style: f => ({ fillColor: mapColor(geoStat(f)), fillOpacity: .88, color: '#0d0c17', weight: 1.2 }),
-    onEachFeature: (f, layer) => {
-      const st = geoStat(f);
-      layer.bindTooltip(`<b>${esc(st.name)}</b>${st.code ? ` <span style="color:#9a98b3">${st.code}</span>` : ''}<br>${st.n ? `${fmt(st.m2)} €/m² · ${st.n} anún.${st.chg != null ? `<br><span style="color:${st.chg > 0 ? '#a5a7ff' : st.chg < 0 ? '#ff6b85' : '#9a98b3'}">${pctS(st.chg)} 1M</span>` : ''}` : '<span style="color:#9a98b3">sem oferta</span>'}`, { className: 'dc-tip', sticky: true });
-      layer.on('mouseover', () => layer.setStyle({ weight: 2.5, color: '#e7e6f2' })); layer.on('mouseout', () => geoLayer.resetStyle(layer));
-      layer.on('click', () => { if (st.code && SYMS[st.code]) { location.hash = '#mercado'; select(st.code); } });
-    }
-  }).addTo(map);
-  map.fitBounds(geoLayer.getBounds(), { padding: [10, 10] });
-  const lab = mapMode === 'n' ? ['≤3','6','10','15','25','40+'] : mapMode === 'm2' ? ['≤400','550','700','850','1 000','1 300+'] : null;
-  $('#legend').innerHTML = mapMode === 'chg' ? `<span class="mu">Var. 1M</span><span class="dn m">−15%</span><span class="sw" style="background:linear-gradient(90deg,#ff6b85,#4a4870,#8b8cff)"></span><span class="up m">+15%</span><span class="mu">· clique numa freguesia para ver a cotação</span>`
-    : `<span class="mu">${mapMode === 'n' ? 'Anúncios' : '€/m² mediano'}</span><span class="sw">${RAMP.slice(1).map(c => `<i style="flex:1;background:${c}"></i>`).join('')}</span><span class="m mu">${lab[0]} … ${lab[lab.length - 1]}</span><span class="mu">· clique numa freguesia para ver a cotação</span>`;
+      ${topType ? `<p class="help" style="margin-top:6px">${fmt(topType[1] / tpt * 100)}% das casas à venda são ${topType[0] === 'Moradia' ? 'moradias' : topType[0].toLowerCase() + 's'}.</p>` : ''}</div>` : ''}`;
 }
 function renderHealth() {
   const G = D.locations.Global.history, first = DATES[0], last = DATES[DATES.length - 1];
   const ent = G.slice(1).reduce((a, h) => a + (h.sales.new_entries || 0), 0), net = G.slice(1).reduce((a, h) => a + (h.sales.net_production || 0), 0), ex = ent - net;
   const byMonth = {}; DATES.forEach(d => { const k = Mes(d.getMonth()); byMonth[k] = (byMonth[k] || 0) + 1; });
   const mx = Math.max(...Object.values(byMonth));
-  const { list, total } = agentsData('Global');
-  $('#health').innerHTML = `<div class="sec-h"><h2>Saúde dos dados</h2></div>
-    <span class="mu m" style="font-size:12px">${DATES.length} recolhas · ${dd(first)} – ${dd(last)}</span>
-    <div style="display:flex;align-items:flex-end;gap:4px;height:60px">${Object.entries(byMonth).map(([m, c]) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div title="${m}: ${c} recolhas" style="width:100%;height:${c / mx * 44}px;background:#4b47ad;border-radius:3px"></div><span class="mu" style="font-size:10px">${m}</span></div>`).join('')}</div>
-    <div class="m"><div class="kv"><span>Entradas registadas</span><span class="up">+${ent}</span></div><div class="kv"><span>Saídas registadas</span><span class="dn">−${ex}</span></div><div class="kv"><span>Variação do stock</span><span>${net >= 0 ? '+' : '−'}${Math.abs(net)}</span></div></div>
-    <div style="border-top:1px dashed var(--line);padding-top:10px"><span class="lbl">Quem tem a montra · ${total} anúncios</span>
-      <div class="m" style="margin-top:6px">${list.map(a => `<div class="kv"><span style="${a.part ? 'color:var(--warn)' : ''}">${esc(a.n)}</span><span>${a.c} · ${fmt(a.p, 1)}%</span></div>`).join('')}</div></div>`;
-}
-function renderSectorTable() {
-  const keys = ['IDF','CID','SUL','NOR','POE'].filter(k => SYMS[k]);
-  const nFreg = k => k === 'IDF' ? ORDER.filter(x => SYMS[x].grp === 'Freguesias').length : k === 'CID' ? 5 : (SYMS[k].parishes || []).length;
-  const conf = n => n >= 50 ? '●●●' : n >= 20 ? '●●○' : '●○○';
-  $('#sectorTable').innerHTML = `<div class="sec-h"><h2>Setores do índice</h2><span class="mu" style="font-size:12px">€/m² mediano · 1M = recolha mais próxima de há 30 dias · desde ${ddmmyyyy(DATES[0])}</span></div>
-    <div style="overflow-x:auto"><table class="tb m"><thead><tr><th>Setor</th><th class="r">€/m²</th><th class="r">1M</th><th class="r">Desde ${MES[DATES[0].getMonth()]}</th><th class="r">Anúncios</th><th class="r hide-sm">Freg.</th><th class="hide-sm">Conf.</th><th class="hide-sm">Evolução</th></tr></thead>
-    <tbody>${keys.map(k => { const S = SYMS[k], L = lastPt(S.s), p1 = chg(k, 30), pa = chg(k, 'ALL');
-      return `<tr data-sym="${k}"><td><b class="wh">${k}</b> <span class="mu" style="font-family:var(--sans)">${esc(S.name)}</span></td><td class="r wh">${fmt(L.v)}</td><td class="r ${tcls(p1)}">${pctS(p1)}</td><td class="r ${tcls(pa)}">${pctS(pa)}</td><td class="r">${L.n}</td><td class="r hide-sm">${nFreg(k)}</td><td class="hide-sm up">${conf(L.n)}</td><td class="hide-sm" style="width:120px">${spark(S.s, S.color, 110, 22, 400).replace('<svg ', '<svg width="110" height="22" ')}</td></tr>`; }).join('')}</tbody></table></div>
-    <span class="mu" style="font-size:11px">Medianas calculadas sobre todos os anúncios de cada setor. Confiança: ●●● ≥ 50 anúncios · ●●○ ≥ 20 · ●○○ menos de 20.</span>`;
+  const box = (title, big, sub) => `<div class="card sec"><span class="lbl">${title}</span><span class="m wh" style="font-size:24px;font-weight:700">${big}</span><span class="help">${sub}</span></div>`;
+  $('#health').innerHTML = `<div class="card sec"><span class="lbl">Recolhas por mês</span>
+      <div style="display:flex;align-items:flex-end;gap:4px;height:64px">${Object.entries(byMonth).map(([m, c]) => `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px"><div title="${m}: ${c} recolhas" style="width:100%;height:${c / mx * 46}px;background:#4b47ad;border-radius:3px"></div><span class="mu" style="font-size:10px">${m}</span></div>`).join('')}</div>
+      <span class="help">${DATES.length} recolhas entre ${ddmmyyyy(first)} e ${ddmmyyyy(last)}.</span></div>`
+    + box('Casas que entraram', `+${ent}`, 'novos anúncios de venda desde a primeira recolha')
+    + box('Casas que saíram', `−${ex}`, 'anúncios retirados: vendidas ou desistências')
+    + box('Saldo', `${net >= 0 ? '+' : '−'}${Math.abs(net)}`, `há hoje ${net >= 0 ? 'mais' : 'menos'} ${Math.abs(net)} casas à venda do que em ${MESL[first.getMonth()]}`);
 }
 
 /* -------------------------------------------------------------- artigos */
@@ -868,42 +915,37 @@ function openArticle(slug) {
 function closeArticle() { $('#reader').classList.add('hide'); document.body.style.overflow = ''; const u = new URL(location); u.searchParams.delete('art'); history.replaceState(null, '', u); }
 
 /* ---------------------------------------------------------------- vistas */
-function show(view) {
-  view = ['mercado', 'setores', 'artigos', 'sobre'].includes(view) ? view : 'mercado';
+let view = 'mercado';
+function show(v) {
+  view = ['mercado', 'setores', 'artigos', 'sobre'].includes(v) ? v : 'mercado';
   document.querySelectorAll('main').forEach(m => { const on = m.id === 'view-' + view; m.classList.toggle('hide', !on); if (on) m.style.display = 'flex'; });
   document.querySelectorAll('nav.tabs .pill').forEach(a => a.classList.toggle('on', a.dataset.view === view));
-  if (view === 'setores' && D) { renderCandles(); renderFicha(); renderHealth(); renderSectorTable(); loadMap(); }
-  if (view === 'mercado' && D) { drawQuoteChart(); renderPerfChartOnly(); }
+  if (D) redraw();
   window.scrollTo({ top: 0 });
 }
-function renderPerfChartOnly() { if ($('#perfChart')) renderPerf(); }
-async function loadMap() {
-  if (!GEO) { try { GEO = await (await fetch('freguesias_fundao.geojson')).json(); } catch { $('#map').innerHTML = '<div class="loading">Não foi possível carregar o mapa.</div>'; return; } }
-  const go = () => { renderMap(); setTimeout(() => map && map.invalidateSize(), 50); };
-  if (window.L) go(); else window.addEventListener('load', go, { once: true });
+function redraw() {
+  if (view === 'mercado') { drawQuoteChart(); renderMoves(); renderPerf(); }
+  if (view === 'setores') { renderHex(); renderZoneList(); renderFicha(); renderCandles(); renderHealth(); }
 }
 function renderAll() {
-  renderSession(); renderTape(); renderIx(); renderWL(); renderQuote(); renderStats(); renderPerf(); renderMoves(); renderAgents();
-  const fr = ORDER.filter(k => SYMS[k].grp === 'Freguesias').length;
-  $('#mapTeaser').textContent = `${fr} freguesias com oferta, velas mensais por setor e saúde dos dados`;
-  const dl = $('#symlist'); dl.innerHTML = ORDER.map(k => `<option value="${k}">${esc(SYMS[k].name)}</option>`).join('') + ORDER.filter(k => SYMS[k].grp === 'Freguesias').map(k => `<option value="${esc(SYMS[k].name)}">${k}</option>`).join('');
+  renderSession(); renderTape(); renderIx(); renderWL(); renderQuote(); renderZones(); renderMoves(); renderPerf(); renderAgents();
+  $('#symlist').innerHTML = ORDER.map(k => `<option value="${esc(SYMS[k].name)}">${k}</option>`).join('');
 }
 
 document.addEventListener('click', e => {
-  const t = e.target.closest('[data-sym]'); if (t) { if (location.hash !== '#mercado' && location.hash !== '') location.hash = '#mercado'; select(t.dataset.sym, true); return; }
   const a = e.target.closest('[data-art]'); if (a) { openArticle(a.dataset.art); return; }
+  const t = e.target.closest('[data-sym]'); if (t) { const k = t.dataset.sym; if (view !== 'mercado') { location.hash = '#mercado'; setTimeout(() => select(k, true), 30); } else select(k, true); return; }
   if (e.target.id === 'reader' || e.target.id === 'artClose') closeArticle();
-  const mm = e.target.closest('#mapMode [data-mode]'); if (mm) { mapMode = mm.dataset.mode; document.querySelectorAll('#mapMode .pill').forEach(b => b.classList.toggle('on', b === mm)); renderMap(); }
+  const mm = e.target.closest('#mapMode [data-mode]'); if (mm) { mapMode = mm.dataset.mode; document.querySelectorAll('#mapMode .pill').forEach(b => b.classList.toggle('on', b === mm)); renderHex(); }
 });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !$('#reader').classList.contains('hide')) closeArticle(); });
 $('#q').addEventListener('change', e => {
   const v = e.target.value.trim(), up = v.toUpperCase();
   const k = SYMS[up] ? up : ORDER.find(x => norm(SYMS[x].name) === norm(v)) || ORDER.find(x => norm(SYMS[x].name).startsWith(norm(v)));
-  if (k) { location.hash = '#mercado'; select(k, true); e.target.value = ''; e.target.blur(); }
+  if (k) { e.target.value = ''; e.target.blur(); if (view !== 'mercado') { location.hash = '#mercado'; setTimeout(() => select(k, true), 30); } else select(k, true); }
 });
 window.addEventListener('hashchange', () => show(location.hash.slice(1)));
-let rz; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!D) return; const v = location.hash.slice(1) || 'mercado';
-  if (v === 'mercado') { drawQuoteChart(); renderPerf(); } if (v === 'setores') { renderCandles(); } }, 150); });
+let rz, lastW = window.innerWidth; window.addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => { if (!D || window.innerWidth === lastW) return; lastW = window.innerWidth; redraw(); }, 150); });
 
 async function init() {
   try {
@@ -913,6 +955,7 @@ async function init() {
     if (s && SYMS[s.toUpperCase()]) sel = s.toUpperCase();
     else if (loc) sel = loc === 'Global' ? 'IDF' : loc === 'UF_FUNDAO' ? 'CID' : (CODES[loc] && SYMS[CODES[loc]] ? CODES[loc] : sel);
     else if (favs[0] && SYMS[favs[0]]) sel = favs[0];
+    if (isMicro(sel)) microOpen = true;
     $('#loading').classList.add('hide'); $('#mercado').classList.remove('hide');
     renderAll(); show(location.hash.slice(1) || 'mercado');
   } catch (e) { console.error(e); $('#loading').textContent = 'Não foi possível carregar os dados. Tente novamente dentro de minutos.'; }
